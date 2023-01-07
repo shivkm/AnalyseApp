@@ -5,32 +5,36 @@ public record NextMatch
     public required  DateTime Date { get; set; }
     public required string HomeTeam { get; set; }
     public required string AwayTeam { get; set; }
-    public GameAverage? HomeCurrentAverage { get; set; }
-    public GameAverage? AwayCurrentAverage { get; set; }
-    public GameAverage? HomeOverAllAverage { get; set; }
-    public GameAverage? AwayOverAllAverage { get; set; }
-    public Head2HeadAverage? CurrentHeadToHeadAverage { get; set; }
-    public Head2HeadAverage? HeadToHeadAverage { get; set; }
-    public string PredictATargetUsingALinearRegressionModel { get; set; }
-    public string? Msg { get; set; }
-    
-    public override string ToString() =>
-        $$"""Date: {{{Date}}, HomeTeam: {{HomeTeam}}, AwayTeam: {{AwayTeam}} HomeCurrentAverage: {{HomeCurrentAverage}} AwayCurrentAverage: {{AwayCurrentAverage}} HomeOverAllAverage: {{HomeOverAllAverage}} AwayOverAllAverage: {{AwayOverAllAverage}} CurrentHeadToHeadAverage: {{CurrentHeadToHeadAverage}} HeadToHeadAverage: {{HeadToHeadAverage}}} PredictATargetUsingALinearRegressionModel: {{PredictATargetUsingALinearRegressionModel}} """;
+    public GameAnalysis? CurrentSeason { get; set; }
+    public GameAnalysis? LastSixSeason { get; set; }
+    public GameAnalysis? LastSixGames { get; set; }
 }
 
 
+public record GameAnalysis
+{
+    public GameAverage? HomeTeam { get; set; }
+    public GameAverage? HomeTeamAtHomeField { get; set; }
+    public GameAverage? AwayTeam { get; set; }
+    public GameAverage? AwayTeamAtAwayField { get; set; }
+    public Head2HeadAverage? HeadToHeadAverage { get; set; }
+    public override string ToString() =>
+        $"HomeTeam: {HomeTeam}, HomeTeamAtHomeField: {HomeTeamAtHomeField}, AwayTeam: {AwayTeam}," +
+        $" AwayTeamAtAwayField: {AwayTeamAtAwayField} HeadToHeadAverage: {HeadToHeadAverage}";
+}
+
 public record GameAverage
 {
-    public double? AtLeastOneGoal { get; set; }
-    public double? MoreThanTwoGoals { get; set; }
+    public double? HalfTimeWithOneGoal { get; set; }
+    public double? OneGoal { get; set; }
+    public double? TwoGoals { get; set; }
     public double? ZeroZero { get; set; }
     public double? TwoToThree { get; set; }
 
-    public override string ToString()
-    {
-        return $"At least one Goal: {AtLeastOneGoal}, More than two goals: {MoreThanTwoGoals}, Zero Zero games: {ZeroZero} " +
-               $"Two to three goals {TwoToThree}";
-    }
+    public override string ToString() =>
+        $"OneGoal: {OneGoal}, TwoGoals: {TwoGoals}, Zero Zero games: {ZeroZero}," +
+        $" TwoToThree: {TwoToThree}, HalfTimeWithOneGoal: {HalfTimeWithOneGoal} ";
+    
 }
 
 public record Head2HeadAverage
@@ -39,6 +43,7 @@ public record Head2HeadAverage
     public double? MoreThanTwoGoals { get; set; }
     public double? TwoToThree { get; set; }
     public double? ZeroZero { get; set; }
+    public double? GoalInFirstHalf { get; set; }
     public string? Hint { get; set; }
     
     public override string ToString()

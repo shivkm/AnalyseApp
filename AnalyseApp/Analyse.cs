@@ -1,11 +1,9 @@
 ﻿using System.Globalization;
-using System.Runtime.InteropServices.JavaScript;
 using AnalyseApp.Extensions;
 using AnalyseApp.models;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Microsoft.ML;
-using Microsoft.ML.Data;
 
 namespace AnalyseApp;
 
@@ -14,7 +12,7 @@ public class Analyse
     private const string FileDir = "C:\\shivm\\AnalyseApp\\data";
     private List<Matches> _historicalGames = new();
     private List<Matches> _upComingGames = new();
-    private const int TeamPerformancePassingPercentage = 60;
+    private const int TeamPerformancePassingPercentage = 50;
     
     internal Analyse ReadFilesHistoricalGames()
     {
@@ -81,7 +79,6 @@ public class Analyse
         await csvfile.WriteRecordsAsync(records);
     }
 
-
     private float ExecuteDecisionTree(string homeTeam, string awayTeam)
     {
         // Create a new ML context
@@ -120,7 +117,6 @@ public class Analyse
         return 0;
     }
     
-
     internal int ExecuteDecisionTree3(string homeTeam, string awayTeam)
     {
         var mlContext = new MLContext();
@@ -171,39 +167,180 @@ public class Analyse
                 AwayTeam = upComingGame.AwayTeam, 
                 Date = DateTime.Parse(upComingGame.Date)
             };
-
-            Execute(nextMatch);
-          //  nextMatch.PredictATargetUsingALinearRegressionModel = $"{ExecuteDecisionTree(upComingGame.HomeTeam, upComingGame.AwayTeam)}%";
+            AnalyseGames(nextMatch);
+            AnalyseCurrentGames(nextMatch);
+            AnalyseSixGames(nextMatch);
+            // if head to head analysis are null that means one of team analysis failed
+            //if (nextMatch.HeadToHeadAverage == null)
+              //  continue;
+            
+            
+            //Execute(nextMatch);
+            //nextMatch.PredictATargetUsingALinearRegressionModel = $"{ExecuteDecisionTree(upComingGame.HomeTeam, upComingGame.AwayTeam)}%";
             upComingMatches.Add(nextMatch);
             
             //ExecuteDecisionTree3(upComingGame.HomeTeam, upComingGame.AwayTeam);
         }
 
-        upComingMatches.FindTopMatchesForBothTeamScore(70);
-        upComingMatches.FindTopMatchesForMoreThanTwoGoal(45);
+       // upComingMatches.ForEach(i => Console.Write("{0}\t", i));
+        upComingMatches.FindTopFiveGamesBy(50);
     }
 
-    private void Execute(NextMatch nextMatch)
+    private void AnalyseGames(NextMatch nextMatch)
     {
-        var currentSeasonMatches = _historicalGames.GetCurrentSeasonBy();
-        nextMatch.HomeCurrentAverage = currentSeasonMatches.TeamPerformance(nextMatch.HomeTeam, true, TeamPerformancePassingPercentage);
-        nextMatch.AwayCurrentAverage = currentSeasonMatches.TeamPerformance(nextMatch.AwayTeam, false, TeamPerformancePassingPercentage);
-
-        var lastFiveMatches = currentSeasonMatches.OrderByDescending(i => i.Date).TakeLast(5);
-        var lastFiveMatchesHome = currentSeasonMatches.TeamPerformance(nextMatch.HomeTeam, true, TeamPerformancePassingPercentage);
-        var lastFiveMatchesAway = currentSeasonMatches.TeamPerformance(nextMatch.AwayTeam, false, TeamPerformancePassingPercentage);
+        var homeTeam = _historicalGames.TeamPerformance(
+            nextMatch.HomeTeam,
+            true,
+            true,
+            TeamPerformancePassingPercentage,
+            default
+        );
+        var homeTeamAtHomeField = _historicalGames.TeamPerformance(
+            nextMatch.HomeTeam,
+            true,
+            false,
+            TeamPerformancePassingPercentage,
+            default
+        );
+        var awayTeam = _historicalGames.TeamPerformance(
+            nextMatch.AwayTeam,
+            false,
+            true,
+            TeamPerformancePassingPercentage,
+            default
+        );
+        var awayTeamAtAwayField = _historicalGames.TeamPerformance(
+            nextMatch.AwayTeam,
+            false,
+            false,
+            TeamPerformancePassingPercentage,
+            default
+        );
         
-        nextMatch.HomeOverAllAverage = _historicalGames.TeamPerformance(nextMatch.HomeTeam, true, TeamPerformancePassingPercentage);
-        nextMatch.AwayOverAllAverage = _historicalGames.TeamPerformance(nextMatch.AwayTeam, false, TeamPerformancePassingPercentage);
+        nextMatch.LastSixSeason = new GameAnalysis
+        {
+            HomeTeam = homeTeam,
+            HomeTeamAtHomeField = homeTeamAtHomeField,
+            AwayTeam = awayTeam,
+            AwayTeamAtAwayField = awayTeamAtAwayField
+        };
 
-        nextMatch.CurrentHeadToHeadAverage = currentSeasonMatches.AnalyseHeadToHeadPerformance(nextMatch.HomeTeam, nextMatch.AwayTeam);
-        nextMatch.HeadToHeadAverage = _historicalGames.AnalyseHeadToHeadPerformance(nextMatch.HomeTeam, nextMatch.AwayTeam);
-
-        if (nextMatch.HomeOverAllAverage?.AtLeastOneGoal == 0 || nextMatch.AwayOverAllAverage?.AtLeastOneGoal == 0)
+        if (nextMatch.LastSixSeason.HomeTeamAtHomeField == null || nextMatch.LastSixSeason.HomeTeam == null ||
+            nextMatch.LastSixSeason.AwayTeamAtAwayField == null || nextMatch.LastSixSeason.AwayTeam == null)
             return;
         
-        nextMatch.GenerateOutput();
+        nextMatch.LastSixSeason.HeadToHeadAverage = _historicalGames.AnalyseHeadToHeadPerformance(
+            nextMatch.HomeTeam,
+            nextMatch.AwayTeam
+        );
     }
+    
+    
+    private void AnalyseCurrentGames(NextMatch nextMatch)
+    {
+        var currentSeason = _historicalGames.GetCurrentSeasonBy();
+        var homeTeam = currentSeason.TeamPerformance(
+            nextMatch.HomeTeam,
+            true,
+            true,
+            TeamPerformancePassingPercentage,
+            TeamPerformancePassingPercentage - 20
+        );
+        var homeTeamAtHomeField = currentSeason.TeamPerformance(
+            nextMatch.HomeTeam,
+            true,
+            false,
+            TeamPerformancePassingPercentage,
+            TeamPerformancePassingPercentage - 20
+        );
+        var awayTeam = currentSeason.TeamPerformance(
+            nextMatch.AwayTeam,
+            false,
+            true,
+            TeamPerformancePassingPercentage,
+            TeamPerformancePassingPercentage - 20
+        );
+        var awayTeamAtAwayField = currentSeason.TeamPerformance(
+            nextMatch.AwayTeam,
+            false,
+            false,
+            TeamPerformancePassingPercentage,
+            TeamPerformancePassingPercentage - 20
+        );
+        
+        nextMatch.CurrentSeason = new GameAnalysis
+        {
+            HomeTeam = homeTeam,
+            HomeTeamAtHomeField = homeTeamAtHomeField,
+            AwayTeam = awayTeam,
+            AwayTeamAtAwayField = awayTeamAtAwayField
+        };
+
+        if (nextMatch.CurrentSeason.HomeTeamAtHomeField == null || nextMatch.CurrentSeason.HomeTeam == null ||
+            nextMatch.CurrentSeason.AwayTeamAtAwayField == null || nextMatch.CurrentSeason.AwayTeam == null)
+            return;
+        
+        nextMatch.CurrentSeason.HeadToHeadAverage = currentSeason.AnalyseHeadToHeadPerformance(
+            nextMatch.HomeTeam,
+            nextMatch.AwayTeam
+        );
+    }
+
+    private void AnalyseSixGames(NextMatch nextMatch)
+    {
+        var currentSeason = _historicalGames
+            .GetCurrentSeasonBy()
+            .OrderByDescending(i => i.Date)
+            .TakeLast(6)
+            .ToList();
+        
+        var homeTeam = currentSeason.TeamPerformance(
+            nextMatch.HomeTeam,
+            true,
+            true,
+            TeamPerformancePassingPercentage,
+            TeamPerformancePassingPercentage - 30
+        );
+        var homeTeamAtHomeField = currentSeason.TeamPerformance(
+            nextMatch.HomeTeam,
+            true,
+            false,
+            TeamPerformancePassingPercentage,
+            TeamPerformancePassingPercentage - 30
+        );
+        var awayTeam = currentSeason.TeamPerformance(
+            nextMatch.AwayTeam,
+            false,
+            true,
+            TeamPerformancePassingPercentage,
+            TeamPerformancePassingPercentage - 30
+        );
+        var awayTeamAtAwayField = currentSeason.TeamPerformance(
+            nextMatch.AwayTeam,
+            false,
+            false,
+            TeamPerformancePassingPercentage,
+            TeamPerformancePassingPercentage - 30
+        );
+        
+        nextMatch.LastSixGames = new GameAnalysis
+        {
+            HomeTeam = homeTeam,
+            HomeTeamAtHomeField = homeTeamAtHomeField,
+            AwayTeam = awayTeam,
+            AwayTeamAtAwayField = awayTeamAtAwayField
+        };
+
+        if (nextMatch.LastSixGames.HomeTeamAtHomeField == null || nextMatch.LastSixGames.HomeTeam == null ||
+            nextMatch.LastSixGames.AwayTeamAtAwayField == null || nextMatch.LastSixGames.AwayTeam == null)
+            return;
+        
+        nextMatch.LastSixGames.HeadToHeadAverage = currentSeason.AnalyseHeadToHeadPerformance(
+            nextMatch.HomeTeam,
+            nextMatch.AwayTeam
+        );
+    }
+
 }
 
 
