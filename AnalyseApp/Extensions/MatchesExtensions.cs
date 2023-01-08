@@ -1,4 +1,5 @@
-﻿using AnalyseApp.models;
+﻿using System.Text.Json;
+using AnalyseApp.models;
 
 namespace AnalyseApp.Extensions;
 
@@ -9,7 +10,7 @@ internal static class MatchesExtensions
     /// </summary>
     /// <param name="matches">Historical matches</param>
     /// <returns>Matches from current season</returns>
-    internal static IList<Matches> GetCurrentSeasonBy(this IEnumerable<Matches> matches)
+    internal static IList<GameData> GetCurrentSeasonBy(this IEnumerable<GameData> matches)
     {
         var filterMatches = matches
             .Where(g => DateTime.Parse(g.Date).Year == DateTime.Now.AddYears(-1).Year || 
@@ -17,11 +18,6 @@ internal static class MatchesExtensions
             .ToList();
 
         return filterMatches;
-    }
-
-    internal static void GenerateOutput(this NextMatch nextMatch)
-    {
-        Console.WriteLine($"Qualified matches {nextMatch}\t\n");
     }
 
     internal static void FindTopFiveGamesBy(this IList<NextMatch> nextMatches, double percentage)
@@ -76,39 +72,45 @@ internal static class MatchesExtensions
             commonGamesWithGoalsInBothTimeAtMoreThanTwoGoals.Where(i => nextMatchesWithZeroZero.Contains(i))
                 .ToList();
 
-        if (commonGamesWithGoalsAndLessZeroZero.Any())
+     /*   if (commonGamesWithGoalsAndLessZeroZero.Any())
         {
             Console.WriteLine("################ -- Qualified matches for all three options 'Both Team Score' or 'More Than 2 Goals' or 'At least one Goal in first half'  -- ################");
             commonGamesWithGoalsAndLessZeroZero.ForEach(i => Console.Write("{0}\t", i));
             return;
 
         }
-
-        var commonGamesWithZeroZero = nextMatchesWithTwoToThree.Where(i => nextMatchesWithZeroZero.Contains(i))
+*/
+        var commonGamesWithZeroZero = nextMatchesWithTwoToThree
+            .Where(i => nextMatchesWithZeroZero.Contains(i))
             .ToList();
         
         if (commonGamesWithZeroZero.Any())
         {
             Console.WriteLine("################ -- Qualified matches for 'Two to three goals'   -- ################");
-            commonGamesWithZeroZero.ForEach(i => Console.Write("{0}\t", i));
-            return;
+            var topfivecommonGamesWithZeroZero = commonGamesWithZeroZero
+                .OrderByDescending(i => i.LastSixSeason.HomeTeam.TwoToThree).TakeLast(5).ToList();
+            var jsonString = JsonSerializer.Serialize(topfivecommonGamesWithZeroZero);
+            Console.WriteLine(jsonString);
         }
 
         if (nextMatchesWithBothScore.Any())
         {
             if (!nextMatchesWithBothScore.Any(i => nextMatchesWithZeroZero.Contains(i)))
                 return;
-            
+
+            var topFive = nextMatchesWithBothScore.OrderByDescending(i => i.LastSixSeason?.HomeTeam?.OneGoal).TakeLast(5).ToList();
             Console.WriteLine("################ -- Qualified matches for 'Both Team Score'   -- ################");
-            nextMatchesWithBothScore.ForEach(i => Console.Write("{0}\t", i));
-            return;
+            var jsonString = JsonSerializer.Serialize(topFive);
+            Console.WriteLine(jsonString);
         }
 
         if (!nextMatchesWithTwoGoals.Any(i => commonGamesWithZeroZero.Contains(i)))
             return;
         
+        var topFiveMoreThanTwoGoals = commonGamesWithGoalsAndLessZeroZero.OrderByDescending(i => i.LastSixSeason?.HomeTeam?.TwoGoals).TakeLast(5).ToList();
         Console.WriteLine("################ -- Qualified matches for 'More Than two Goals'   -- ################");
-        nextMatchesWithTwoGoals.ForEach(i => Console.Write("{0}\t", i));
+        var output3 = JsonSerializer.Serialize(topFiveMoreThanTwoGoals);
+        Console.WriteLine(output3);
         
         
         
@@ -132,16 +134,15 @@ internal static class MatchesExtensions
     ///         * For at least one goal in halftime should be bigger than given percentage - 20
     ///         * For 0:0 game average should below then given percentage - 35
     ///         * For more than two goals should be bigger than given percentage - 10</param>
+    /// <param name="lastSixGames"></param>
     /// <param name="currentSeasonPercentage"></param>
     /// <returns>If the zero zero result is less than 10 and at least one goal pass the passing percentage</returns>
     internal static GameAverage? TeamPerformance(
-        this IList<Matches> matches,
+        this IList<GameData> matches,
         string team,
         bool isHome,
         bool overAll,
-        int passingPercentage,
-        int currentSeasonPercentage
-        
+        bool lastSixGames
     )
     {
         var result = new GameAverage();
@@ -149,31 +150,30 @@ internal static class MatchesExtensions
             matches.GetMatchesBy(a => a.HomeTeam == team || a.AwayTeam == team):
             matches.GetMatchesBy(a => isHome ? a.HomeTeam == team : a.AwayTeam == team);
 
+        if (lastSixGames)
+        {
+            teamMatches = teamMatches.GetCurrentSeasonBy()
+                .OrderByDescending(i => i.Date)
+                .TakeLast(6)
+                .ToList();
+        }
+        
+        
         // At least over 50% should make a goal in full time
         result.OneGoal = teamMatches.GoalsInFullTime(team, isHome, overAll, 1);
-        if (result.OneGoal < passingPercentage || 
-            currentSeasonPercentage != 0 && result.OneGoal < currentSeasonPercentage)
-            return null;
         
         // Two goals over 45% in full time
         result.TwoGoals = teamMatches.GoalsInFullTime(team, isHome, overAll, 2);
-        if (result.TwoGoals < passingPercentage - 10 ||
-            currentSeasonPercentage != 0 && result.TwoGoals < currentSeasonPercentage)
-            return null;
         
         // At least over 25% should make a gaol in halftime
         result.HalfTimeWithOneGoal = teamMatches.GoalsInFirstHalf(isHome, overAll);
-        if (result.HalfTimeWithOneGoal < passingPercentage - 20 &&
-            currentSeasonPercentage != 0 && result.HalfTimeWithOneGoal < currentSeasonPercentage)
-            return null;
         
         // 0:0 games are less than 10% 
         result.ZeroZero = teamMatches.ZeroZeroGoal();
-        if(result.ZeroZero > passingPercentage - 30 &&
-           currentSeasonPercentage != 0 && result.OneGoal < currentSeasonPercentage)
-           return null;
         
         result.TwoToThree = teamMatches.TwoToThreeGoals();
+
+        result.AllowGoal = teamMatches.AllowedGoal(isHome);
         return result;
     }
     
@@ -189,9 +189,10 @@ internal static class MatchesExtensions
     /// <param name="awayTeam">Away team</param>
     /// <returns></returns>
     internal static Head2HeadAverage AnalyseHeadToHeadPerformance(
-        this IList<Matches> matches, 
+        this IList<GameData> matches, 
         string homeTeam,
-        string awayTeam
+        string awayTeam,
+        bool lastSixGames
     )
     {
         var atHomeMatches = matches.GetMatchesBy(a => a.HomeTeam == homeTeam && a.AwayTeam == awayTeam);
@@ -209,7 +210,7 @@ internal static class MatchesExtensions
         return result;
     }
     
-    private static IList<Matches> GetMatchesBy(this IEnumerable<Matches> games, Func<Matches, bool> predicate)
+    internal static IList<GameData> GetMatchesBy(this IEnumerable<GameData> games, Func<GameData, bool> predicate)
     {
         var currentSession = games
             .Where(predicate)
@@ -218,13 +219,13 @@ internal static class MatchesExtensions
         return currentSession;
     }
     
-    private static double ZeroZeroGoal(this IEnumerable<Matches> matches) =>
+    private static double ZeroZeroGoal(this IEnumerable<GameData> matches) =>
         matches.Percent(p =>  p is { FTHG: 0, FTAG: 0 });
 
-    private static double BothTeamMakeGoal(this IEnumerable<Matches> matches) =>
+    private static double BothTeamMakeGoal(this IEnumerable<GameData> matches) =>
         matches.Percent(a => a is { FTHG: > 0, FTAG: > 0 });
     
-    private static double GoalsInFirstHalf(this IEnumerable<Matches> matches, bool isHome, bool overAll)
+    private static double GoalsInFirstHalf(this IEnumerable<GameData> matches, bool isHome, bool overAll)
     {
         return overAll 
             ? matches.Percent(a => a.HTHG > 0 || a.HTAG > 0)
@@ -232,7 +233,7 @@ internal static class MatchesExtensions
     }
     
     private static double GoalsInFullTime(
-        this IEnumerable<Matches> matches,
+        this IEnumerable<GameData> matches,
         string team,
         bool isHome, 
         bool overall, 
@@ -244,23 +245,15 @@ internal static class MatchesExtensions
         : matches.Percent(a => isHome ? a.HomeTeam == team && a.FTHG > expectedGoal : a.AwayTeam == team && a.FTAG > expectedGoal);
     }
     
-    private static double MoreThanTwoGoals(this IEnumerable<Matches> matches) =>
+    private static double MoreThanTwoGoals(this IEnumerable<GameData> matches) =>
         matches.Percent(a =>  a.FTHG + a.FTAG >= 3);
     
-    private static double TwoToThreeGoals(this IEnumerable<Matches> matches) =>
+    private static double TwoToThreeGoals(this IEnumerable<GameData> matches) =>
         matches.Percent(a => a.FTHG + a.FTAG <= 3 && a.FTHG + a.FTAG > 1);
     
-    private static double GetPercentageOfTeamWithExpectedGoal(
-        this IList<Matches> matches,
-        bool isHome,
-        int expectedGoal
-    )
-    {
-        var result = matches.Percent(p => isHome ? p.FTHG >= expectedGoal : p.FTAG >= expectedGoal);
-
-        return result;
-    }
-    
+    private static double AllowedGoal(this IEnumerable<GameData> matches, bool isHome) =>
+        matches.Percent(a => isHome ? a.FTAG != 0 : a.FTHG != 0);
+   
     private static double Percent<T>(this IEnumerable<T> source, Func<T, bool> predicate)
     {
         var total = 0;

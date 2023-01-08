@@ -30,6 +30,7 @@ public record GameAverage
     public double? TwoGoals { get; set; }
     public double? ZeroZero { get; set; }
     public double? TwoToThree { get; set; }
+    public double? AllowGoal { get; set; }
 
     public override string ToString() =>
         $"OneGoal: {OneGoal}, TwoGoals: {TwoGoals}, Zero Zero games: {ZeroZero}," +
@@ -52,3 +53,16 @@ public record Head2HeadAverage
                $"Two to three goals {TwoToThree} Hint: {Hint}";
     }
 }
+
+
+
+public record Game
+{
+    public string? Team { get; set; }
+    public Result? BothTeamScore { get; set; }
+    public Result? MoreThanTwoGoals { get; set; }
+    public decimal TwoToThreeGoal { get; set; }
+    public Result? OneGoalInFirstHalf { get; set; }
+}
+
+public record Result(decimal HomeTeam, decimal AwayTeam, decimal HeadToHead, bool Qualified, string Msg);
