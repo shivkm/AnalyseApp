@@ -3,7 +3,6 @@
 public record GameData
 {
     public string Date { get; set; }
-    public string? Time { get; set; }
     public string HomeTeam { get; set; }
     public string AwayTeam { get; set; }
     public int? FTHG { get; set; }
@@ -15,5 +14,4 @@ public record GameData
 }
 
 
-public record Average(decimal Percentage, int TotalGames);
 

@@ -1,6 +1,6 @@
 ﻿namespace AnalyseApp.models;
 
-public record NextMatch
+public record NextMatch2
 {
     public required  DateTime Date { get; set; }
     public required string HomeTeam { get; set; }
@@ -13,32 +13,19 @@ public record NextMatch
 
 public record GameAnalysis
 {
-    public GameAverage? HomeTeam { get; set; }
-    public GameAverage? HomeTeamAtHomeField { get; set; }
-    public GameAverage? AwayTeam { get; set; }
-    public GameAverage? AwayTeamAtAwayField { get; set; }
-    public Head2HeadAverage? HeadToHeadAverage { get; set; }
+    public GameAverage2? HomeTeam { get; set; }
+    public GameAverage2? HomeTeamAtHomeField { get; set; }
+    public GameAverage2? AwayTeam { get; set; }
+    public GameAverage2? AwayTeamAtAwayField { get; set; }
+    public Head2HeadAverage2? HeadToHeadAverage { get; set; }
     public override string ToString() =>
         $"HomeTeam: {HomeTeam}, HomeTeamAtHomeField: {HomeTeamAtHomeField}, AwayTeam: {AwayTeam}," +
         $" AwayTeamAtAwayField: {AwayTeamAtAwayField} HeadToHeadAverage: {HeadToHeadAverage}";
 }
 
-public record GameAverage
-{
-    public double? HalfTimeWithOneGoal { get; set; }
-    public double? OneGoal { get; set; }
-    public double? TwoGoals { get; set; }
-    public double? ZeroZero { get; set; }
-    public double? TwoToThree { get; set; }
-    public double? AllowGoal { get; set; }
 
-    public override string ToString() =>
-        $"OneGoal: {OneGoal}, TwoGoals: {TwoGoals}, Zero Zero games: {ZeroZero}," +
-        $" TwoToThree: {TwoToThree}, HalfTimeWithOneGoal: {HalfTimeWithOneGoal} ";
-    
-}
 
-public record Head2HeadAverage
+public record Head2HeadAverage2
 {
     public double? BothTeamScore { get; set; }
     public double? MoreThanTwoGoals { get; set; }
@@ -54,15 +41,32 @@ public record Head2HeadAverage
     }
 }
 
-
+public record Head2HeadAverage
+{
+    public decimal? BothTeamScore { get; set; }
+    public decimal? MoreThanTwoGoals { get; set; }
+    public decimal? TwoToThree { get; set; }
+    public decimal? ZeroZero { get; set; }
+    public decimal? GoalInFirstHalf { get; set; }
+    public int TotalGames { get; set; }
+    public string? Msg { get; set; }
+    
+    public override string ToString()
+    {
+        return $"BothTeamScore: {BothTeamScore}, More than two goals: {MoreThanTwoGoals}, Zero Zero games: {ZeroZero} " +
+               $"Two to three goals {TwoToThree} Hint: {Msg}";
+    }
+}
 
 public record Game
 {
-    public string? Team { get; set; }
-    public Result? BothTeamScore { get; set; }
-    public Result? MoreThanTwoGoals { get; set; }
-    public decimal TwoToThreeGoal { get; set; }
-    public Result? OneGoalInFirstHalf { get; set; }
+    public string? Title { get; set; }
+    public Head2HeadAverage? HeadToHead { get; set; }
+    public GameAverage? LastSixGames { get; set; }
+    public GameAverage? LastTwelveGames { get; set; }
+    public GameAverage? AllGame { get; set; }
+    public string? Prediction { get; set; }
+    
 }
 
 public record Result(decimal HomeTeam, decimal AwayTeam, decimal HeadToHead, bool Qualified, string Msg);

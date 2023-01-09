@@ -20,40 +20,40 @@ internal static class MatchesExtensions
         return filterMatches;
     }
 
-    internal static void FindTopFiveGamesBy(this IList<NextMatch> nextMatches, double percentage)
+    internal static void FindTopFiveGamesBy(this IList<NextMatch2> nextMatches, double percentage)
     {
         if (!nextMatches.Any())
             return;
 
-        var nextMatchesWithBothScore = new List<NextMatch>();
+        var nextMatchesWithBothScore = new List<NextMatch2>();
         var matchesBothScore = nextMatches
-            .Where(i => i.LastSixSeason?.HomeTeam?.OneGoal > percentage &&
-                                i.LastSixSeason.AwayTeam?.OneGoal > percentage);
+            .Where(i => i.LastSixSeason?.HomeTeam?.OneGoal2 > percentage &&
+                                i.LastSixSeason.AwayTeam?.OneGoal2 > percentage);
         
         nextMatchesWithBothScore.AddRange(matchesBothScore);
         
-        var nextMatchesWithGoalInFirstHalf = new List<NextMatch>();
+        var nextMatchesWithGoalInFirstHalf = new List<NextMatch2>();
         var matchesWithGoalInFirstHalf = nextMatches
             .Where(i => i.LastSixSeason?.HomeTeam?.HalfTimeWithOneGoal > percentage &&
                                 i.LastSixSeason.AwayTeam?.HalfTimeWithOneGoal > percentage);
         
         nextMatchesWithGoalInFirstHalf.AddRange(matchesWithGoalInFirstHalf);
         
-        var nextMatchesWithTwoGoals = new List<NextMatch>();
+        var nextMatchesWithTwoGoals = new List<NextMatch2>();
         var matchesWithTwoGoals = nextMatches
             .Where(i => i.LastSixSeason?.HomeTeam?.TwoGoals > percentage &&
                         i.LastSixSeason.AwayTeam?.TwoGoals > percentage);
         
         nextMatchesWithTwoGoals.AddRange(matchesWithTwoGoals);
         
-        var nextMatchesWithZeroZero = new List<NextMatch>();
+        var nextMatchesWithZeroZero = new List<NextMatch2>();
         var matchesWithZeroZero = nextMatches
             .Where(i => i.LastSixSeason?.HomeTeam?.ZeroZero < 10 &&
                         i.LastSixSeason.AwayTeam?.ZeroZero < 10);
         
         nextMatchesWithZeroZero.AddRange(matchesWithZeroZero);
         
-        var nextMatchesWithTwoToThree = new List<NextMatch>();
+        var nextMatchesWithTwoToThree = new List<NextMatch2>();
         var matchesWithTwoToThree = nextMatches
             .Where(i => i.LastSixSeason?.HomeTeam?.ZeroZero < 10 &&
                         i.LastSixSeason.AwayTeam?.ZeroZero < 10);
@@ -98,7 +98,7 @@ internal static class MatchesExtensions
             if (!nextMatchesWithBothScore.Any(i => nextMatchesWithZeroZero.Contains(i)))
                 return;
 
-            var topFive = nextMatchesWithBothScore.OrderByDescending(i => i.LastSixSeason?.HomeTeam?.OneGoal).TakeLast(5).ToList();
+            var topFive = nextMatchesWithBothScore.OrderByDescending(i => i.LastSixSeason?.HomeTeam?.OneGoal2).TakeLast(5).ToList();
             Console.WriteLine("################ -- Qualified matches for 'Both Team Score'   -- ################");
             var jsonString = JsonSerializer.Serialize(topFive);
             Console.WriteLine(jsonString);
@@ -137,7 +137,7 @@ internal static class MatchesExtensions
     /// <param name="lastSixGames"></param>
     /// <param name="currentSeasonPercentage"></param>
     /// <returns>If the zero zero result is less than 10 and at least one goal pass the passing percentage</returns>
-    internal static GameAverage? TeamPerformance(
+    internal static GameAverage2? TeamPerformance(
         this IList<GameData> matches,
         string team,
         bool isHome,
@@ -145,7 +145,7 @@ internal static class MatchesExtensions
         bool lastSixGames
     )
     {
-        var result = new GameAverage();
+        var result = new GameAverage2();
         var teamMatches = overAll ?
             matches.GetMatchesBy(a => a.HomeTeam == team || a.AwayTeam == team):
             matches.GetMatchesBy(a => isHome ? a.HomeTeam == team : a.AwayTeam == team);
@@ -157,10 +157,11 @@ internal static class MatchesExtensions
                 .TakeLast(6)
                 .ToList();
         }
-        
+
+        //result.OneGoal = teamMatches.AnalyseGoalsInFullTime(team, isHome, overAll, 1);
         
         // At least over 50% should make a goal in full time
-        result.OneGoal = teamMatches.GoalsInFullTime(team, isHome, overAll, 1);
+        result.OneGoal2 = teamMatches.GoalsInFullTime(team, isHome, overAll, 1);
         
         // Two goals over 45% in full time
         result.TwoGoals = teamMatches.GoalsInFullTime(team, isHome, overAll, 2);
@@ -188,7 +189,7 @@ internal static class MatchesExtensions
     /// <param name="homeTeam">Home team</param>
     /// <param name="awayTeam">Away team</param>
     /// <returns></returns>
-    internal static Head2HeadAverage AnalyseHeadToHeadPerformance(
+    internal static Head2HeadAverage2 AnalyseHeadToHeadPerformance(
         this IList<GameData> matches, 
         string homeTeam,
         string awayTeam,
@@ -197,7 +198,7 @@ internal static class MatchesExtensions
     {
         var atHomeMatches = matches.GetMatchesBy(a => a.HomeTeam == homeTeam && a.AwayTeam == awayTeam);
 
-        var result = new Head2HeadAverage
+        var result = new Head2HeadAverage2
         {
             ZeroZero = atHomeMatches.ZeroZeroGoal(),
             BothTeamScore = atHomeMatches.BothTeamMakeGoal(),
@@ -245,6 +246,7 @@ internal static class MatchesExtensions
         : matches.Percent(a => isHome ? a.HomeTeam == team && a.FTHG > expectedGoal : a.AwayTeam == team && a.FTAG > expectedGoal);
     }
     
+   
     private static double MoreThanTwoGoals(this IEnumerable<GameData> matches) =>
         matches.Percent(a =>  a.FTHG + a.FTAG >= 3);
     
@@ -275,4 +277,5 @@ internal static class MatchesExtensions
         return 100.0 * total / count;
     }
 
+    
 }
