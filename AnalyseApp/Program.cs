@@ -1,20 +1,12 @@
 ﻿using AnalyseApp;
-using Microsoft.ML.Data;
+using AnalyseApp.Commons.Enums;
+using AnalyseApp.Extensions;
 
 var analysis = new Analyse();
 
-//analysis.ReadFilesHistoricalGames().ReadUpcomingGames().StartAnalysis();
-analysis.ReadFilesHistoricalGames().ReadUpcomingGames().AnalyseBy("Troyes", "Marseille");
-
-//await analysis.CreateCsvFile();
-//analysis.Test();
-
-public class Prediction
-{
-    [ColumnName("Score")]
-    public float Score { get; set; }
-}
-
-//TODO: 
-// Method for single match analysis
-// 
+analysis.ReadFilesHistoricalGames().ReadUpcomingGames().StartAnalysis();
+//analysis.ReadFilesHistoricalGames().ReadUpcomingGames()
+  //  .StartAnalysisBy("Charlton", "Barnsley")
+   // .StartAnalysisBy(Seriea.Bologna.GetValue(), Seriea.Atalanta.GetValue())
+   // .StartAnalysisBy(Laliga.Sevilla.GetValue(), Laliga.Getafe.GetValue())
+    ;

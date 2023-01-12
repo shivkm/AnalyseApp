@@ -1,19 +1,115 @@
 ﻿using AnalyseApp.Extensions;
 using AnalyseApp.models;
+using Microsoft.ML;
 
 namespace AnalyseApp.Services;
 
 public class AnalyseService
 {
     private readonly List<GameData> _gameData;
-    private readonly List<Game> _bettingGames = new ();
 
     public AnalyseService(List<GameData> gameData)
     {
         _gameData = gameData;
     }
 
-    public Game AnalyseGameBy(string homeTeam, string awayTeam)
+
+    
+    public void AnalysePattern(string homeTeam, string awayTeam)
+    {
+        
+        // Create the machine learning context
+        var context = new MLContext();
+
+        // Read the data from the input file
+        var data = _gameData
+            .Where(i => i.HomeTeam == homeTeam || i.AwayTeam == homeTeam ||
+                        i.HomeTeam == awayTeam || i.AwayTeam == awayTeam)
+            .Select(i => new FootballGameData
+            {
+                HomeTeamGoals = Convert.ToSingle(i.FTHG),
+                AwayTeamGoals = Convert.ToSingle(i.FTAG),
+                HomeTeamHalfTimeGoals = Convert.ToSingle(i.HTHG),
+                AwayTeamHalfTimeGoals = Convert.ToSingle(i.HTAG),
+                HomeTeamWins = i.FTR == "H",
+                Score = new [] { Convert.ToSingle(i.FTHG), Convert.ToSingle(i.FTAG) }
+            })
+            .ToList();
+        
+        // Convert the data to an IDataView
+        var gameDataView = context.Data.LoadFromEnumerable(data);
+
+        // Define the pipeline
+        var pipeline = context.Transforms.Conversion.MapValueToKey("Label", "Score")
+            .Append(context.Transforms.Categorical.OneHotEncoding("HomeTeamWinsOneHot", "HomeTeamWins"))
+            .Append(context.Transforms.Concatenate("Features", 
+                "HomeTeamGoals", "AwayTeamGoals", "HomeTeamHalfTimeGoals",
+                "AwayTeamHalfTimeGoals", "HomeTeamWinsOneHot"))
+            .Append(context.Transforms.NormalizeMinMax("Features"))
+            .Append(context.Transforms.Conversion.MapKeyToValue("Label"))
+            .Append(context.MulticlassClassification.Trainers.SdcaNonCalibrated());
+
+        // Train the model
+        var model = pipeline.Fit(gameDataView);
+
+        var prediction = context.Model.CreatePredictionEngine<FootballGameData, FootballGamePrediction>(model)
+            .Predict(new FootballGameData { HomeTeamGoals = 2, AwayTeamGoals = 1, HomeTeamWins = true });
+      
+        Console.WriteLine($"Home Team Goals: {prediction.Score[0]} Away Team Goals: {prediction.Score[1]}");
+        
+        
+        
+        
+        
+      /*  
+        // Create a new MLContext
+        var context = new MLContext();
+
+        // Read the data from the CSV file
+
+        var data = _gameData
+            .Where(i => i.HomeTeam == homeTeam || i.AwayTeam == homeTeam ||
+                        i.HomeTeam == awayTeam || i.AwayTeam == awayTeam)
+            .Select(i => new FootballGameData
+            {
+                HomeTeamGoals = Convert.ToSingle(i.FTHG),
+                AwayTeamGoals = Convert.ToSingle(i.FTAG),
+                HomeTeamHalfTimeGoals = Convert.ToSingle(i.HTHG),
+                AwayTeamHalfTimeGoals = Convert.ToSingle(i.HTAG),
+                HomeTeamWins = i.FTR == "H",
+                Score = new[] { Convert.ToSingle(i.FTHG), Convert.ToSingle(i.FTAG) }
+
+            })
+            .ToList();
+        
+        if (!data.Any())
+           return;
+        // Convert the data to an IDataView
+        var gameDataView = context.Data.LoadFromEnumerable(data);
+
+        // Define the pipeline
+        var pipeline =
+            context.Transforms.Conversion.MapValueToKey("Score")
+                .Append(context.Transforms.Categorical.OneHotEncoding("HomeTeamWinsOneHot", "HomeTeamWins"))
+                .Append(context.Transforms.Concatenate(
+                    "Features", "HomeTeamGoals", "AwayTeamGoals",
+                    "HomeTeamHalfTimeGoals", "AwayTeamHalfTimeGoals", "HomeTeamWinsOneHot"))
+                .Append(context.Transforms.NormalizeMinMax("Features"))
+                .Append(context.Regression.Trainers.Sdca())
+                .Append(context.Transforms.Conversion.MapKeyToValue("Score", "Label"));
+
+        
+        // Train the model
+        var model = pipeline.Fit(gameDataView);
+
+        var prediction = context.Model.CreatePredictionEngine<FootballGameData, FootballGamePrediction>(model)
+            .Predict(new FootballGameData { HomeTeamGoals = 2, AwayTeamGoals = 1, HomeTeamWins = true });
+      
+        Console.WriteLine($"Home Team Goals: {prediction.Score[0]} Away Team Goals: {prediction.Score[1]}");*/
+    
+    }
+    
+    public Game AnalyseGameBy(string homeTeam, string awayTeam, DateTime dateTime)
     {
         var headToHead = _gameData.AnalyseHeadToHead(homeTeam, awayTeam);
         var lastTwelveGames = AnalyseGames(homeTeam, awayTeam, 12);
@@ -21,43 +117,13 @@ public class AnalyseService
         var allGames = AnalyseGames(homeTeam, awayTeam, 0);
         var result = new Game
         {
-            Title = $"{homeTeam}:{awayTeam}",
+            Title = $"{dateTime} {homeTeam}:{awayTeam}",
             LastTwelveGames = lastTwelveGames,
             LastSixGames = lastSixGames,
             AllGame = allGames,
             HeadToHead = headToHead
         };
 
-        var predictBothTeamScore = allGames
-            .PredictBothTeamScore(lastTwelveGames, lastSixGames, headToHead);
-        
-        var predictMoreThanTwoScore = allGames
-            .PredictMoreThanTwoScore(lastTwelveGames, lastSixGames, headToHead);
-        
-        var predictTwoToThreeScore = allGames
-            .PredictTwoToThreeScore(lastTwelveGames, lastSixGames, headToHead);
-
-        var predict = $"{result.Title}";
-        if (predictBothTeamScore.Average > predictMoreThanTwoScore.Average && predictBothTeamScore.Qaulified)
-        {
-            _bettingGames.Add(result);
-            predict = $" {predict} is both team make score because analysis says over " +
-                      $"{predictBothTeamScore.Average}% score both team at least one goal each.";
-        }
-        if (predictMoreThanTwoScore is { Average: > 60, Qaulified: true })
-        {
-            _bettingGames.Add(result);
-            predict = $"{predict}\n{result.Title} is both team make score because analysis says over" +
-                      $" {predictMoreThanTwoScore.Average}% score both team at least one goal each.";
-        }
-
-        if (!string.IsNullOrWhiteSpace(predictTwoToThreeScore))
-        { 
-            _bettingGames.Add(result);
-            predict = $"{predict}\n{predictTwoToThreeScore}";
-        }
-
-        result.Prediction = predict;
         return result;
     }
     
@@ -75,12 +141,20 @@ public class AnalyseService
             Msg = default!,
             IsHome = default
         };
+        var home = _gameData
+            .GetGamesDataBy(nextHomeGame)
+            .AnalyseTeamGoals(nextHomeGame);
+        
+        var away = _gameData
+            .GetGamesDataBy(nextAwayGame)
+            .AnalyseTeamGoals(nextAwayGame);
+
         var result = new GameAverage
         {
-            Home = _gameData.GetGamesDataBy(nextHomeGame).AnalyseGamesBy(nextHomeGame),
-            Away = _gameData.GetGamesDataBy(nextAwayGame).AnalyseGamesBy(nextAwayGame)
+            Home = home,
+            Away = away
         };
-
+        
         return result;
     }
 }
