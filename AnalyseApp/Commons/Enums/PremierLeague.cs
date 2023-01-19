@@ -3,7 +3,7 @@
 public enum PremierLeague
 {
     Arsenal,
-    AstonVilla,
+    Aston_Villa,
     Brighton,
     Bournemouth,
     Chelsea,

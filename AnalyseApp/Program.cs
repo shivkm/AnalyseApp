@@ -1,12 +1,9 @@
-﻿using AnalyseApp;
-using AnalyseApp.Commons.Enums;
-using AnalyseApp.Extensions;
+﻿using AnalyseApp.Services;
 
-var analysis = new Analyse();
+var analysis = new AnalyseService();
 
-analysis.ReadFilesHistoricalGames().ReadUpcomingGames().StartAnalysis();
-//analysis.ReadFilesHistoricalGames().ReadUpcomingGames()
-  //  .StartAnalysisBy("Charlton", "Barnsley")
-   // .StartAnalysisBy(Seriea.Bologna.GetValue(), Seriea.Atalanta.GetValue())
-   // .StartAnalysisBy(Laliga.Sevilla.GetValue(), Laliga.Getafe.GetValue())
-    ;
+analysis.ReadHistoricalGames().ReadUpcomingGames().AnalyseMatches();
+// .StartAnalysisTestBy("Roma", Seriea.Fiorentina.ToString(), "I1")
+// .StartAnalysisTestBy("Osasuna", "Mallorca", "SP1")
+   // .Analyse("Marseille", "Lorient", "F1");
+ //.StartAnalysisTestBy("Sociedad", "Ath Bilbao", "SP1");

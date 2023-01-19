@@ -1,11 +1,8 @@
 ﻿using System.Globalization;
-using System.Text.Json;
-using AnalyseApp.Extensions;
 using AnalyseApp.models;
 using AnalyseApp.Services;
 using CsvHelper;
 using CsvHelper.Configuration;
-using Microsoft.ML;
 
 namespace AnalyseApp;
 
@@ -164,229 +161,16 @@ public class Analyse
         return 0;
     }
     */
-    internal void StartAnalysis()
-    {
-        _analyseService = new AnalyseService(_historicalGames);
-        var games = _upComingGames
-            .Select(nextGame =>
-                _analyseService.AnalyseGameBy(nextGame.HomeTeam, nextGame.AwayTeam, DateTime.Parse(nextGame.Date)));
-        
-        foreach (var game in games)
-        {
-            PredictBothTeamScore(game);
-            PredictMoreThanTwoScores(game);
-            PredictTwoToThreeScore(game);
-        }
-        
-        _upComingGames.ForEach(i => { _analyseService.AnalysePattern(i.HomeTeam, i.AwayTeam); });
-    }
     
-    internal Analyse StartAnalysisBy(string homeTeam, string awayTeam)
+
+    internal Analyse StartAnalysisTestBy(string homeTeam, string awayTeam, string league)
     {
-        _analyseService = new AnalyseService(_historicalGames);
-        var game = _analyseService.AnalyseGameBy(homeTeam, awayTeam, DateTime.Now);
+        var calc = new PoissonService(_historicalGames, _upComingGames);
 
-        PredictBothTeamScore(game);
-        PredictMoreThanTwoScores(game);
-        //Console.WriteLine(game);
-
+        calc.Execute(homeTeam, awayTeam, league);
         return this;
     }
 
-    private static void PredictBothTeamScore(Game game)
-    {
-        if (game.Title == "11/01/2023 00:00:00 Brest:Lille" || game.Title == "11/01/2023 00:00:00 Nantes:Lyon")
-        {
-            
-        }
-        if (ZeroZerGamesFilter(game)) return;
-        var (homeHalfTimeGoalAverage, awayHalfTimeGoalAverage) = HalftimeGoalFilter(game);
-        if (homeHalfTimeGoalAverage < 25 || awayHalfTimeGoalAverage < 25)
-            return;
-        
-        
-        var homeGoalAverage = CalcWeighting(
-            game.AllGame.Home.OneGoalPercentage,
-            game.LastTwelveGames.Home.OneGoalPercentage,
-            game.LastSixGames.Home.OneGoalPercentage
-        );
-        
-        var awayGoalAverage = CalcWeighting(
-            game.AllGame.Away.OneGoalPercentage,
-            game.LastTwelveGames.Away.OneGoalPercentage,
-            game.LastSixGames.Away.OneGoalPercentage
-        );
-
-        var headToHead = game.HeadToHead.BothTeamScoreQualified || game.HeadToHead.GoalInFirstHalfQualified;
-        
-        if (homeGoalAverage > 65 && awayGoalAverage > 65 && headToHead)
-        {
-            Console.WriteLine($"{game.Title} both teams performance home: {homeGoalAverage}% away: {awayGoalAverage}% qualified for GG");
-        }
-
-        if (homeGoalAverage > 68 && awayGoalAverage is < 68 and > 55 && headToHead)
-        {
-            Console.WriteLine($"{game.Title} both teams performance home: {homeGoalAverage}% away: {awayGoalAverage}% qualified for GG");
-        }
-        
-        if (awayGoalAverage > 68 && homeGoalAverage is < 68 and > 55 && headToHead)
-        {
-            Console.WriteLine($"{game.Title}both teams performance home: {homeGoalAverage}% away: {awayGoalAverage}% qualified for GG");
-        }
-    }
-
-    
-    private static void PredictTwoToThreeScore(Game game)
-    {
-        if (ZeroZerGamesFilter(game)) return;
-        
-        var (homeHalfTimeGoalAverage, awayHalfTimeGoalAverage) = HalftimeGoalFilter(game);
-        if (homeHalfTimeGoalAverage < 25 || awayHalfTimeGoalAverage < 25)
-            return;
-        
-        var (homeGoalAverage, awayGoalAverage) = TwoToThreeGoalAverage(game);
-
-        var headToHead = !game.HeadToHead.GoalInFirstHalfQualified &&
-                         !game.HeadToHead.MoreThanTwoGoalsQualified &&
-                         game.HeadToHead.TwoToThreeQualified;
-        
-        if (homeGoalAverage > 60 && awayGoalAverage > 60 && headToHead)
-        {
-            Console.WriteLine($"{game.Title} both teams performance home: {homeGoalAverage}% away: {awayGoalAverage}% qualified for two to three goals");
-        }
-
-        if (homeGoalAverage > 60 && awayGoalAverage is < 60 and > 50 && headToHead)
-        {
-            Console.WriteLine($"{game.Title} both teams performance home: {homeGoalAverage}% away: {awayGoalAverage}% qualified for two to three goals");
-        }
-        
-        if (awayGoalAverage > 60 && homeGoalAverage is < 60 and > 50 && headToHead)
-        {
-            Console.WriteLine($"{game.Title}both teams performance home: {homeGoalAverage}% away: {awayGoalAverage}% qualified for two to three goals");
-        }
-    }
-
-    private static (decimal homeGoalAverage, decimal awayGoalAverage) TwoToThreeGoalAverage(Game game)
-    {
-        var homeGoalAverage = CalcWeighting(
-            game.AllGame.Home.TwoToThreeGoalGames,
-            game.LastTwelveGames.Home.TwoToThreeGoalGames,
-            game.LastSixGames.Home.TwoToThreeGoalGames
-        );
-
-        var awayGoalAverage = CalcWeighting(
-            game.AllGame.Away.TwoToThreeGoalGames,
-            game.LastTwelveGames.Away.TwoToThreeGoalGames,
-            game.LastSixGames.Away.TwoToThreeGoalGames
-        );
-        return (homeGoalAverage, awayGoalAverage);
-    }
-
-    private static decimal CalcWeighting(decimal left, decimal center, decimal right)
-    {
-        var result = left * 0.30m + center * 0.30m + right * 0.40m;
-        return result;
-    }
-
-    private static void PredictMoreThanTwoScores(Game game)
-    {
-        var homeGoalAverage = game.AllGame.Home.TwoGoalPercentage * 0.30m +
-                              game.LastSixGames.Home.TwoGoalPercentage * 0.40m +
-                              game.LastTwelveGames.Home.TwoGoalPercentage * 0.30m;
-        
-        
-        var awayGoalAverage = game.AllGame.Away.TwoGoalPercentage * 0.30m +
-                              game.LastSixGames.Away.TwoGoalPercentage * 0.40m +
-                              game.LastTwelveGames.Away.TwoGoalPercentage * 0.30m;
-        
-        var (homeHalfTimeGoalAverage, awayHalfTimeGoalAverage) = HalftimeGoalFilter(game);
-        if (homeHalfTimeGoalAverage < 25 || awayHalfTimeGoalAverage < 25)
-            return;
-
-        var headToHead = game.HeadToHead.BothTeamScoreQualified || game.HeadToHead.GoalInFirstHalfQualified;
-
-        if (ZeroZerGamesFilter(game)) return;
-
-        if (homeGoalAverage > 68 && awayGoalAverage > 68 && headToHead)
-        {
-            Console.WriteLine($"{game.Title} Both teams performance qualified for more than two goals.");
-        }
-        
-        if (homeGoalAverage > 68 && awayGoalAverage is < 68 and > 55 && headToHead && 
-            homeHalfTimeGoalAverage is < 68 and > 45 && awayHalfTimeGoalAverage is < 68 and > 45)
-        {
-            Console.WriteLine($"{game.Title} over 55% Both teams performance qualified for more than two goals.");
-        }
-        
-        if (awayGoalAverage > 68 && homeGoalAverage is < 68 and > 55 && headToHead && 
-            homeHalfTimeGoalAverage is < 68 and > 45 && awayHalfTimeGoalAverage is < 68 and > 45)
-        {
-            Console.WriteLine($"{game.Title} over 55% both teams performance qualified for more than two goals.");
-        }
-
-        var awayWin = awayGoalAverage - homeGoalAverage > 50 && game.AllGame.Away.WonGames > 75 &&
-                     game.LastSixGames.Away.WonGames > 60 &&
-                     game.LastTwelveGames.Away.WonGames > 60;
-        
-        
-        var  homeWin = homeGoalAverage - awayGoalAverage > 50 && game.AllGame.Away.WonGames > 75 &&
-                       game.LastSixGames.Away.WonGames > 60 &&
-                       game.LastTwelveGames.Away.WonGames > 60;
-        
-        var win = awayWin ? $"{game.Title} Away win" : homeWin ? $"{game.Title} home win" : "";
-        
-        if (string.IsNullOrWhiteSpace(win))
-            return;
-
-        Console.WriteLine(win);
-    }
-
-    private static (decimal homeHalfTimeGoalAverage, decimal awayHalfTimeGoalAverage) HalftimeGoalFilter(Game game)
-    {
-        var homeHalfTimeGoalAverage = CalcWeighting(
-            game.AllGame.Home.HalfTimePercentage,
-            game.LastTwelveGames.Home.HalfTimePercentage,
-            game.LastSixGames.Home.HalfTimePercentage
-        );
-
-        var awayHalfTimeGoalAverage = CalcWeighting(
-            game.AllGame.Away.HalfTimePercentage,
-            game.LastTwelveGames.Away.HalfTimePercentage,
-            game.LastSixGames.Away.HalfTimePercentage
-        );
-        
-        return (homeHalfTimeGoalAverage, awayHalfTimeGoalAverage);
-    }
-
-    private static bool ZeroZerGamesFilter(Game game)
-    {
-        var homeZeroZero = CalcWeighting(
-            game.AllGame.Home.ZeroZeroGames,
-            game.LastTwelveGames.Home.ZeroZeroGames,
-            game.LastSixGames.Home.ZeroZeroGames
-        );
-
-        var awayZeroZero = CalcWeighting(
-            game.AllGame.Away.ZeroZeroGames,
-            game.LastTwelveGames.Away.ZeroZeroGames,
-            game.LastSixGames.Away.ZeroZeroGames
-        );
-
-
-        var homeAllowedGoal = CalcWeighting(
-            game.AllGame.Home.AllowedGoals,
-            game.LastTwelveGames.Home.AllowedGoals,
-            game.LastSixGames.Home.AllowedGoals
-        );
-
-        var awayAllowedGoal = CalcWeighting(
-            game.AllGame.Away.AllowedGoals,
-            game.LastTwelveGames.Away.AllowedGoals,
-            game.LastSixGames.Away.AllowedGoals
-        );
-
-        return homeZeroZero > 25 || awayZeroZero > 25 || homeAllowedGoal > 30 || awayAllowedGoal > 30;
-    }
 }
 
 

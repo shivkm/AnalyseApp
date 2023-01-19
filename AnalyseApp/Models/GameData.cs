@@ -1,18 +1,36 @@
-﻿using Microsoft.ML.Data;
+﻿using CsvHelper.Configuration.Attributes;
+using Microsoft.ML.Data;
 
 namespace AnalyseApp.models;
 
 public record GameData
 {
-    public string Date { get; set; }
-    public string HomeTeam { get; set; }
-    public string AwayTeam { get; set; }
-    public int? FTHG { get; set; }
-    public int? FTAG { get; set; }
-    public string FTR { get; set; }
-    public int? HTHG { get; set; }
-    public int? HTAG { get; set; }
-    public string HTR { get; set; }
+    public string Div { get; set; } = default!;
+    public string Date { get; set; } = default!;
+    [Optional]
+    public string Time { get; set; } = default!;
+    public string HomeTeam { get; set; } = default!;
+    public string AwayTeam { get; set; } = default!;
+    public int? FTHG { get; set; } = default!;
+    public int? FTAG { get; set; } = default!;
+    public string FTR { get; set; } = default!;
+    public int? HTHG { get; set; } = default!;
+    public int? HTAG { get; set; } = default!;
+    public string HTR { get; set; } = default!;
+    [Optional]
+    public string HomeWin { get; set; } = default!;
+    [Optional]
+    public string Draw { get; set; } = default!;
+    [Optional]
+    public string AwayWin { get; set; } = default!;
+    [Optional]
+    public string MoreThanTwoGoals { get; set; } = "0";
+    [Optional]
+    public string LessThanTwoGoals { get; set; } = "0"!;
+    [Optional]
+    public string BothTeamScore { get; set; } = "0"!;
+    [Optional]
+    public string TwoToThree { get; set; } = "0"!;
 }
 
 // Define a class to hold the data for each match
