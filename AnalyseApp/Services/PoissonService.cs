@@ -6,7 +6,7 @@ namespace AnalyseApp.Services;
 
 public interface IPoissonService
 {
-    public List<MatchProbability> Execute(
+    public List<PoissonProbability> Execute(
         string homeTeam, string awayTeam, string league);
 }
 public class PoissonService : IPoissonService
@@ -21,9 +21,9 @@ public class PoissonService : IPoissonService
         _upComingMatch = upComingMatch;
     }
 
-    public List<MatchProbability> Execute(string homeTeam, string awayTeam, string league)
+    public List<PoissonProbability> Execute(string homeTeam, string awayTeam, string league)
     {
-        var result = new List<MatchProbability>();
+        var result = new List<PoissonProbability>();
         var currentSeason = AnalysePerformance(homeTeam, awayTeam, league, 2022, 2023);
         var allSeasons = AnalysePerformance(homeTeam, awayTeam, league, 2018, 2022);
         //var currentSeasonHalftime = AnalyseHalftimePerformance(homeTeam, awayTeam, league, 2022, 2023);
@@ -36,7 +36,7 @@ public class PoissonService : IPoissonService
                 .Select(ii => ii.Value)
                 .FirstOrDefault();
 
-             result.Add(new MatchProbability
+             result.Add(new PoissonProbability
             {
                 Key = allSeason.Key,
                 Probability = allSeason.Value.CalculateWeighting(currentSeasonProbability),
@@ -224,7 +224,7 @@ public class PoissonService : IPoissonService
     }
     
     // Compute the average goals scored and conceded for all games in the season of the given league at home
-    private static Average CalculateGoalAverage(ICollection<GameData> gameData, int count = 0, bool isHome = false, bool halftime = false)
+    private static PoissonAverage CalculateGoalAverage(ICollection<GameData> gameData, int count = 0, bool isHome = false, bool halftime = false)
     {
         var scored = (double)(isHome ? gameData.Sum(i => halftime ? i.HTHG : i.FTHG ?? 0) : gameData.Sum(i => halftime ? i.HTAG : i.FTAG ?? 0));
         var concededScored = (double)(isHome ? gameData.Sum(i => halftime ? i.HTAG : i.FTAG ?? 0) : gameData.Sum(i => halftime ? i.HTHG : i.FTHG ?? 0));
@@ -233,7 +233,7 @@ public class PoissonService : IPoissonService
         var averageScored = scored.Divide(countValue);
         var averageConcededScored = concededScored.Divide(countValue);
         
-        var result = new Average(averageScored, averageConcededScored);
+        var result = new PoissonAverage(averageScored, averageConcededScored);
         
         return result;
     }

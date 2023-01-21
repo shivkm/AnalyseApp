@@ -100,7 +100,7 @@ public static class AnalyseExtensions
     /// <param name="gameData"></param>
     /// <param name="nextGame"></param>
     /// <returns>The ratio calculated value</returns>
-    public static Average AnalyseTeamGoals(this IList<GameData> gameData, NextGame nextGame)
+    public static PoissonAverage AnalyseTeamGoals(this IList<GameData> gameData, NextGame nextGame)
     {
         var halfTimeGoal = gameData
             .AnalyseGoals(nextGame.Team, nextGame.IsHome, true, 1, true);
@@ -141,7 +141,7 @@ public static class AnalyseExtensions
         
         var zeroZeroGames = gameData.ZeroZeroGoal().GetTwoDigitAfterComma();
           
-        return new Average(
+        return new PoissonAverage(
             0,0);
     }
 

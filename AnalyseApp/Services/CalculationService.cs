@@ -3,31 +3,38 @@ using AnalyseApp.models;
 using MathNet.Numerics.Distributions;
 using Microsoft.ML;
 using Microsoft.ML.Data;
+using Microsoft.ML.Trainers;
+using Microsoft.ML.Trainers.FastTree;
 using Microsoft.ML.Transforms;
-
 namespace AnalyseApp.Services;
 
 public class CalculationService
 {
-    private readonly List<GameData> _gameData;
     private readonly MLContext _mlContext;
+    private readonly List<GameData> _gameData;
     private readonly List<GameData> _upComingMatch;
-    
+    private IList<GameData> _currentLeague = new List<GameData>();
+    private GameAverage _gameAverage = new ();
+
     public CalculationService(List<GameData> gameData, List<GameData> upComingMatch)
     {
-        _gameData = gameData;
         _mlContext = new MLContext();
+        _gameData = gameData;
         _upComingMatch = upComingMatch;
     }
 
-    public List<MatchProbability> Execute(string homeTeam, string awayTeam, string league)
+    public void Execute(string homeTeam, string awayTeam, string league)
     {
-        var result = new List<MatchProbability>();
+        AnalyseTheSeasonPerformanceBy(homeTeam, awayTeam, league);
+        //var allGgames = _gameData.GetLeagueSeasonBy(2018, 2022, league);
+        //var model = Train(homeTeam, awayTeam);
+        //PredictMatch(model);
+
+        /*  var result = new List<MatchProbability>();
         var lastSeasons = AnalyseTheSeasonPerformanceBy(homeTeam, awayTeam, league, 2018, 2022);
         var currentSeason = AnalyseTheSeasonPerformanceBy(homeTeam, awayTeam, league, 2022, 2023); 
         var currentGameBookmakers = GetBet365BookmakersValuesBy(homeTeam, awayTeam);
 
-        /*
          var homeBet365 = 1 / 2.0;
          var awayBet365 = 1 / 3.60;
          var drawBet365 = 1 / 3.40;
@@ -44,7 +51,6 @@ public class CalculationService
         var moreThanTwoGoalBet365 = 1 / 2.37;
         var TwoToThreeGoalBet365 = 1 / 2.00;
         var lessThanThreeGoalBet365 = 1 / 1.57;
-        */
         
         var homeBet365 = 1 / 1.40;
         var awayBet365 = 1 / 7.50;
@@ -81,259 +87,266 @@ public class CalculationService
         }
 
         return result;
-        //var model = Train(homeTeam, awayTeam);
-
-
-        //PredictMatch(model);
+        ;
         //  var homeWin = lastSeason.Values + currentSeason.Values;
         //  var awayWin = awayWinMatches.Sum(i => i.Value[1]);
         //  var draw = drawMatches.Sum(i => i.Value[0]);
+*/
 
 
     }
     
-    private double GetBet365BookMakersProbabilityBy(GameData gameData, string key)
-    {
-        return key switch
-        {
-            nameof(gameData.BothTeamScore) => Convert.ToDouble(gameData.BothTeamScore),
-            nameof(gameData.MoreThanTwoGoals) => Convert.ToDouble(gameData.MoreThanTwoGoals),
-            nameof(gameData.LessThanTwoGoals) => Convert.ToDouble(gameData.LessThanTwoGoals),
-            nameof(gameData.TwoToThree) => Convert.ToDouble(gameData.TwoToThree),
-            nameof(gameData.Draw) => Convert.ToDouble(gameData.Draw),
-            nameof(gameData.AwayWin) => Convert.ToDouble(gameData.AwayWin),
-            nameof(gameData.HomeWin) => Convert.ToDouble(gameData.HomeWin),
-            _ => 0
-        };
-    }
-    
-    private GameData GetBet365BookmakersValuesBy(string homeTeam, string awayTeam)
-    {
-        var match = _upComingMatch
-            .First(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam);
-        
-        return match;
-    }
 
-    private static double CalculateWeighting(double left, double right)
-    {
-        var result = left * 0.35 + right * 0.65;
-        return Math.Round(result, 2);
-    }
-
-
-    private TransformerChain<NormalizingTransformer> Train(string homeTeam, string awayTeam)
-    {
-        var data = _gameData
-            .Where(i => i.HomeTeam == homeTeam || i.AwayTeam == awayTeam)
-            .Select(i => new FootballData
-            {
-                AwayTeamScore = Convert.ToSingle(i.FTAG),
-                HomeTeamScore = Convert.ToSingle(i.FTHG),
-            })
-            .ToList();
-        
-        var dataView = _mlContext.Data.LoadFromEnumerable(data);
-
-        var pipeline = _mlContext.Transforms.Concatenate(
-                "Features", "HomeTeamScore", "AwayTeamScore")
-            .Append(_mlContext.Transforms.NormalizeMinMax("Features"));
-
-        var pipeline2 =
-            _mlContext.Transforms.Concatenate("Features", "HomeTeamScore", "AwayTeamScore")
-            .Append(_mlContext.Regression.Trainers.FastTree());
-        /*
-        var model2 = pipeline2.Fit(dataView);
-        var predictionEngine = _mlContext.Model.CreatePredictionEngine<FootballData, MatchPrediction>(model2);
-        var matchData = new FootballData { HomeTeamScore = 2, AwayTeamScore = 0 };
-        var probability = predictionEngine.Predict(matchData);
-        Console.WriteLine($"Predicted score: {probability.Score}");
-        
-        */
-        
-        var model = pipeline.Fit(dataView);
-
-        return model;
-    }
-
-    private void PredictMatch(ITransformer model)
-    {
-        var predictionEngine = _mlContext.Model.CreatePredictionEngine<FootballData, MatchPrediction>(model);
-        for (var homeScore = 0; homeScore <= 6; homeScore++)
-        {
-            for (var awayScore = 0; awayScore <= homeScore; awayScore++)
-            {
-                var matchData = new FootballData { HomeTeamScore = homeScore, AwayTeamScore = awayScore };
-                var probability = predictionEngine.Predict(matchData);
-                Console.WriteLine($"Predicted score: {homeScore}:{awayScore} Probability: {probability.Score}");
-            }
-        }
-    }
-    
     private Dictionary<string, double> AnalyseTheSeasonPerformanceBy(
-        string homeTeam, string awayTeam, string league, int startYear, int endYear)
+        string homeTeam, string awayTeam, string league)
     {
-        // Retrieving the season of the league by year.
-        var leagueSeason = GetLeagueSeasonBy(startYear, endYear, league);
-        
-        // Checking if the given home team and away team are part of the league.
-        var teams = leagueSeason.Select(i => i.HomeTeam)
-            .Distinct()
-            .ToList();
-
-        if (teams.All(i => i != homeTeam)||teams.All(i => i != awayTeam))
-            return null;
-        
-        // Compute the average goals scored and conceded for all games in the season of the given league at home
-        var (averageAllHomeScored, averageAllHomeConcededScored) = CalcScoredAndConcededScoredAverage(
-            leagueSeason, true);
-        
-        // Compute the average goals scored and conceded for all games in the season of the given league on away field
-        var (averageAllAwayScored, averageAllAwayConcededScored) = CalcScoredAndConcededScoredAverage(
-            leagueSeason, default);
-
-
-        var home = leagueSeason
-            .Where(i => i.HomeTeam == homeTeam)
-            .ToList();
-        
-        var away = leagueSeason
-            .Where(i => i.AwayTeam == awayTeam)
-            .ToList();
-
-        // Compute the average goals scored and conceded for each team in specific field
-        var (averageHomeScored, averageHomeConcededScored) = CalcScoredAndConcededScoredAverage(home, true);
-        var (averageAwayScored, averageAwayConcededScored) = CalcScoredAndConcededScoredAverage(away, default);
-         
-        // Calculates the performance of each team based on their average goals scored and conceded compared to the league averages.
-        var homeScoredPerformance = CalculatePerformance(averageHomeScored, averageAllHomeScored);
-        var awayScoredPerformance = CalculatePerformance(averageAwayScored, averageAllAwayScored);
-        var homeScoredConcededPerformance = CalculatePerformance(averageHomeConcededScored, averageAllHomeConcededScored);
-        var awayScoredConcededPerformance = CalculatePerformance(averageAwayConcededScored, averageAllAwayConcededScored);
-
-       var expectedHomeGoal = homeScoredPerformance * awayScoredConcededPerformance * averageAllHomeScored;
-       var expectedAwayGoal = awayScoredPerformance * homeScoredConcededPerformance * averageAllAwayScored;
-      // var expectedHomeGoal = homeScoredPerformance + awayScoredConcededPerformance / 2;
-      // var expectedAwayGoal = awayScoredPerformance + homeScoredConcededPerformance / 2;
-       var result = Probability(expectedHomeGoal, expectedAwayGoal);
-
-        return result;
-    }
-
-    private static double CalculatePerformance(double left, double right) => left / right;
-    
-    private static (double homeScored, double homeConcededScored) CalcScoredAndConcededScoredAverage(
-        ICollection<GameData> gameData, bool isHome)
-    {
-        var scored = gameData.Count(i => isHome ? i.FTHG > 0 : i.FTAG > 0);
-        var concededScored = gameData.Count(i => isHome ? i.FTAG > 0 : i.FTHG > 0);
-        
-        var averageScored = scored / (double)gameData.Count;
-        var averageConcededScored = concededScored / (double)gameData.Count;
-        
-        var result = (averageScored, averageConcededScored);
-        
-        return result;
-    }
-    
-    private Dictionary<string, double> Probability(double homeAverage, double awayAverage)
-    {
-        var homeWinMatches = new Dictionary<int[], double>();
-        var goalGoalScore = new Dictionary<int[], double>();
-        var moreThanTwoScore = new Dictionary<int[], double>();
-        var twoToThreeScore = new Dictionary<int[], double>();
-        var zeroZero = new Dictionary<int[], double>();
-        var lessThanThreeGoals = new Dictionary<int[], double>();
-        var awayWinMatches = new Dictionary<int[], double>();
-        var drawMatches = new Dictionary<int[], double>();
-        
-        for (var homeScore = 0; homeScore <= 10; homeScore++)
+        var gameAverage = new GameAverage
         {
-            for (var awayScore = 0; awayScore <= 10; awayScore++)
-            {
-                var homePoissonProbability = CalculatePoissonProbability(homeAverage, homeScore);
-                var awayPoissonProbability = CalculatePoissonProbability(awayAverage, awayScore);
+            CurrentSeason = AnalyseCurrentSeasonBy(homeTeam, awayTeam, league),
+            LastSixMatches = AnalyseLastSixGamesBy(homeTeam, awayTeam, league),
+            HistoricalMatches = AnalyseAllSeasonBy(homeTeam, awayTeam, league),
+        };
 
-                var probability = homePoissonProbability * awayPoissonProbability;
+        MergeTheAnalysis(gameAverage, homeTeam, awayTeam);
+        return null;
+    }
 
-                if (homeScore > awayScore)
-                {
-                    homeWinMatches.Add(new []{ homeScore, awayScore }, probability);
-                }
-                else if (homeScore < awayScore)
-                {
-                    awayWinMatches.Add(new []{ homeScore, awayScore }, probability);
-                }
-                else
-                {
-                    drawMatches.Add(new []{ homeScore, awayScore }, probability);
-                }
-                if (homeScore > 0 && awayScore > 0)
-                {
-                    goalGoalScore.Add(new []{ homeScore, awayScore }, probability);
-                }
-
-                if (homeScore + awayScore > 2)
-                {
-                    moreThanTwoScore.Add(new []{ homeScore, awayScore }, probability);
-                }
-                if (homeScore + awayScore <= 3 && homeScore + awayScore > 1)
-                {
-                    twoToThreeScore.Add(new []{ homeScore, awayScore }, probability);
-                }
-                if (homeScore + awayScore < 3)
-                {
-                    lessThanThreeGoals.Add(new []{ homeScore, awayScore }, probability);
-                }
-                if (homeScore is 0 && awayScore is 0)
-                {
-                    zeroZero.Add(new []{ homeScore, awayScore }, probability);
-                }
-            }
+    private GameAverage MergeTheAnalysis(GameAverage gameAverage, string homeTeam, string awayTeam)
+    {
+        var currentLeagueScore = gameAverage.CurrentSeason;
+        var lastSixScore = gameAverage.LastSixMatches;
+        var allGamesScore = gameAverage.HistoricalMatches;
+        
+        var homeGameScoredAverage = CalculateWeighting(
+            lastSixScore?.ScoredGamesAverage.Home,
+            currentLeagueScore?.ScoredGamesAverage.Home,
+            allGamesScore?.ScoredGamesAverage.Home
+        );
+        var awayGameScoredAverage = CalculateWeighting(
+            lastSixScore?.ScoredGamesAverage.Away,
+            currentLeagueScore?.ScoredGamesAverage.Away,
+            allGamesScore?.ScoredGamesAverage.Away
+        );
+        
+        var msg = string.Empty;
+        if (allGamesScore?.HeadToHeadGameAverage.TotalGames < 3)
+            msg = "CAUTION!";
+        
+        
+        if (homeGameScoredAverage < 70 || awayGameScoredAverage < 70 || allGamesScore?.HeadToHeadGameAverage.BothTeamScore < 50)
+        {
+            msg = $"{msg} {homeTeam}:{awayTeam} not qualified. {allGamesScore?.HeadToHeadGameAverage.BothTeamScore}";
         }
 
-        var home = homeWinMatches.Sum(i => i.Value);
-        var away = awayWinMatches.Sum(i => i.Value);
-        var matchDraw = drawMatches.Sum(i => i.Value);
-        var goalGoal = goalGoalScore.Sum(i => i.Value);
-        var moreThanTwoGoal = moreThanTwoScore.Sum(i => i.Value);
-        var twoToThreeGoal = twoToThreeScore.Sum(i => i.Value);
-        var zeroZeroGoal = zeroZero.Sum(i => i.Value);
-        var lessThanThree = lessThanThreeGoals.Sum(i => i.Value);
-        return new Dictionary<string, double>
+        
+        return null;
+    }
+
+    private double? CalculateWeighting(double? left, double? middle, double? right) 
+        => left * 0.40 + middle * 0.30 + right * 0.30;
+
+    private Average? AnalyseCurrentSeasonBy(string homeTeam, string awayTeam, string league)
+    {
+        var currentLeague = _gameData.GetLeagueSeasonBy(2022, 2023, league);
+        if (!currentLeague.TeamsAreInLeague(homeTeam, awayTeam))
+            return null;
+
+        var average = new Average
         {
-            {"HomeWin", home},
-            {"AwayWin", away},
-            {"Draw", matchDraw},
-            {"BothTeamScore", goalGoal},
-            {"MoreThanTwoGoals", moreThanTwoGoal},
-            {"TwoToThree", twoToThreeGoal},
-            {"ZeroZeroGoal", zeroZeroGoal},
-            {"LessThanTwoGoals", lessThanThree},
-            
-            
+            ZeroZeroGameAverage =
+            {
+                Home = TeamZeroZeroGames(currentLeague, homeTeam, atHome: true),
+                Away = TeamZeroZeroGames(currentLeague, homeTeam)
+            },
+            ScoredGamesAverage =
+            {
+                Home = TeamScoredGameAverage(currentLeague, homeTeam, atHome: true),
+                Away = TeamScoredGameAverage(currentLeague, awayTeam)
+            },
+            HalftimeScoredGamesAverage = 
+            {
+                Home = TeamScoredGameAverage(currentLeague, homeTeam, halftime: true, atHome: true),
+                Away = TeamScoredGameAverage(currentLeague, awayTeam, halftime: true)
+            },
+            HalftimeScoreAverage =
+            {
+                Home = TeamScoreAverage(currentLeague, homeTeam, true),
+                Away = TeamScoreAverage(currentLeague, awayTeam, true)
+            },
+            ScoreAverage =
+            {
+                Home = TeamScoreAverage(currentLeague, homeTeam),
+                Away = TeamScoreAverage(currentLeague, awayTeam)
+            },
         };
-    }
-    
-    private static double CalculatePoissonProbability(double lambda, int expectedGoal)
-    {
-        var poisson = new Poisson(lambda);
-        var probability = poisson.Probability(expectedGoal);
 
-        return probability;
+        return average;
     }
-    
-    private IList<GameData> GetLeagueSeasonBy(int startYear, int endYear, string league)
+   
+    private Average? AnalyseAllSeasonBy(string homeTeam, string awayTeam, string league)
     {
-        var startDate = new DateTime(startYear, 08, 01);
-        var endDate = new DateTime(endYear, 06, 30);
+        var currentLeague = _gameData.GetLeagueSeasonBy(2017, 2022, league);
+        if (!currentLeague.TeamsAreInLeague(homeTeam, awayTeam))
+            return null;
 
-        var filteredMatches = _gameData.Where(i => 
+        var average = new Average
         {
-            var matchDate = DateTime.Parse(i.Date);
-            return matchDate >= startDate && matchDate <= endDate && i.Div == league;
-        }).ToList();
+            ZeroZeroGameAverage =
+            {
+                Home = TeamZeroZeroGames(currentLeague, homeTeam, atHome: true),
+                Away = TeamZeroZeroGames(currentLeague, homeTeam)
+            },
+            ScoredGamesAverage =
+            {
+                Home = TeamScoredGameAverage(currentLeague, homeTeam, atHome: true),
+                Away = TeamScoredGameAverage(currentLeague, awayTeam)
+            },
+            HalftimeScoredGamesAverage = 
+            {
+                Home = TeamScoredGameAverage(currentLeague, homeTeam, halftime: true, atHome: true),
+                Away = TeamScoredGameAverage(currentLeague, awayTeam, halftime: true)
+            },
+            HalftimeScoreAverage =
+            {
+                Home = TeamScoreAverage(currentLeague, homeTeam, true),
+                Away = TeamScoreAverage(currentLeague, awayTeam, true)
+            },
+            ScoreAverage =
+            {
+                Home = TeamScoreAverage(currentLeague, homeTeam),
+                Away = TeamScoreAverage(currentLeague, awayTeam)
+            },
+            HeadToHeadGameAverage = TeamHeadToHeadGameAverage(currentLeague, homeTeam, awayTeam)
+        };
 
-        return filteredMatches;
+        return average;
     }
+
+    private Average? AnalyseLastSixGamesBy(string homeTeam, string awayTeam, string league)
+    {
+        var currentLeague = _gameData.GetLeagueSeasonBy(2022, 2023, league)
+            .Where(i => i.HomeTeam == homeTeam || i.AwayTeam == homeTeam ||
+                        i.HomeTeam == awayTeam || i.AwayTeam == awayTeam)
+            .Take(12)
+            .ToList();
+        if (!currentLeague.TeamsAreInLeague(homeTeam, awayTeam))
+            return null;
+        var average = new Average
+        {
+            ZeroZeroGameAverage =
+            {
+                Home = TeamZeroZeroGames(currentLeague, homeTeam, atHome: true),
+                Away = TeamZeroZeroGames(currentLeague, homeTeam)
+            },
+            ScoredGamesAverage =
+            {
+                Home = TeamScoredGameAverage(currentLeague, homeTeam, atHome: true),
+                Away = TeamScoredGameAverage(currentLeague, awayTeam)
+            },
+            HalftimeScoredGamesAverage = 
+            {
+                Home = TeamScoredGameAverage(currentLeague, homeTeam, halftime: true, atHome: true),
+                Away = TeamScoredGameAverage(currentLeague, awayTeam, halftime: true)
+            },
+            HalftimeScoreAverage =
+            {
+                Home = TeamScoreAverage(currentLeague, homeTeam, true),
+                Away = TeamScoreAverage(currentLeague, awayTeam, true)
+            },
+            ScoreAverage =
+            {
+                Home = TeamScoreAverage(currentLeague, homeTeam),
+                Away = TeamScoreAverage(currentLeague, awayTeam)
+            }
+        };
+
+        return average;
+    }
+
+    /// <summary>
+    /// The method is used to check if the team has the ability to score at least one goal
+    /// in the majority of its home and away games.
+    /// the method returns a boolean value indicating if the homeScoreGameAverage and awayScoreGameAverage are greater
+    /// than 0.60, which means the team has the ability to score at least one goal in more than 60% of its games.
+    /// </summary>
+    /// <param name="leagueSeason"></param>
+    /// <param name="team"></param>
+    private double TeamScoredGameAverage(IList<GameData> leagueSeason, string team, bool halftime = false, bool atHome = false)
+    {
+        var homeTeamHomeField = leagueSeason
+            .Where(i => i.HomeTeam == team)
+            .ToList();
+        
+        var homeTeamAwayField = leagueSeason
+            .Where(i => i.AwayTeam == team)
+            .ToList();
+
+
+        var homeScoreGames = (double)homeTeamHomeField.Count(i => halftime ? i.HTHG  > 0 : i.FTHG > 0);
+        var awayScoreGames = (double)homeTeamAwayField.Count(i => halftime ? i.HTAG  > 0 : i.FTAG > 0);
+        
+        var homeScoreGameAverage = homeScoreGames.Divide(homeTeamHomeField.Count);
+        var awayScoreGameAverage = awayScoreGames.Divide(homeTeamAwayField.Count);
+
+        var scoreAverage = homeScoreGameAverage.CalculateWeighting(awayScoreGameAverage, atHome ? 60 : 40);
+        return  Math.Round(scoreAverage, 3);
+    }
+    
+    private double TeamZeroZeroGames(IList<GameData> leagueSeason, string team, bool atHome = false)
+    {
+        var homeTeamHomeField = leagueSeason.Where(i => i.HomeTeam == team).ToList();
+        var homeTeamAwayField = leagueSeason.Where(i => i.AwayTeam == team).ToList();
+
+        var homeScoreGames = (double)homeTeamHomeField.Count(i => i.FTHG == 0);
+        var awayScoreGames = (double)homeTeamAwayField.Count(i => i.FTAG == 0);
+        
+        var homeScoreGameAverage = homeScoreGames.Divide(homeTeamHomeField.Count);
+        var awayScoreGameAverage = awayScoreGames.Divide(homeTeamAwayField.Count);
+
+        var scoreAverage = homeScoreGameAverage
+            .CalculateWeighting(awayScoreGameAverage, atHome ? 60 : 40);
+
+        return Math.Round(scoreAverage, 3);
+    }
+    
+    private static double TeamScoreAverage(IList<GameData> leagueSeason, string team, bool halftime = false)
+    {
+        var teamHomeField = leagueSeason
+            .Where(i => i.HomeTeam == team || i.AwayTeam == team)
+            .Select(ii => halftime ? ii.HTHG : ii.FTHG)
+            .Average() ?? 0.0;
+        
+        return Math.Round(teamHomeField, 3);
+    }
+
+    private static HeadToHead TeamHeadToHeadGameAverage(IList<GameData> leagueSeason, string homeTeam, string awayTeam)
+    {
+        var teamHomeField = leagueSeason
+            .Where(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam)
+            .ToList();
+
+        if (teamHomeField.Count == 0)
+            return new HeadToHead();
+
+        var home = teamHomeField.Average(i => i.FTHG ?? 0);
+        var away = teamHomeField.Average(i => i.FTAG ?? 0);
+        
+        var homeHalftime = teamHomeField.Average(i => i.HTHG ?? 0);
+        var awayHalftime = teamHomeField.Average(i => i.HTAG ?? 0);
+        var headToHead = new HeadToHead
+        {
+            BothTeamScore = teamHomeField.Count(i => i is { FTHG: >= 1, FTAG: >= 1 }).Divide(teamHomeField.Count),
+            MoreThanTwoGoals = teamHomeField.Count(i => i.FTHG + i.FTAG > 2).Divide(teamHomeField.Count),
+            TwoToThreeGoals = teamHomeField.Count(i => i.FTHG + i.FTAG == 2 || i.FTHG + i.FTAG == 3)
+                .Divide(teamHomeField.Count),
+            NoGoal = teamHomeField.Count(i => i is { FTHG: 0, FTAG: 0 }).Divide(teamHomeField.Count),
+            TotalGames = teamHomeField.Count,
+            HalfTimeScored = teamHomeField.Count(i => i is { HTHG: 1, HTAG: 1 }).Divide(teamHomeField.Count),
+            MoreThanTwoGoalAverage = home.CalculateWeighting(away, 40),
+            HalftimeScoreAverage = homeHalftime.CalculateWeighting(awayHalftime, 45)
+        };
+
+        return headToHead;
+    }
+    
 }

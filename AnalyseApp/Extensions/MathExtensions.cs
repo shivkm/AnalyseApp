@@ -6,9 +6,9 @@ public static class MathExtensions
 {
     internal static T Divide<T>(this T left, T right) where T: INumber<T> => left / right;
     
-    internal static double CalculateWeighting(this double left, double right)
+    internal static double CalculateWeighting(this double left, double right, double leftWeight = 0.35)
     {
-        var result = left * 0.35 + right * 0.65;
+        var result = left * leftWeight + right * (100 - leftWeight);
         return Math.Round(result, 2);
     }
 }

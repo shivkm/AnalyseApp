@@ -5,7 +5,8 @@ namespace AnalyseApp.Extensions;
 internal static class GameDataExtensions
 {
 
-    internal static IList<GameData> GetLeagueSeasonBy(this IEnumerable<GameData> gameData, int startYear, int endYear, string league)
+    internal static IList<GameData> GetLeagueSeasonBy(
+        this IEnumerable<GameData> gameData, int startYear, int endYear, string league)
     {
         var startDate = new DateTime(startYear, 08, 01);
         var endDate = new DateTime(endYear, 06, 30);
@@ -14,7 +15,7 @@ internal static class GameDataExtensions
         {
             var matchDate = DateTime.Parse(i.Date);
             return matchDate >= startDate && matchDate <= endDate && i.Div == league;
-        }).ToList();
+        }).OrderByDescending(i => i.Date).ToList();
 
         return filteredMatches;
     }
