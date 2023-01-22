@@ -10,14 +10,14 @@ namespace AnalyseApp.Services;
 
 public class AnalyseService
 {
-    private const string FileDir = "C:\\shivm\\AnalyseApp\\data";
+    private const string FileDir = "/Users/shivm/Documents/projects/AnalyseApp/data";
     private List<GameData> _historicalGames = new();
     private List<GameData> _upComingGames = new();
     private IPoissonService _poissonService = new PoissonService(null, null);
 
     internal AnalyseService ReadHistoricalGames()
     {
-        var files = Directory.GetFiles($"{FileDir}\\raw_csv");
+        var files = Directory.GetFiles($"{FileDir}/raw_csv");
 
         foreach (var file in files)
         {
@@ -38,7 +38,7 @@ public class AnalyseService
 
     internal AnalyseService ReadUpcomingGames()
     {
-        var files = Directory.GetFiles($"{FileDir}\\upcoming_matches");
+        var files = Directory.GetFiles($"{FileDir}/upcoming_matches");
         foreach (var file in files)
         {
             var config = new CsvConfiguration(CultureInfo.InvariantCulture)

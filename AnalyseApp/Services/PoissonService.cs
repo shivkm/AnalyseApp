@@ -25,7 +25,7 @@ public class PoissonService : IPoissonService
     {
         var result = new List<PoissonProbability>();
         var currentSeason = AnalysePerformance(homeTeam, awayTeam, league, 2022, 2023);
-        var allSeasons = AnalysePerformance(homeTeam, awayTeam, league, 2018, 2022);
+        var allSeasons = AnalysePerformance(homeTeam, awayTeam, league, 2017, 2022);
         //var currentSeasonHalftime = AnalyseHalftimePerformance(homeTeam, awayTeam, league, 2022, 2023);
         //var currentGameBookmakers = GetBet365BookmakersValuesBy(homeTeam, awayTeam);
 

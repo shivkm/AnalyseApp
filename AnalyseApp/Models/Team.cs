@@ -12,8 +12,10 @@ public record Average2
 public record Average
 {
     public Average2 ZeroZeroGameAverage { get; set; } = new();
+    public Average2 OneSideResult { get; set; } = new();
+    public Average2 ZeroOneResult { get; set; } = new();
     public Average2 ScoredGamesAverage { get; set; }= new();
-    public Average2 ScoreAverage { get; set; }= new();
+    public Average2 ScoreThanTwoGoalsAverage { get; set; }= new();
     public Average2 HalftimeScoredGamesAverage { get; set; } = new();
     public Average2 HalftimeScoreAverage { get; set; } = new();
     public HeadToHead HeadToHeadGameAverage { get; set; } = new();
