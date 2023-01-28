@@ -8,7 +8,31 @@ public static class MathExtensions
     
     internal static double CalculateWeighting(this double left, double right, double leftWeight = 0.35)
     {
-        var result = left * leftWeight + right * (100 - leftWeight);
+        var rightWeight = 1 - leftWeight;
+        var result = left * leftWeight + right * rightWeight;
         return Math.Round(result, 2);
+    }
+    
+    internal static double GetPercent<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+    {
+        var found = 0;
+        var total = 0;
+
+        var enumerable = source.ToList();
+        if (!enumerable.Any())
+            return 0;
+
+        foreach (var item in enumerable)
+        {
+            ++total;
+            if (predicate(item))
+            {
+                found += 1;
+            }
+        }
+
+        var value =  (double)found / total;
+
+        return Math.Round(value, 2);
     }
 }

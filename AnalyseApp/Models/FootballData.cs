@@ -1,6 +1,6 @@
 ﻿using Microsoft.ML.Data;
 
-namespace AnalyseApp.models;
+namespace AnalyseApp.Models;
 
 
 // Define a class to hold the data for a single match
@@ -12,7 +12,3 @@ public class FootballData
 }
 
 // Define a class to hold the input and output data for the model
-public class MatchPrediction
-{
-    [ColumnName("Score")] public float Score;
-}

@@ -1,7 +1,7 @@
 ﻿using CsvHelper.Configuration.Attributes;
 using Microsoft.ML.Data;
 
-namespace AnalyseApp.models;
+namespace AnalyseApp.Models;
 
 public record GameData
 {
@@ -17,6 +17,22 @@ public record GameData
     public int? HTHG { get; set; } = default!;
     public int? HTAG { get; set; } = default!;
     public string HTR { get; set; } = default!;
+    [Optional]
+    public int? HS { get; set; }
+    [Optional]
+    public int? AS { get; set; }
+    [Optional]
+    public int? HST { get; set; }
+    [Optional]
+    public int? AST { get; set; }
+    [Optional]
+    public int? HO { get; set; }
+    [Optional]
+    public int? AO { get; set; }
+    [Optional]
+    public int? HF { get; set; }
+    [Optional]
+    public int? AF { get; set; }
     [Optional]
     public string HomeWin { get; set; } = default!;
     [Optional]
@@ -34,15 +50,6 @@ public record GameData
 }
 
 // Define a class to hold the data for each match
-public class FootballGameData
-{
-    [LoadColumn(0)] public float HomeTeamGoals;
-    [LoadColumn(1)] public float AwayTeamGoals;
-    [LoadColumn(2)] public float HomeTeamHalfTimeGoals;
-    [LoadColumn(3)] public float AwayTeamHalfTimeGoals;
-    [LoadColumn(4)] public bool HomeTeamWins;
-    [LoadColumn(5)] public float[] Score;
-}
 
 public class FootballGamePrediction
 {

@@ -19,7 +19,16 @@ public static class DerbyTeams
             "Arsenal:West Ham",
             "West Ham:Arsenal",
             "Crystal Palace:Brighton",
-            "Brighton:Crystal Palace"
+            "Brighton:Crystal Palace",
+            "Dortmund:Schalke 04",
+            "Milan:Inter",
+            "Juventus:Turin",
+            "Lazio:Roma",
+            "Napoli:Roma",
+            "Nice:Monaco",
+            "Nice:Monaco",
+            "Lille:Lens"
+            
         };
 
         return result;

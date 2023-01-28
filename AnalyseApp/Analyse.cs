@@ -1,5 +1,5 @@
 ﻿using System.Globalization;
-using AnalyseApp.models;
+using AnalyseApp.Models;
 using AnalyseApp.Services;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -165,10 +165,53 @@ public class Analyse
 
     internal Analyse StartAnalysisTestBy(string homeTeam, string awayTeam, string league)
     {
-        var calc = new PoissonService(_historicalGames, _upComingGames);
+
+        var calc = new PoissonService(_historicalGames);
 
         calc.Execute(homeTeam, awayTeam, league);
+
+        PossibleProbabilities(homeTeam, awayTeam);
         return this;
+    }
+
+    private Dictionary<string, double> PossibleProbabilities(string homeTeam, string awayTeam)
+    {
+        var output = new Dictionary<string, double>();
+        for (var homeScore = 0; homeScore <= 10; homeScore++)
+        {
+            for (var awayScore = 0; awayScore <= 10; awayScore++)
+            {
+                var probability = BundesligaAnalysis(
+                    homeTeam,
+                    awayTeam,
+                    homeScore,
+                    awayScore
+                );
+                output.Add($"{homeTeam}:{awayTeam}{homeScore}-{awayTeam}", probability);
+            }
+        }
+        return output;
+    }
+
+    private static float BundesligaAnalysis(string homeTeam, string awayTeam, int homeGoal, float awayGoal)
+    {
+        //Load sample data
+        var sampleData = new Bundesliga.ModelInput
+        {
+            HomeTeam = @$"{homeTeam}",
+            AwayTeam = @$"{awayTeam}",
+            AwayTeamGoals = awayGoal,
+            HomeTeamGoals= homeGoal,
+            HomeTeamFullTimeGoals = homeGoal,
+            AwayTeamFullTimeGoals = awayGoal,
+            PredictedLabel = 0F,
+        };
+
+        //Load model and predict output
+        var result = Bundesliga.Predict(sampleData);
+
+        var score= result.Score;
+        return score;
     }
 
 }

@@ -16,4 +16,20 @@
     <PackageReference Include="Microsoft.ML.TensorFlow" Version="2.0.0" />
     <PackageReference Include="TensorFlow.NET" Version="0.100.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="DataModels\Bundesliga.consumption.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+    <Compile Update="DataModels\Bundesliga.training.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Update="DataModels\Bundesliga.mbconfig">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="DataModels\Bundesliga.zip">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
 </Project>

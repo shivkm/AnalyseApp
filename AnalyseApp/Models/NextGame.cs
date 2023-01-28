@@ -1,4 +1,4 @@
-﻿namespace AnalyseApp.models;
+﻿namespace AnalyseApp.Models;
 
 public record NextGame(
     int TakeLastGames,

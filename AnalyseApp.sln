@@ -1,8 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyseApp", "AnalyseApp\AnalyseApp.csproj", "{750C4D41-F4BE-44F4-AAF9-E8546C771288}"
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33110.190
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyseApp", "AnalyseApp\AnalyseApp.csproj", "{750C4D41-F4BE-44F4-AAF9-E8546C771288}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyseAppUnitTests", "tests\AnalyseAppUnitTests\AnalyseAppUnitTests.csproj", "{DF3A61FB-E0B5-4679-BF1B-0FD07FC55747}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AnalyseAppUnitTests", "tests\AnalyseAppUnitTests\AnalyseAppUnitTests.csproj", "{DF3A61FB-E0B5-4679-BF1B-0FD07FC55747}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Bundesliga_Predictions", "Bundesliga_Predictions\Bundesliga_Predictions.csproj", "{4627ACDB-F080-4EA7-A706-A2675BCBE855}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -18,5 +23,15 @@ Global
 		{DF3A61FB-E0B5-4679-BF1B-0FD07FC55747}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DF3A61FB-E0B5-4679-BF1B-0FD07FC55747}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DF3A61FB-E0B5-4679-BF1B-0FD07FC55747}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4627ACDB-F080-4EA7-A706-A2675BCBE855}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4627ACDB-F080-4EA7-A706-A2675BCBE855}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4627ACDB-F080-4EA7-A706-A2675BCBE855}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4627ACDB-F080-4EA7-A706-A2675BCBE855}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {51D56802-5729-42E0-ACD5-EDC474242E60}
 	EndGlobalSection
 EndGlobal

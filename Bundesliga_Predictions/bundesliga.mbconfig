@@ -1,0 +1,765 @@
+﻿{
+  "Scenario": "Regression",
+  "DataSource": {
+    "Type": "TabularFile",
+    "Version": 1,
+    "FilePath": "C:\\shivm\\AnalyseApp\\data\\ml\\D1.csv",
+    "Delimiter": ",",
+    "DecimalMarker": ".",
+    "HasHeader": true,
+    "ColumnProperties": [
+      {
+        "ColumnName": "HomeTeam",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "String",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "AwayTeam",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "String",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "HomeTeamGoals",
+        "ColumnPurpose": "Label",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "AwayTeamGoals",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "HomeTeamShots",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "AwayTeamShots",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "HomeTeamHalfTimeGoals",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "AwayTeamHalfTimeGoals",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "HomeTeamFullTimeGoals",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": false,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "AwayTeamFullTimeGoals",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 3
+      },
+      {
+        "ColumnName": "PredictedLabel",
+        "ColumnPurpose": "Feature",
+        "ColumnDataFormat": "Single",
+        "IsCategorical": true,
+        "Type": "Column",
+        "Version": 3
+      }
+    ]
+  },
+  "Environment": {
+    "Type": "LocalCPU",
+    "Version": 1
+  },
+  "RunHistory": {
+    "Version": 2,
+    "Type": "Result",
+    "Trials": [
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 1.0,
+        "RuntimeInSeconds": 0.266,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ],
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ]
+          },
+          "e1": {
+            "InputColumnName": "HomeTeam",
+            "OutputColumnName": "HomeTeam"
+          },
+          "e2": {
+            "InputColumnName": "AwayTeam",
+            "OutputColumnName": "AwayTeam"
+          },
+          "e3": {
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel",
+              "HomeTeam",
+              "AwayTeam"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 2,
+            "NumberOfTrees": 10,
+            "MaximumBinCountPerFeature": 1023,
+            "FeatureFraction": 0.90569269009392317,
+            "LearningRate": 0.99999977667298645,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e5": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e6": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 1.0,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 1.0,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "L1Regularization": 2E-10,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e7": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e8": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 1.0,
+        "RuntimeInSeconds": 0.534,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ],
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ]
+          },
+          "e1": {
+            "InputColumnName": "HomeTeam",
+            "OutputColumnName": "HomeTeam"
+          },
+          "e2": {
+            "InputColumnName": "AwayTeam",
+            "OutputColumnName": "AwayTeam"
+          },
+          "e3": {
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel",
+              "HomeTeam",
+              "AwayTeam"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 2,
+            "NumberOfTrees": 343,
+            "MaximumBinCountPerFeature": 1023,
+            "FeatureFraction": 0.98734402633953167,
+            "LearningRate": 0.99999977667298645,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e5": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e6": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 1.0,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 1.0,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "L1Regularization": 2E-10,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e7": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e8": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 0.99988633599545929,
+        "RuntimeInSeconds": 0.26,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e4",
+          "e0": {
+            "OutputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ],
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ]
+          },
+          "e1": {
+            "InputColumnName": "HomeTeam",
+            "OutputColumnName": "HomeTeam"
+          },
+          "e2": {
+            "InputColumnName": "AwayTeam",
+            "OutputColumnName": "AwayTeam"
+          },
+          "e3": {
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel",
+              "HomeTeam",
+              "AwayTeam"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 15,
+            "MinimumExampleCountPerLeaf": 9,
+            "NumberOfTrees": 4,
+            "MaximumBinCountPerFeature": 819,
+            "FeatureFraction": 0.82266570456077626,
+            "LearningRate": 0.99999977667298645,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e5": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e6": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 1.0,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 1.0,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "L1Regularization": 2E-10,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e7": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e8": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LightGbmRegression",
+        "Score": 0.999515961749731,
+        "RuntimeInSeconds": 0.391,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e6",
+          "e0": {
+            "OutputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ],
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ]
+          },
+          "e1": {
+            "InputColumnName": "HomeTeam",
+            "OutputColumnName": "HomeTeam"
+          },
+          "e2": {
+            "InputColumnName": "AwayTeam",
+            "OutputColumnName": "AwayTeam"
+          },
+          "e3": {
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel",
+              "HomeTeam",
+              "AwayTeam"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e6": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 1.0,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 1.0,
+            "MaximumBinCountPerFeature": 254,
+            "FeatureFraction": 1.0,
+            "L1Regularization": 2E-10,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "NumberOfTrees": 4,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "LearningRate": 0.099999999999999978,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e5": {
+            "NumberOfTrees": 4,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e7": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e8": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.99946776396663528,
+        "RuntimeInSeconds": 0.28,
+        "Parameter": {
+          "_SCHEMA_": "e0 * e1 * e2 * e3 * e5",
+          "e0": {
+            "OutputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ],
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel"
+            ]
+          },
+          "e1": {
+            "InputColumnName": "HomeTeam",
+            "OutputColumnName": "HomeTeam"
+          },
+          "e2": {
+            "InputColumnName": "AwayTeam",
+            "OutputColumnName": "AwayTeam"
+          },
+          "e3": {
+            "InputColumnNames": [
+              "AwayTeamGoals",
+              "HomeTeamShots",
+              "AwayTeamShots",
+              "HomeTeamHalfTimeGoals",
+              "AwayTeamHalfTimeGoals",
+              "HomeTeamFullTimeGoals",
+              "AwayTeamFullTimeGoals",
+              "PredictedLabel",
+              "HomeTeam",
+              "AwayTeam"
+            ],
+            "OutputColumnName": "Features"
+          },
+          "e5": {
+            "NumberOfTrees": 14,
+            "NumberOfLeaves": 4,
+            "FeatureFraction": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e4": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "NumberOfTrees": 4,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "LearningRate": 0.099999999999999978,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e6": {
+            "NumberOfLeaves": 4,
+            "MinimumExampleCountPerLeaf": 20,
+            "LearningRate": 1.0,
+            "NumberOfTrees": 4,
+            "SubsampleFraction": 1.0,
+            "MaximumBinCountPerFeature": 255,
+            "FeatureFraction": 1.0,
+            "L1Regularization": 2E-10,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e7": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 1.0,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          },
+          "e8": {
+            "L1Regularization": 1.0,
+            "L2Regularization": 0.1,
+            "LabelColumnName": "HomeTeamGoals",
+            "FeatureColumnName": "Features"
+          }
+        }
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.99459245389447637,
+        "RuntimeInSeconds": 1.252
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LightGbmRegression",
+        "Score": 0.99913906756838977,
+        "RuntimeInSeconds": 6.274
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.99848916560643219,
+        "RuntimeInSeconds": 1.086
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.9952853257397315,
+        "RuntimeInSeconds": 0.293
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LightGbmRegression",
+        "Score": 0.29924777316618689,
+        "RuntimeInSeconds": 0.349
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.995445985425351,
+        "RuntimeInSeconds": 0.322
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LbfgsPoissonRegressionRegression",
+        "Score": 0.853769808665907,
+        "RuntimeInSeconds": 0.227
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.99883430751843061,
+        "RuntimeInSeconds": 0.362
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.94994027604809084,
+        "RuntimeInSeconds": 0.312
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.9991225692892135,
+        "RuntimeInSeconds": 0.333
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.9294552877611223,
+        "RuntimeInSeconds": 0.3
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": -0.976241309172696,
+        "RuntimeInSeconds": 0.269
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 0.99636235963262343,
+        "RuntimeInSeconds": 0.273
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 0.99988633599545929,
+        "RuntimeInSeconds": 0.26
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 1.0,
+        "RuntimeInSeconds": 0.266
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": 1.0,
+        "RuntimeInSeconds": 0.534
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastTreeRegression",
+        "Score": -1.3378574930041709,
+        "RuntimeInSeconds": 0.258
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.99946776396663528,
+        "RuntimeInSeconds": 0.28
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.99942241255484066,
+        "RuntimeInSeconds": 5.443
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "LbfgsPoissonRegressionRegression",
+        "Score": 0.41685506936708872,
+        "RuntimeInSeconds": 0.26
+      },
+      {
+        "Version": 1,
+        "Type": "Trial",
+        "TrainerName": "FastForestRegression",
+        "Score": 0.94021009438908532,
+        "RuntimeInSeconds": 0.254
+      }
+    ],
+    "Estimators": {
+      "e0": "ReplaceMissingValues",
+      "e1": "FeaturizeText",
+      "e2": "FeaturizeText",
+      "e3": "Concatenate",
+      "e4": "FastTreeRegression",
+      "e5": "FastForestRegression",
+      "e6": "LightGbmRegression",
+      "e7": "LbfgsPoissonRegressionRegression",
+      "e8": "SdcaRegression"
+    },
+    "Schema": "e0 * e1 * e2 * e3 * (e4 + e5 + e6 + e7 + e8)",
+    "MetricName": "RSquared"
+  },
+  "Type": "TrainingConfig",
+  "Version": 3,
+  "TrainingOption": {
+    "Version": 0,
+    "Type": "RegressionTrainingOption",
+    "TrainingTime": 25,
+    "LabelColumn": "HomeTeamGoals",
+    "Seed": 0
+  }
+}

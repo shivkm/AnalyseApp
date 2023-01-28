@@ -1,5 +1,5 @@
 ﻿using AnalyseApp.Extensions;
-using AnalyseApp.models;
+using AnalyseApp.Models;
 
 namespace AnalyseApp.Services;
 internal class Node
