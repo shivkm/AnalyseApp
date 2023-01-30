@@ -3,7 +3,7 @@ using AnalyseApp.Services;
 
 var analysis = new AnalyseService();
 
-analysis.ReadHistoricalGames().ReadUpcomingGames().AnalyseMatches();
+analysis.ReadHistoricalGames().ReadUpcomingGames().AnalyseGames();
  // .CreateMlFile("D1").CreateMlFile("E0")
  // .CreateMlFile("E1").CreateMlFile("E2")
  // .CreateMlFile("SP1").CreateMlFile("I1")

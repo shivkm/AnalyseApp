@@ -6,6 +6,12 @@ public static class MathExtensions
 {
     internal static T Divide<T>(this T left, T right) where T: INumber<T> => left / right;
     
+    internal static double Divide(this int left, int right)
+    {
+        var value = (double)left / right;
+        return double.IsNaN(value) ? 0.0 : value;
+    }
+    
     internal static double CalculateWeighting(this double left, double right, double leftWeight = 0.35)
     {
         var rightWeight = 1 - leftWeight;

@@ -3,7 +3,7 @@ using AnalyseApp.Models;
 using Microsoft.ML;
 
 namespace AnalyseApp.Services;
-
+/*
 public class CalculationService
 {
     private readonly IPoissonService _service;
@@ -13,10 +13,10 @@ public class CalculationService
     private readonly IList<GameData> _lastSixSeason;
 
     private List<PoissonProbability> _poissonProbability;
-    private (Models.TeamPerformance Home, Models.TeamPerformance Away) _lastEightMatches;
-    private (Models.TeamPerformance Home, Models.TeamPerformance Away) _headToHeadMatches;
-    private (Models.TeamPerformance Home, Models.TeamPerformance Away) _currentSeasonMatches;
-    private (Models.TeamPerformance Home, Models.TeamPerformance Away) _lastSixSeasonMatches;
+    private (TeamPerformance Home, TeamPerformance Away) _lastEightMatches;
+    private (TeamPerformance Home, TeamPerformance Away) _headToHeadMatches;
+    private (TeamPerformance Home, TeamPerformance Away) _currentSeasonMatches;
+    private (TeamPerformance Home, TeamPerformance Away) _lastSixSeasonMatches;
     private readonly List<Prediction> _NoGoalMatches = new ();
     private readonly List<Prediction> _moreThanTwoGoalMatches = new ();
     private readonly List<Prediction> _bothScoredGoalMatches = new ();
@@ -226,7 +226,7 @@ public class CalculationService
         _lastSixSeasonMatches = (homeTeamPerformance, awayTeamPerformance);
     }
 
-    private static Models.TeamPerformance CalculateTeamPerformanceBy(IList<GameData> currentMatches, string team)
+    private static TeamPerformance CalculateTeamPerformanceBy(IList<GameData> currentMatches, string team)
     {
         var performance = new TeamPerformance
         {
@@ -252,25 +252,7 @@ public class CalculationService
             HalftimeGoalMatches = currentMatches.GetHalftimeGoalScoredMatchCountBy()
         };
 
-        var result = new Models.TeamPerformance
-        {
-            MatchesPlayed = performance.MatchesPlayed,
-            NoGoalMatches = performance.NoGoalMatchAccuracy(),
-            CompositeWin = performance.CompositeWin(),
-            CompositeMoreThanTwoGoals = performance.CompositeMoreThanTwoGoals(),
-            CompositeScoreGoals = performance.CompositeScoreGoals(),
-            CompositeDefense = performance.CompositeDefense(),
-            CompositeOffsideAndFouls = performance.CompositeOffsideAndFouls(),
-            CompositeLessGoals = performance.CompositeLessGoals(),
-            Offsides = performance.OffsidesAccuracy(),
-            WinOneSideGoalMatches = performance.WinOneSideGoalMatchesAccuracy(),
-            OneSideGoalMatches = performance.OneSideGoalAccuracy(),
-            MoreThanTwoGoalMatchPlayed = performance.MoreThanTwoGoalsMatches,
-            BothScoredMatchPlayed = performance.BothScoreMatches,
-            CompositeHalftimeGoals = performance.CompositeHalftimeScoredGames()
-        };
-        
-        return result;
+        return performance;
     }
     
     private bool NoGoalMatches()
@@ -671,7 +653,7 @@ public class CalculationService
         //  var homeWin = lastSeason.Values + currentSeason.Values;
         //  var awayWin = awayWinMatches.Sum(i => i.Value[1]);
         //  var draw = drawMatches.Sum(i => i.Value[0]);
-*/
+
 
 
     }
@@ -1088,4 +1070,4 @@ public class CalculationService
         return headToHead;
     }
     
-}
+}*/

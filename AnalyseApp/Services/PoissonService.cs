@@ -9,14 +9,19 @@ public interface IPoissonService
     public List<PoissonProbability> Execute(
         string homeTeam, string awayTeam, string league);
 }
+
 public class PoissonService : IPoissonService
 {
     private readonly List<GameData> _gameData;
+    private readonly IList<GameData> _currentSeason;
+    private readonly IList<GameData> _lastSixSeason;
     private readonly Dictionary<string, Dictionary<int[], double>> _poissonProbabilityDictionary = new ();
     
     public PoissonService(List<GameData> gameData)
     {
         _gameData = gameData;
+        _currentSeason = gameData.GetGameDataBy(2022, 2023);
+        _lastSixSeason = gameData.GetGameDataBy(2016, 2022);
     }
 
     public List<PoissonProbability> Execute(string homeTeam, string awayTeam, string league)
@@ -132,7 +137,7 @@ public class PoissonService : IPoissonService
         {
             AddOrUpdateDictionary(homeScore, awayScore, probability, "OneSideGoal", result);
         }
-        if (homeScore + awayScore == 0 || homeScore + awayScore == 1)
+        if (homeScore + awayScore == 0 || homeScore + awayScore == 1 || homeScore + awayScore == 2)
         {
             AddOrUpdateDictionary(homeScore, awayScore, probability, "LessThanTwoGoals", result);
         }

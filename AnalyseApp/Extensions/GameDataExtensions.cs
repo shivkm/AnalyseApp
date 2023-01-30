@@ -15,19 +15,19 @@ internal static class GameDataExtensions
         {
             var matchDate = DateTime.Parse(i.Date);
             return matchDate >= startDate && matchDate <= endDate;
-        }).OrderByDescending(i => i.Date).ToList();
+        }).OrderByDescending(i => DateTime.Parse(i.Date)).ToList();
 
         return filteredMatches;
     }
 
     
-    internal static int GetWinMatchCountBy(this IEnumerable<GameData> currentMatches, string team) =>
+    internal static int GetWinGamesCountBy(this IEnumerable<GameData> currentMatches, string team) =>
         currentMatches.Count(i => i.FTR == "H" && i.HomeTeam == team || i.FTR == "A" && i.AwayTeam == team);
     
-    internal static int GetLossMatchCountBy(this IEnumerable<GameData> currentMatches, string team) =>
+    internal static int GetLossGamesCountBy(this IEnumerable<GameData> currentMatches, string team) =>
         currentMatches.Count(i => i.FTR == "A" && i.HomeTeam == team || i.FTR == "H" && i.AwayTeam == team);
 
-    internal static int GetNoGoalMatchCountBy(this IEnumerable<GameData> currentMatches) =>
+    internal static int GetNoGoalGameCount(this IEnumerable<GameData> currentMatches) =>
         currentMatches.Count(i => i is { FTHG: 0, FTAG: 0 });
 
     internal static int GetShotsCountBy(this IEnumerable<GameData> currentMatches, string team) =>
@@ -42,24 +42,24 @@ internal static class GameDataExtensions
     internal static int GetFoulCommittedCountBy(this IEnumerable<GameData> currentMatches, string team) =>
         currentMatches.Count(i =>i.HF > 0 && i.HomeTeam == team || i.AF > 0 && i.AwayTeam == team);
 
-    internal static int GetGoalScoredMatchSumBy(this IList<GameData> currentMatches, string team) =>
+    internal static int GetGoalScoredSumBy(this IList<GameData> currentMatches, string team) =>
         currentMatches.Where(i => i.HomeTeam == team).Sum(i => i.FTHG ?? 0) +
         currentMatches.Where(i => i.AwayTeam == team).Sum(i => i.FTAG ?? 0);
 
-    internal static int GetGoalConcededMatchSumBy(this IList<GameData> currentMatches, string team) =>
+    internal static int GetGoalConcededSumBy(this IList<GameData> currentMatches, string team) =>
         currentMatches.Where(i => i.HomeTeam == team).Sum(i => i.FTAG ?? 0) +
         currentMatches.Where(i => i.AwayTeam == team).Sum(i => i.FTHG ?? 0);
 
-    internal static int GetOneSideGoalMatchCountBy(this IEnumerable<GameData> currentMatches) =>
-        currentMatches.Count(i => i is { FTHG: 1, FTAG: 0 } or { FTHG: 0, FTAG: > 0 });
+    internal static int GetOneSideGoalGamesCount(this IEnumerable<GameData> currentMatches) =>
+        currentMatches.Count(i => i is { FTHG: > 0, FTAG: 0 } or { FTHG: 0, FTAG: > 0 });
     
-    internal static int GetBothScoredMatchCountBy(this IEnumerable<GameData> currentMatches) =>
+    internal static int GetBothScoredGamesCount(this IEnumerable<GameData> currentMatches) =>
         currentMatches.Count(i => i is { FTHG: > 0, FTAG: > 0 });
     
-    internal static int GetMoreThanTwoGoalScoredMatchCountBy(this IEnumerable<GameData> currentMatches) =>
+    internal static int GetMoreThanTwoGoalScoredGamesCount(this IEnumerable<GameData> currentMatches) =>
         currentMatches.Count(i => i.FTHG + i.FTAG > 2);
     
-    internal static int GetTwoToThreeGoalScoredMatchCountBy(this IEnumerable<GameData> currentMatches) =>
+    internal static int GetTwoToThreeGoalScoredGamesCount(this IEnumerable<GameData> currentMatches) =>
         currentMatches.Count(i => i.FTHG + i.FTAG == 2 && i.FTHG + i.FTAG == 3);
     
     internal static int GetHalftimeGoalScoredSumBy(this IList<GameData> currentMatches, string team) =>
@@ -70,7 +70,7 @@ internal static class GameDataExtensions
         currentMatches.Where(i => i.HomeTeam == team).Sum(i => i.HTAG ?? 0) +
         currentMatches.Where(i => i.AwayTeam == team).Sum(i => i.HTHG ?? 0);
     
-    internal static int GetHalftimeGoalScoredMatchCountBy(this IEnumerable<GameData> currentMatches) =>
+    internal static int GetHalftimeGoalScoredGamesCount(this IEnumerable<GameData> currentMatches) =>
         currentMatches.Count(i => i.HTHG > 0 || i.HTAG > 0);
 
     

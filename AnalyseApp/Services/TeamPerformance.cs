@@ -1,6 +1,8 @@
 ﻿using MathNet.Numerics.Distributions;
 
-namespace AnalyseApp.Services;
+namespace AnalyseApp.Handlers;
+
+
 
 public class TeamPerformance
 {
@@ -8,8 +10,9 @@ public class TeamPerformance
     public int ShotsOnGoal { get; set; }
     public int GoalsScored { get; set; }
     public int GoalsConceded { get; set; }
-    public int HalftimeGoalsScored { get; set; }
-    public int HalftimeGoalsConceded { get; set; }
+    public double HalftimeGoalsScored { get; set; }
+    public double HalftimeGoalsConceded { get; set; }
+    public int HalftimeGoalMatches { get; set; }
     public int NoGoalMatches { get; set; }
     public int Offsides { get; set; }
     public int FoulsCommitted { get; set; }
@@ -18,7 +21,7 @@ public class TeamPerformance
     public int BothScoreMatches { get; set; }
     public int MoreThanTwoGoalsMatches { get; set; }
     public int TwoToThreeGoalMatches { get; set; }
-    public int HalftimeGoalMatches { get; set; }
+    public double HalftimeGoals { get; set; }
     public int WinOneSideGoalMatches { get; set; }
     public int Win { get; set; }
     public int Loss { get; set; }

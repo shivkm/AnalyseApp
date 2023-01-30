@@ -51,11 +51,7 @@ public record GameData
 
 // Define a class to hold the data for each match
 
-public class FootballGamePrediction
-{
-    [ColumnName("Score")]
-    public float[] Score;
-}
+
 
 /*
 // Define a class to hold the data from the input file

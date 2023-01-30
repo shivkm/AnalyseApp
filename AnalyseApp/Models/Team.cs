@@ -35,30 +35,9 @@ public record Result
     public double? Away { get; set; }
 }
 
-public record Average
-{
-    public Result ZeroZeroGame { get; set; } = new();
-    public Result OneSideResult { get; set; } = new();
-    public Result ScoredGames { get; set; }= new();
-    public Result TwoScoredGame { get; set; }= new();
-    public Result TwoScoredGameCount { get; set; }= new();
-    public Result HalftimeScoredGames { get; set; } = new();
-    public Result MoreThanTwoScoredAverage { get; set; } = new();
-    public Result BothScoredAverage { get; set; } = new();
-    public HeadToHead HeadToHeadGame { get; set; } = new();
-}
+public record Average(double Value, bool Qualified, string Msg = default);
 
-public record HeadToHead
-{
-    public int TotalGames { get; set; }
-    public double BothTeamScore { get; set; }
-    public double MoreThanTwoScore { get; set; }
-    public double TwoToThreeScore { get; set; }
-    public double NoScore { get; set; }
-    public double HalfTimeScore { get; set; }
-    public double HomeSideResult { get; set; }
-    public double AwaySideResult { get; set; }
-}
+
 
 public record Game
 {
