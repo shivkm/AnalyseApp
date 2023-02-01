@@ -19,7 +19,6 @@ internal static class GameDataExtensions
 
         return filteredMatches;
     }
-
     
     internal static int GetWinGamesCountBy(this IEnumerable<GameData> currentMatches, string team) =>
         currentMatches.Count(i => i.FTR == "H" && i.HomeTeam == team || i.FTR == "A" && i.AwayTeam == team);
@@ -60,7 +59,7 @@ internal static class GameDataExtensions
         currentMatches.Count(i => i.FTHG + i.FTAG > 2);
     
     internal static int GetTwoToThreeGoalScoredGamesCount(this IEnumerable<GameData> currentMatches) =>
-        currentMatches.Count(i => i.FTHG + i.FTAG == 2 && i.FTHG + i.FTAG == 3);
+        currentMatches.Count(i => i.FTHG + i.FTAG == 2 || i.FTHG + i.FTAG == 3);
     
     internal static int GetHalftimeGoalScoredSumBy(this IList<GameData> currentMatches, string team) =>
         currentMatches.Where(i => i.HomeTeam == team).Sum(i => i.HTHG ?? 0) +
@@ -74,21 +73,6 @@ internal static class GameDataExtensions
         currentMatches.Count(i => i.HTHG > 0 || i.HTAG > 0);
 
     
-    internal static IList<GameData> GetLeagueSeasonBy(
-        this IEnumerable<GameData> gameData, int startYear, int endYear, string league)
-    {
-        var startDate = new DateTime(startYear, 08, 01);
-        var endDate = new DateTime(endYear, 06, 30);
-
-        var filteredMatches = gameData.Where(i => 
-        {
-            var matchDate = DateTime.Parse(i.Date);
-            return matchDate >= startDate && matchDate <= endDate && i.Div == league;
-        }).OrderByDescending(i => i.Date).ToList();
-
-        return filteredMatches;
-    }
-
     // Checking if the given home team and away team are part of the current league.
     internal static bool TeamsAreInLeague(this IList<GameData> gameData, string homeTeam, string awayTeam)
     {

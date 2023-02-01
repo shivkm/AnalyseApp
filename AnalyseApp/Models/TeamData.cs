@@ -2,27 +2,27 @@
 
 public record TeamData
 {
-    public Average? GoalsScored { get; set; }
-    public Average? GoalsConceded { get; set; }
-    public Average? HalftimeGoalsScored { get; set; }
-    public Average? HalftimeGoalsConceded { get; set; }
+    public string? Title { get; set; }
+    public DateTime Date { get; set; }
+    public DateTime Time { get; set; }
+    public string? ProbabilityKey { get; set; }
+    public double? Probability { get; set; }
+    public double? AverageAndProbability { get; set; }
     public Average? NoGoalGames { get; set; }
-    public int MatchesPlayed { get; set; }
     public Average? BothScoreGames { get; set; }
     public Average? MoreThanTwoGoalsGames { get; set; }
     public Average? TwoToThreeGoalGames { get; set; }
     public Average? HalftimeGoalGames { get; set; }
     public Average? OneSideGoalGames { get; set; }
-    public Average? WinOneSideGoalGames { get; set; }
     public Average? Win { get; set; }
-    public Average? Loss { get; set; }
-    public Average? Draw { get; set; }
 }
 
 public record NextGame
 {
-    public Team Home { get; set; } = default!;
-    public Team Away { get; set; } = default!;
+    public Team HomeHome { get; set; } = default!;
+    public Team HomeAway { get; set; } = default!;
+    public Team AwayHome { get; set; } = default!;
+    public Team AwayAway { get; set; } = default!;
     public HeadToHead HeadToHead { get; set; } = default!;
 }
 

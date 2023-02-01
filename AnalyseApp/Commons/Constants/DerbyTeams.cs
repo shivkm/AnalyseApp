@@ -21,14 +21,34 @@ public static class DerbyTeams
             "Crystal Palace:Brighton",
             "Brighton:Crystal Palace",
             "Dortmund:Schalke 04",
+            "Schalke 04:Dortmund",
+            "Hertha:Union Berlin",
+            "Union Berlin:Hertha",
             "Milan:Inter",
+            "Inter:Milan",
             "Juventus:Turin",
+            "Turin:Juventus",
             "Lazio:Roma",
+            "Roma:Lazio",
             "Napoli:Roma",
+            "Roma:Napoli",
             "Nice:Monaco",
-            "Nice:Monaco",
-            "Lille:Lens"
+            "Monaco:Nice",
+            "Lille:Lens",
+            "Lens:Lille"
             
+        };
+
+        return result;
+    }
+    internal static List<string> PopularTeams()
+    {
+        var result = new List<string>
+        {
+            "Man City",
+            "Liverpool",
+            "Union Berlin",
+            "Paris SG",
         };
 
         return result;

@@ -39,19 +39,16 @@ public record Average(double Value, bool Qualified, string Msg = default);
 
 
 
-public record Game
+public record GameProbability
 {
     public string? Title { get; set; }
-    public GameAverage SelfAnalysis { get; set; }
-    public PoissonProbability PoissonProbability { get; set; }
-}
-
-public record GameAverage
-{
-    public Average? CurrentSeason { get; set; }
-    public Average? LastSixMatches { get; set; }
-    public Average? HistoricalMatches { get; set; }
-    public PoissonProbability PoissonProbability { get; set; }
+    public DateTime Date { get; set; }
+    public DateTime Time { get; set; }
+    public string? ProbabilityKey { get; set; }
+    public double? Probability { get; set; }
+    public bool Qualified { get; set; }
+    public double? NoGoalAverage { get; set; }
+    public double? HalftimeGoalAverage { get; set; }
 }
 
 public class MatchData
