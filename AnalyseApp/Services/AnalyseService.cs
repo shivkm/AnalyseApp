@@ -4,32 +4,34 @@ using AnalyseApp.Extensions;
 using AnalyseApp.Models;
 using CsvHelper;
 using CsvHelper.Configuration;
+using MathNet.Numerics.Distributions;
 
 namespace AnalyseApp.Services;
 
 public class AnalyseService
 {
     private const string FileDir = "C:\\shivm\\AnalyseApp\\data";
-    private List<GameData> _historicalGames = new();
-    private List<GameData> _upComingGames = new();
-    
+    private List<HistoricalGame> _historicalGames = new();
+    private List<HistoricalGame> _upComingGames = new();
+
     // Rajev
     //private const double LastSixGamesWeight = 0.40;
     //private const double HistoricalGamesWeight = 0.20;
     //private const double HeadToHeadGamesWeight = 0.25;
     //private const double PoisonProbabilityWeight = 0.15;
     // WK/SM
-    //private const double LastSixGamesWeight = 0.40;
-    //private const double HistoricalGamesWeight = 0.10;
-    //private const double HeadToHeadGamesWeight = 0.25;
-    //private const double PoisonProbabilityWeight = 0.25;
-    // Shivm
     private const double LastSixGamesWeight = 0.30;
     private const double HistoricalGamesWeight = 0.10;
     private const double HeadToHeadGamesWeight = 0.30;
     private const double PoisonProbabilityWeight = 0.30;
+    // Shivm
+    //private const double LastSixGamesWeight = 0.30;
+    //private const double HistoricalGamesWeight = 0.10;
+    //private const double HeadToHeadGamesWeight = 0.30;
+    //private const double PoisonProbabilityWeight = 0.30;
     private List<GameProbability> Probabilities = new();
 
+    
     internal AnalyseService ReadHistoricalGames()
     {
         var files = Directory.GetFiles($"{FileDir}\\raw_csv");
@@ -43,7 +45,7 @@ public class AnalyseService
             using var reader = new StreamReader(file);
             using var csv = new CsvReader(reader, config);
 
-            var currentFileGames = csv.GetRecords<GameData>();
+            var currentFileGames = csv.GetRecords<HistoricalGame>();
             _historicalGames.AddRange(currentFileGames);
         }
 
@@ -51,7 +53,7 @@ public class AnalyseService
             .OrderByDescending(i => DateTime.Parse(i.Date)).ToList();
         return this;
     }
-    
+
     internal AnalyseService CreateMlFile(string league)
     {
         var records = _historicalGames
@@ -94,130 +96,344 @@ public class AnalyseService
             using var reader = new StreamReader(file);
             using var csv = new CsvReader(reader, config);
 
-            var currentFileGames = csv.GetRecords<GameData>();
+            var currentFileGames = csv.GetRecords<HistoricalGame>();
 
             _upComingGames.AddRange(currentFileGames);
         }
 
         _upComingGames = _upComingGames.OrderByDescending(i => i.Date).ToList();
-        
+
         return this;
     }
 
     internal void AnalyseGames()
     {
         var poissonService = new PoissonService(_historicalGames);
-        
+
         foreach (var comingGame in _upComingGames)
         {
-            if (DerbyTeams.PopularTeams().Contains(comingGame.HomeTeam) || DerbyTeams.PopularTeams().Contains(comingGame.AwayTeam))
-                continue;
-
             var gameProbability = new GameProbability
             {
                 Title = $"{comingGame.HomeTeam}:{comingGame.AwayTeam}",
                 Date = DateTime.Parse(comingGame.Date).Date,
-                Time = DateTime.Parse(comingGame.Date)
+                Time = DateTime.Parse(comingGame.Date),
+                League = comingGame.Div
             };
-            var lastSixGames = LastSixGames(comingGame.HomeTeam, comingGame.AwayTeam);
-            var lastSixSeason = LastSixSeason(comingGame.HomeTeam, comingGame.AwayTeam);
-            var probability = poissonService.Execute(comingGame.HomeTeam, comingGame.AwayTeam, comingGame.Div);
+            if (DerbyTeams.PopularTeams().Contains(gameProbability.Title))
+                continue;
 
-            if (comingGame.HomeTeam == "Dortmund" || comingGame.HomeTeam == "Cremonese" || comingGame.HomeTeam == "Nice")
+            var probability = poissonService
+                .Execute(comingGame.HomeTeam, comingGame.AwayTeam, comingGame.Div)
+                .OrderByDescending(i => i.Probability)
+                .Take(1)
+                .ToList();
+            
+            if (probability.Any(i => i.Probability == 0.00))
+                return;
+            
+            if (comingGame.HomeTeam == "Rotherham" || comingGame.HomeTeam == "Cambridge")
             {
                 
             }
-            NoGoalAverage(
-                probability.FirstOrDefault(i => i.Key == "ZeroZeroGoals")?.Probability ?? 0,
-                lastSixGames, lastSixSeason,
-                gameProbability);
+            var headToHeads = _historicalGames.GetHeadToHeadGamesBy(comingGame.HomeTeam, comingGame.AwayTeam);
             
-            HalfTimeScoredGames(
-                lastSixGames, lastSixSeason,
-                gameProbability);
-
-            BothScoreGames(
-                probability.FirstOrDefault(i => i.Key == "BothTeamScore")?.Probability ?? 0,
-                lastSixGames, lastSixSeason,
-                gameProbability);
+            // Last eight games average
+            var homeTeamCurrentData = _historicalGames.GetCurrentSeasonGamesBy(comingGame.HomeTeam);
+            var awayTeamCurrentData = _historicalGames.GetCurrentSeasonGamesBy(comingGame.AwayTeam);
             
-            MoreThanTwoGoalsGames(
-                probability.FirstOrDefault(i => i.Key == "MoreThanTwoGoals")?.Probability ?? 0,
-                lastSixGames, lastSixSeason,
-                gameProbability);
+            // Current season and Poison zero zero games filter 
+            if (IsZeroZero(homeTeamCurrentData, awayTeamCurrentData, headToHeads, probability))
+            {
+                Console.WriteLine($"{comingGame.HomeTeam}:{comingGame.AwayTeam} failed in 0:0 filter");
+                continue;
+            }
             
-            TwoToThreeGoalsGames(
-                probability.FirstOrDefault(i => i.Key == "TwoToThree")?.Probability ?? 0,
-                lastSixGames, lastSixSeason,
-                gameProbability);
+            // Both score games
+            var bothScoreGames = BothTeamScore(
+                homeTeamCurrentData,
+                awayTeamCurrentData,
+                headToHeads,
+                probability);
             
-            OneSideGoalsGames(
-                probability.FirstOrDefault(i => i.Key == "OneSideGoal")?.Probability ?? 0,
-                lastSixGames, lastSixSeason,
-                gameProbability);
+            if (bothScoreGames.Qualified)
+            {
+                gameProbability.Msg = bothScoreGames.indicator;
+                gameProbability.Qualified = bothScoreGames.Qualified;
+                gameProbability.Probability = bothScoreGames.probability;
+                gameProbability.ProbabilityKey = nameof(BothTeamScore);
+            }
+           
+            // more than two score games
+            var moreThanTwoGoals = MoreThanTwoScores(
+                homeTeamCurrentData,
+                awayTeamCurrentData,
+                headToHeads,
+                probability);
             
-            WinGames(
-                probability.FirstOrDefault(i => i.Key == "HomeWin")?.Probability ?? 0,
-                probability.FirstOrDefault(i => i.Key == "AwayWin")?.Probability ?? 0,
-                lastSixGames, lastSixSeason,
-                gameProbability
-                ); 
+            if (moreThanTwoGoals.Qualified)
+            {
+                if (bothScoreGames.probability <= moreThanTwoGoals.probability)
+                {
+                    gameProbability.Msg = moreThanTwoGoals.Indicator;
+                    gameProbability.Qualified = moreThanTwoGoals.Qualified;
+                    gameProbability.Probability = moreThanTwoGoals.probability;
+                    gameProbability.ProbabilityKey = nameof(MoreThanTwoScores);
+                }
+            }
             
-            if (gameProbability is { Qualified: true, Probability: > 0.62 })
-            //if (gameProbability is { Qualified: true })
+            // two to three score games
+            var twoToThreeGoals = TwoToThreeGoals(
+                homeTeamCurrentData,
+                awayTeamCurrentData,
+                headToHeads,
+                probability);
+            
+            if (!bothScoreGames.Qualified && !moreThanTwoGoals.Qualified && twoToThreeGoals.Qualified)
+            {
+                if (bothScoreGames.probability <= twoToThreeGoals.probability ||
+                    moreThanTwoGoals.probability <= twoToThreeGoals.probability)
+                {
+                    gameProbability.Msg = twoToThreeGoals.Indicator;
+                    gameProbability.Qualified = twoToThreeGoals.Qualified;
+                    gameProbability.Probability = twoToThreeGoals.probability;
+                    gameProbability.ProbabilityKey = nameof(TwoToThreeGoals);
+                }
+            }
+           
+            if (gameProbability is { Qualified: true })
                 Probabilities.Add(gameProbability);
         }
 
         FilterBestGames();
     }
 
+    private static (bool Qualified,double probability, string indicator) BothTeamScore(
+        TeamData homeTeamCurrentData, 
+        TeamData awayTeamCurrentData,
+       // TeamData homeTeamData,
+        // TeamData awayTeamData,
+        HeadToHead headToHeads,
+        IEnumerable<PoissonProbability> probabilities)
+    {
+        var oneGoalAverage = probabilities
+            .FirstOrDefault(s => s.Key == "BothTeamScore")?.Probability ?? 0;
+
+        if (headToHeads.GamesPlayed < 2 ||  oneGoalAverage < 0.60) 
+            return (false, oneGoalAverage, "Unqualified");
+        
+        // If poison and last eight games pass then head to head can use range for qualify
+        if ((oneGoalAverage > 0.65 && headToHeads.BothTeamScored > 0.60 || 
+             oneGoalAverage > 0.68 && headToHeads.BothTeamScored > 0.40)
+            && homeTeamCurrentData.OneGoalQualified && awayTeamCurrentData.OneGoalQualified)
+            return (true, oneGoalAverage, "Qualified");
+
+        return homeTeamCurrentData switch
+        {
+            { OneGoalQualified: false, ConcededQualified: true } when awayTeamCurrentData is
+            {
+                OneGoalQualified: true, ConcededQualified: true
+            } => (true, oneGoalAverage, "Dangers Home failed"),
+            { OneGoalQualified: true, ConcededQualified: true } when awayTeamCurrentData is
+            {
+                OneGoalQualified: false, ConcededQualified: true
+            } => (true, oneGoalAverage, "Dangers Away failed"),
+            _ => (false, oneGoalAverage, "Failed")
+        };
+    }
+    
+    private static (bool Qualified,double probability, string Indicator) MoreThanTwoScores(
+        TeamData homeTeamCurrentData, 
+        TeamData awayTeamCurrentData,
+        HeadToHead headToHeads,
+        IEnumerable<PoissonProbability> probabilities)
+    {
+        var moreThanTwoScores = probabilities
+            .FirstOrDefault(s => s.Key == "MoreThanTwoGoals")?.Probability ?? 0;
+
+        if (headToHeads.MoreThanTwoScored < 0.60 || headToHeads.GamesPlayed < 2 ||  moreThanTwoScores < 0.60) 
+            return (false, moreThanTwoScores, "Failed");
+
+        if (homeTeamCurrentData.OneGoalQualified && awayTeamCurrentData.OneGoalQualified && 
+            homeTeamCurrentData.GoalAverage > 0.70 && awayTeamCurrentData.GoalAverage > 0.70)
+            return (true, moreThanTwoScores, "Qualified");
+
+        return homeTeamCurrentData switch
+        {
+            { OneGoalQualified: false, ConcededQualified: true } when awayTeamCurrentData is
+            {
+                OneGoalQualified: true, ConcededQualified: true
+            } => (true, moreThanTwoScores, "Dangers Home failed"),
+            { OneGoalQualified: true, ConcededQualified: true } when awayTeamCurrentData is
+            {
+                OneGoalQualified: false, ConcededQualified: true
+            } => (true, moreThanTwoScores, "Dangers Away failed"),
+            _ => (false, moreThanTwoScores, "Failed")
+        };
+    }
+    
+    private static (bool Qualified,double probability, string Indicator) TwoToThreeGoals(
+        TeamData homeTeamCurrentData, 
+        TeamData awayTeamCurrentData,
+        HeadToHead headToHeads,
+        IEnumerable<PoissonProbability> probabilities)
+    {
+        var twoToThreeGoals = probabilities
+            .FirstOrDefault(s => s.Key == "TwoToThree")?.Probability ?? 0;
+
+        if (headToHeads.TwoToThreeScored < 0.60 || headToHeads.GamesPlayed < 2 ||  twoToThreeGoals < 0.60) 
+            return (false, twoToThreeGoals, "Failed");
+
+        if ((homeTeamCurrentData.OneGoalQualified || awayTeamCurrentData.OneGoalQualified) && 
+            homeTeamCurrentData.GoalAverage is < 0.70 and > 0.55 && awayTeamCurrentData.GoalAverage is < 0.70 and > 0.55)
+            return (true, twoToThreeGoals, "Qualified");
+
+        return (false, twoToThreeGoals, "Failed");
+    }
+
+    /// <summary>
+    /// The method check the 0:0 games.
+    /// The method retrieve first the zero zero probability of poison.
+    /// After that it will check each team Data individually the 0:0 games average are bigger than 20% if so it will
+    /// return true otherwise false
+    /// </summary>
+    /// <param name="homeTeamCurrentData"></param>
+    /// <param name="homeTeamData"></param>
+    /// <param name="awayTeamCurrentData"></param>
+    /// <param name="awayTeamData"></param>
+    /// <param name="headToHeads"></param>
+    /// <param name="probabilities"></param>
+    /// <returns></returns>
+    private static bool IsZeroZero(
+        TeamData homeTeamCurrentData, 
+        //TeamData homeTeamData, 
+        TeamData awayTeamCurrentData,
+        //TeamData awayTeamData, 
+        HeadToHead headToHeads,
+        IEnumerable<PoissonProbability> probabilities)
+    {
+        var zeroZero = probabilities.FirstOrDefault(s => s.Key == "ZeroZeroGoals")?.Probability ?? 0;
+        
+        return homeTeamCurrentData is { LastAwayGameZeroZero: false, LastHomeGameZeroZero: false } && 
+               awayTeamCurrentData is { LastAwayGameZeroZero: false, LastHomeGameZeroZero: false } &&
+               zeroZero > 0.20 && headToHeads.BothTeamScored > 0.25;
+    }
+
     private void FilterBestGames()
     {
         var orderedProbabilities = Probabilities
+            .Where(i => i.ProbabilityKey != "Over15Goals")
             .OrderByDescending(ii => ii.Probability)
             .ToList();
 
-        for (var i = 0; i < orderedProbabilities.Count; i++)
+        var firstTicket = new List<GameProbability>();
+        var secondTicket = new List<GameProbability>();
+        var thirdTicket = new List<GameProbability>();
+        var dangersTicket = new List<GameProbability>();
+        var otherGames = new List<GameProbability>();
+
+        var superSicherTicket = Probabilities
+            .Where(i => i.ProbabilityKey == "Over15Goals")
+            .OrderByDescending(i => i.Probability)
+            .ToList();
+
+        var threeTicket = orderedProbabilities
+            .Where(i => i.ProbabilityKey != "Over15Goals")
+           // .Take(8)
+            .OrderByDescending(i => i.Probability)
+            .ToList();
+
+        foreach (var game in threeTicket)
         {
-            var item = orderedProbabilities[i];
-            var message = "";
-            var isDerby = IsDerbyMatch(item.Title);
+            //var firstGameDate = firstTicket.Count == 0 ? game.Date : firstTicket[item-1].Date;
+            //var secondTicketFirstGameDate = secondTicket.Count == 0 ? game.Date : secondTicket[item-1].Date;
+            // (firstGameDate == game.Date || firstGameDate.AddDays(1) == game.Date) && 
+            //(secondTicketFirstGameDate == game.Date || secondTicketFirstGameDate.AddDays(1) == game.Date) &&
 
-            if (isDerby)
+            var game1 = game;
+            if (
+                firstTicket.Count(i => i.ProbabilityKey == game1.ProbabilityKey) < 2 &&
+                firstTicket.Count(i => i.League == game.League) < 2 && firstTicket.Count < 4)
             {
-                message = "DERBY MATCH!!";
+                firstTicket.Add(game);
+                continue;
             }
 
-            message += $"{item.Date:d} {item.Time:g}: {item.Title} {item.ProbabilityKey} = {Math.Round(item.Probability ?? 0, 2)}%";
-
-            switch (i)
+            if (
+                secondTicket.Count(i => i.ProbabilityKey == game.ProbabilityKey) < 3 &&
+                secondTicket.Count(i => i.League == game.League) < 3 && secondTicket.Count < 4 &&
+                !firstTicket.Exists(i => i.Title == game.Title))
             {
-                case 0:
-                    Console.WriteLine("###### Generated Super Poison Ticket #######");
-                    break;
-                case 4:
-                    Console.WriteLine("###############################\n\n");
-                    Console.WriteLine("######## Generated Second Schein ###########");
-                    break;
-                case 8:
-                    Console.WriteLine("###############################\n\n");
-                    if (i != orderedProbabilities.Count)
-                    {
-                        Console.WriteLine("######## Generated Third Schein ###########");
-                    }
-                    break;
-            }
-
-            if (!isDerby)
-            {
-                Console.WriteLine(message);
-            }
-            
-            if (i == orderedProbabilities.Count)
-            {
-                Console.WriteLine("###############################");
+                secondTicket.Add(game);
             }
         }
+
+        foreach (var game in orderedProbabilities)
+        {
+            if (thirdTicket.Count(i => i.ProbabilityKey == game.ProbabilityKey) < 3 &&
+                thirdTicket.Count(i => i.League == game.League) < 2 && thirdTicket.Count < 4 &&
+                !firstTicket.Exists(i => i.Title == game.Title) &&
+                !secondTicket.Exists(i => i.Title == game.Title))
+            {
+                thirdTicket.Add(game);
+                continue;
+            }
+            
+            if (dangersTicket.Count(i => i.ProbabilityKey == game.ProbabilityKey) < 2 &&
+                dangersTicket.Count(i => i.League == game.League) < 2 && dangersTicket.Count < 5 &&
+                firstTicket.All(i => i.Title != game.Title) &&
+                secondTicket.All(i => i.Title != game.Title) &&
+                thirdTicket.All(i => i.Title != game.Title))
+                dangersTicket.Add(game);
+
+
+            if (firstTicket.All(i => i.Title != game.Title) &&
+                secondTicket.All(i => i.Title != game.Title) &&
+                thirdTicket.All(i => i.Title != game.Title) &&
+                dangersTicket.All(i => i.Title != game.Title))
+                otherGames.Add(game);
+        }
+
+        LogTicket(firstTicket);
+        LogTicket(secondTicket, 1);
+        LogTicket(thirdTicket, 2);
+        LogTicket(dangersTicket, 3);
+        LogTicket(otherGames, 4);
+    }
+
+    private void LogTicket(List<GameProbability> topMatches, int ticketNr = 0)
+    {
+        var name = GetTicketName(ticketNr);
+        Console.WriteLine($"###### Generated {name} Ticket #######");
+
+        topMatches.ForEach(item =>
+        {
+            var isDerby = IsDerbyMatch(item.Title!);
+            var message = "";
+            if (isDerby)
+            {
+                message = "DERBY MATCH!! ";
+            }
+
+            if (item.PossibleMoreThanTwoGoals)
+                message += "DANGERS!! ";
+
+            message += $"{item.Date:d}: {item.Msg} {item.Title} {item.ProbabilityKey} = {Math.Round(item.Probability, 2)}%";
+
+            Console.WriteLine(message);
+        });
+        Console.WriteLine("###############################\n\n");
+    }
+
+    private static string GetTicketName(int ticketNr)
+    {
+        return ticketNr switch
+        {
+            0 => "Super",
+            1 => "Best",
+            2 => "Possible",
+            3 => "Dangers",
+            _ => "Anything is possible"
+        };
     }
 
     private static bool IsDerbyMatch(string title)
@@ -226,113 +442,197 @@ public class AnalyseService
     }
 
 
-    private  NextGame LastSixGames(string homeTeam, string awayTeam)
+    private NextGame LastEightGames(string homeTeam, string awayTeam)
     {
         var currentMatches = _historicalGames
             .Where(i => i.HomeTeam == awayTeam || i.AwayTeam == homeTeam ||
-                        i.HomeTeam == homeTeam || i.AwayTeam == awayTeam)
+                                   i.HomeTeam == homeTeam || i.AwayTeam == awayTeam)
             .GetGameDataBy(2022, 2023);
-        
-        var lastSixHomeHomeMatches = currentMatches
-            .Where(i => i.HomeTeam == homeTeam)
-            .Take(4)
+
+        var lastTenHomeGames = currentMatches
+            .Where(i => i.HomeTeam == homeTeam || i.AwayTeam == homeTeam)
+            .Take(10)
             .ToList();
 
-        var lastSixHomeAwayMatches = currentMatches
-            .Where(i => i.AwayTeam == homeTeam)
-            .Take(4)
+        var lastTenAwayGames = currentMatches
+            .Where(i => i.HomeTeam == awayTeam || i.AwayTeam == awayTeam)
+            .Take(10)
             .ToList();
-        
-        var lastSixAwayHomeMatches = currentMatches
-            .Where(i => i.HomeTeam == awayTeam)
-            .Take(6)
-            .ToList();
-        
-        var lastSixAwayAwayMatches = currentMatches
-            .Where(i => i.AwayTeam == awayTeam)
-            .Take(6)
-            .ToList();
-        
-        var homeHomeTeamData = GetTeamDataBy(lastSixHomeHomeMatches, homeTeam);
-        var homeAwayTeamData = GetTeamDataBy(lastSixHomeAwayMatches, homeTeam);
-        var awayHomeTeamData = GetTeamDataBy(lastSixAwayHomeMatches, awayTeam);
-        var awayAwayTeamData = GetTeamDataBy(lastSixAwayAwayMatches, awayTeam);
+
+        if (!lastTenHomeGames.Any() || !lastTenAwayGames.Any())
+            return new NextGame();
+
+        var lastFourHomeHomeMatches = lastTenHomeGames
+            .Where(i => i.HomeTeam == homeTeam).Take(4).ToList();
+
+        var lastFourHomeAwayMatches = lastTenHomeGames
+            .Where(i => i.AwayTeam == homeTeam).Take(4).ToList();
+
+        var lastFourAwayHomeMatches = lastTenAwayGames
+            .Where(i => i.HomeTeam == awayTeam).Take(4).ToList();
+
+        var lastFourAwayAwayMatches = lastTenAwayGames
+            .Where(i => i.AwayTeam == awayTeam).Take(4).ToList();
+
+        var homeAway = GetTeamDataBy(lastFourHomeAwayMatches, homeTeam);
+        var home = GetTeamDataBy(lastFourHomeHomeMatches, homeTeam);
+
+        var awayHome = GetTeamDataBy(lastFourAwayHomeMatches, awayTeam);
+        var away = GetTeamDataBy(lastFourAwayAwayMatches, awayTeam);
+
+        var homeScored = GetGoalSumBy(lastTenHomeGames, homeTeam);
+        var homeConceded = GetGoalSumBy(lastTenHomeGames, homeTeam, true);
+        var homeAllGameCount = lastTenHomeGames.Count;
+
+        var awayScored = GetGoalSumBy(lastTenAwayGames, awayTeam);
+        var awayConceded = GetGoalSumBy(lastTenAwayGames, awayTeam, true);
+        var awayAllGameCount = lastTenAwayGames.Count;
 
         var result = new NextGame
         {
-            HomeHome = homeHomeTeamData,
-            HomeAway = awayHomeTeamData,
-            AwayAway = awayAwayTeamData,
-            AwayHome = homeAwayTeamData
+            Home = home with
+            {
+                // Last ten games win accuracy
+                LastTenGamesWinAccuracy = lastTenHomeGames.GetWinGamesCountBy(homeTeam).Divide(lastTenHomeGames.Count),
+
+                // Last ten games over accuracy
+                LastTenGamesOverTwoGoalsAccuracy = lastTenHomeGames
+                    .GetMoreThanTwoGoalScoredGamesCount().Divide(lastTenHomeGames.Count),
+
+                AllowGoals = homeConceded.Divide(homeAllGameCount),
+                ScoredGoal = homeScored.Divide(homeAllGameCount),
+
+                // Last ten games draw accuracy
+                LastTenGamesDrawAccuracy = lastTenHomeGames
+                    .Count(i => i.FTR == "D").Divide(lastTenHomeGames.Count),
+
+                // Last five games in row over
+                LastFiveGamesOver = lastTenHomeGames.Take(5).All(i => i.FTAG + i.FTHG > 2),
+                LastTwoGamesWithZeroGoal = lastTenHomeGames.Take(1).Any(i => i.FTAG + i.FTHG <= 1),
+                // Last five games in row both score
+                LastSixGamesBothScored = lastTenHomeGames.Take(6).All(i => i is { FTAG: > 0, FTHG: > 0 }),
+                LastFiveGamesLess = lastTenHomeGames.Take(5).All(i => i.FTHG + i.FTAG < 3),
+                LastTwoGamesLessThanTwoGoals = lastTenHomeGames.Take(2).Any(i =>
+                    (i.FTAG is 1 or 2 && i.FTHG == 0) || (i.FTHG is 1 or 2 && i.FTAG == 0)),
+                BothScoreGames = home.BothScoreGames * 0.5 + homeAway.BothScoreGames * 0.5,
+                MoreThanTwoGoalsGames = home.MoreThanTwoGoalsGames * 0.5 + homeAway.MoreThanTwoGoalsGames * 0.5,
+                HalftimeGoalGames = home.HalftimeGoalGames * 0.5 + homeAway.HalftimeGoalGames * 0.5,
+                TwoToThreeGoalGames = home.TwoToThreeGoalGames * 0.5 + homeAway.TwoToThreeGoalGames * 0.5,
+                LessThanThreeGoalsAccuracy = home.LessThanThreeGoalsAccuracy * 0.5 + homeAway.LessThanThreeGoalsAccuracy * 0.5
+            },
+            Away = away with
+            {
+                // Last ten games win accuracy
+                LastTenGamesWinAccuracy = lastTenAwayGames.GetWinGamesCountBy(awayTeam).Divide(lastTenAwayGames.Count),
+
+                // Last ten games over accuracy
+                LastTenGamesOverTwoGoalsAccuracy = lastTenAwayGames
+                .GetMoreThanTwoGoalScoredGamesCount().Divide(lastTenAwayGames.Count),
+
+                AllowGoals = awayConceded.Divide(awayAllGameCount),
+                ScoredGoal = awayScored.Divide(awayAllGameCount),
+
+                // Last ten games draw accuracy
+                LastTenGamesDrawAccuracy = lastTenAwayGames
+                .Count(i => i.FTR == "D").Divide(lastTenAwayGames.Count),
+
+                // Last five games in row over
+                LastFiveGamesOver = lastTenAwayGames.Take(5).All(i => i.FTAG + i.FTHG > 2),
+
+                // Last five games in row both score
+                LastSixGamesBothScored = lastTenAwayGames.Take(6).All(i => i is { FTAG: > 0, FTHG: > 0 }),
+                LastFiveGamesLess = lastTenAwayGames.Take(5).All(i => i.FTHG + i.FTAG < 3),
+                LastTwoGamesWithZeroGoal = lastFourAwayHomeMatches.Take(3).Any(i => i.FTHG < 1) &&
+                                                    lastFourAwayAwayMatches.Take(3).Any(i => i.FTAG < 1),
+                LastTwoGamesLessThanTwoGoals = lastTenAwayGames.Take(6).Any(i =>
+                    (i.FTAG is 1 or 2 && i.FTHG == 0) || (i.FTHG is 1 or 2 && i.FTAG == 0)),
+                BothScoreGames = away.BothScoreGames * 0.5 + awayHome.BothScoreGames * 0.5,
+                MoreThanTwoGoalsGames = away.MoreThanTwoGoalsGames * 0.5 + awayHome.MoreThanTwoGoalsGames * 0.5,
+                HalftimeGoalGames = away.HalftimeGoalGames * 0.5 + awayHome.HalftimeGoalGames * 0.5,
+                TwoToThreeGoalGames = away.TwoToThreeGoalGames * 0.5 + awayHome.TwoToThreeGoalGames * 0.5,
+                LessThanThreeGoalsAccuracy = away.LessThanThreeGoalsAccuracy * 0.5 + awayHome.LessThanThreeGoalsAccuracy * 0.5
+            }
         };
 
         return result;
-        
+
     }
-    
+
     private NextGame LastSixSeason(string homeTeam, string awayTeam)
     {
-        var lastSixHomeGames = _historicalGames
+        var homeGames = _historicalGames
             .Where(i => i.HomeTeam == homeTeam || i.AwayTeam == homeTeam)
             .ToList();
 
-        var lastSixAwayGames = _historicalGames
+        var awayGames = _historicalGames
             .Where(i => i.HomeTeam == awayTeam || i.AwayTeam == awayTeam)
             .ToList();
-        
+
         var headToHeadGames = _historicalGames
-            .Where(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam || 
+            .Where(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam ||
                                 i.HomeTeam == awayTeam && i.AwayTeam == homeTeam)
             .ToList();
 
-        
-        var homeTeamData = GetTeamDataBy(lastSixHomeGames, homeTeam);
-        var awayTeamData = GetTeamDataBy(lastSixAwayGames, awayTeam);
+
+        var homeScored = GetGoalSumBy(homeGames, homeTeam);
+        var homeConceded = GetGoalSumBy(homeGames, homeTeam, true);
+        var homeAllGameCount = homeGames.Count;
+
+        var awayScored = GetGoalSumBy(awayGames, awayTeam);
+        var awayConceded = GetGoalSumBy(awayGames, awayTeam, true);
+        var awayAllGameCount = awayGames.Count;
+
+        var homeTeamData = GetTeamDataBy(homeGames, homeTeam);
+        var awayTeamData = GetTeamDataBy(awayGames, awayTeam);
         var headToHead = GetHeadToHeadDataBy(headToHeadGames);
-        
+
         var result = new NextGame
         {
-            HomeHome = homeTeamData,
-            AwayAway = awayTeamData,
+            Home = homeTeamData with
+            {
+                ScoredGoal = homeScored.Divide(homeAllGameCount),
+                AllowGoals = homeConceded.Divide(homeAllGameCount)
+            },
+            Away = awayTeamData with
+            {
+                ScoredGoal = awayScored.Divide(awayAllGameCount),
+                AllowGoals = awayConceded.Divide(awayAllGameCount)
+            },
             HeadToHead = headToHead
-            
+
         };
 
         return result;
     }
-    
-    private static Team GetTeamDataBy(IList<GameData> games, string team)
+
+    private static Team GetTeamDataBy(IList<HistoricalGame> games, string team)
     {
         var gamesPlayed = games.Count;
-        
         var teamData = new Team
         {
             GamesPlayed = games.Count,
-            Win = games.GetWinGamesCountBy(team).Divide(gamesPlayed),
-            Loss = games.GetLossGamesCountBy(team).Divide(gamesPlayed),
-            Draw = games.Count(i => i.FTR == "D").Divide(gamesPlayed),
-            NoGoalGames = games.GetNoGoalGameCount().Divide(gamesPlayed),
-            GoalsScored = games.GetGoalScoredSumBy(team).Divide(gamesPlayed),
-            GoalsConceded = games.GetGoalConcededSumBy(team).Divide(gamesPlayed),
-            OneSideGoalGames = games.GetOneSideGoalGamesCount().Divide(gamesPlayed),
             HalftimeGoalsScored = games.GetHalftimeGoalScoredSumBy(team).Divide(gamesPlayed),
             HalftimeGoalsConceded = games.GetHalftimeGoalConcededSumBy(team).Divide(gamesPlayed),
+            // -------------------------------------------------------------------
+            WinAccuracy = games.GetWinGamesCountBy(team).Divide(gamesPlayed),
+            LossAccuracy = games.GetLossGamesCountBy(team).Divide(gamesPlayed),
+            DrawAccuracy = games.Count(i => i.FTR == "D").Divide(gamesPlayed),
+            NoGoalGames = games.GetNoGoalGameCount().Divide(gamesPlayed),
+            OneSideGoalGames = games.GetOneSideGoalGamesCount().Divide(gamesPlayed),
             HalftimeGoalGames = games.GetHalftimeGoalScoredGamesCount().Divide(gamesPlayed),
-            WinOneSideGoalGames = games.Count(i => i.HomeTeam == team && i is { FTHG: > 0, FTAG: 0 } ||
-                                                   i.AwayTeam == team && i is { FTHG: 0, FTAG: > 0 })
-                                        .Divide(gamesPlayed),
             BothScoreGames = games.GetBothScoredGamesCount().Divide(gamesPlayed),
             MoreThanTwoGoalsGames = games.GetMoreThanTwoGoalScoredGamesCount().Divide(gamesPlayed),
-            TwoToThreeGoalGames = games.GetTwoToThreeGoalScoredGamesCount().Divide(gamesPlayed)
+            TwoToThreeGoalGames = games.GetTwoToThreeGoalScoredGamesCount().Divide(gamesPlayed),
+            LessThanThreeGoalsAccuracy = games.Count(i => i.FTAG + i.FTHG < 3).Divide(gamesPlayed)
         };
 
         return teamData;
     }
-    
-    private static HeadToHead GetHeadToHeadDataBy(ICollection<GameData> games)
+
+    private static HeadToHead GetHeadToHeadDataBy(ICollection<HistoricalGame> games)
     {
         var gameCount = games.Count;
-        
+
         var teamData = new HeadToHead
         {
             GamesPlayed = gameCount,
@@ -344,223 +644,137 @@ public class AnalyseService
             MoreThanTwoScored = games.GetMoreThanTwoGoalScoredGamesCount().Divide(gameCount),
             TwoToThreeScored = games.GetTwoToThreeGoalScoredGamesCount().Divide(gameCount),
             HalfTimeScored = games.Count(i => i.HTHG > 0 || i.HTAG > 0).Divide(gameCount),
-            HomeSideScored = games.Count(i => i.FTHG is > 0 and < 3 && i.FTAG == 0).Divide(gameCount),
-            AwaySideScored = games.Count(i => i.FTAG is > 0 and < 3 && i.FTHG == 0).Divide(gameCount)
+            HomeSideScored = games.Count(i => i is { FTHG: > 0, FTAG: 0 }).Divide(gameCount),
+            AwaySideScored = games.Count(i => i is { FTAG: > 0, FTHG: 0 }).Divide(gameCount),
+            LessThanThreeGoal = games.Count(i => i.FTAG + i.FTHG < 3).Divide(gameCount)
         };
 
         return teamData;
     }
-    
-    
+
+    private static int GetGoalSumBy(IReadOnlyCollection<HistoricalGame> games, string team, bool conceded = false) =>
+        games.Where(i => i.HomeTeam == team).Sum(i => conceded ? i.FTAG : i.FTHG) +
+        games.Where(i => i.AwayTeam == team).Sum(i => conceded ? i.FTHG : i.FTAG) ?? 0;
     private static void NoGoalAverage(double probability, NextGame lastSixGames, NextGame allGames, GameProbability gameProbability)
     {
-        var homeAverage = (lastSixGames.HomeHome.NoGoalGames * 0.5 + lastSixGames.HomeAway.NoGoalGames * 0.5) * LastSixGamesWeight  +
-                          allGames.HomeHome.NoGoalGames * HistoricalGamesWeight +
-                          allGames.HeadToHead.NoScored * HeadToHeadGamesWeight +
-                          probability * PoisonProbabilityWeight;
-        
-        var awayAverage = (lastSixGames.AwayHome.NoGoalGames * 0.5 + lastSixGames.AwayAway.NoGoalGames * 0.5) * LastSixGamesWeight  +
-                          allGames.AwayAway.NoGoalGames * HistoricalGamesWeight +
-                          allGames.HeadToHead.NoScored * HeadToHeadGamesWeight +
-                          probability * PoisonProbabilityWeight;
+        var homeAverage = lastSixGames.Home.NoGoalGames * LastSixGamesWeight +
+                              allGames.Home.NoGoalGames * HistoricalGamesWeight +
+                              allGames.HeadToHead.NoScored * HeadToHeadGamesWeight +
+                              probability * PoisonProbabilityWeight;
+
+        var awayAverage = lastSixGames.Away.NoGoalGames * LastSixGamesWeight +
+                              allGames.Away.NoGoalGames * HistoricalGamesWeight +
+                              allGames.HeadToHead.NoScored * HeadToHeadGamesWeight +
+                              probability * PoisonProbabilityWeight;
 
         gameProbability.NoGoalAverage = homeAverage * 0.50 + awayAverage * 0.50;
 
-        if (gameProbability.NoGoalAverage > 0.60)
+        var limit = GetPassingLimitBy(gameProbability.League);
+        if (gameProbability.NoGoalAverage > limit)
         {
             gameProbability.Qualified = true;
-            gameProbability.Probability =  gameProbability.NoGoalAverage;
+            gameProbability.Probability = gameProbability.NoGoalAverage;
             gameProbability.ProbabilityKey = nameof(NoGoalAverage);
         }
     }
-    
-    private static void BothScoreGames(double probability, NextGame lastSixGames, NextGame allGames, GameProbability gameProbability)
-    {
-        var homeAverage = (lastSixGames.HomeHome.BothScoreGames * 0.5 + lastSixGames.HomeAway.BothScoreGames * 0.5) * LastSixGamesWeight  +
-                          allGames.HomeHome.BothScoreGames * HistoricalGamesWeight +
-                          allGames.HeadToHead.BothTeamScored * HeadToHeadGamesWeight +
-                          probability * PoisonProbabilityWeight;
-        
-        var awayAverage = (lastSixGames.AwayHome.BothScoreGames * 0.5 + lastSixGames.AwayAway.BothScoreGames * 0.5) * LastSixGamesWeight  +
-                          allGames.AwayAway.BothScoreGames * HistoricalGamesWeight +
-                          allGames.HeadToHead.BothTeamScored * HeadToHeadGamesWeight +
-                          probability * PoisonProbabilityWeight;
 
-        // Home and Away both are able at least 68% to score a goal and the previous probability is not bigger than current
-        // than this would be qualified.
-        if (homeAverage > 0.68 && awayAverage > 0.68 && gameProbability.Probability is null ||
-            gameProbability.Probability < probability || gameProbability.ProbabilityKey == nameof(HalfTimeScoredGames))
-        {
-            gameProbability.Qualified = true;
-            gameProbability.Probability = homeAverage * 0.50 + awayAverage * 0.50;
-            gameProbability.ProbabilityKey = nameof(BothScoreGames);
-        }
 
-        if (gameProbability.Probability is null)
-        {
-            gameProbability.Probability = (homeAverage * 0.50 + awayAverage * 0.50);
-            gameProbability.ProbabilityKey = nameof(BothScoreGames);
-        }
-    }
-    
-    private static void MoreThanTwoGoalsGames(double probability, NextGame lastSixGames, NextGame allGames, GameProbability gameProbability)
-    {
-        var homeAverage = (lastSixGames.HomeHome.MoreThanTwoGoalsGames * 0.5 + lastSixGames.HomeAway.MoreThanTwoGoalsGames * 0.5) * LastSixGamesWeight  +
-                          allGames.HomeHome.MoreThanTwoGoalsGames * HistoricalGamesWeight +
-                          allGames.HeadToHead.MoreThanTwoScored * HeadToHeadGamesWeight +
-                          probability * PoisonProbabilityWeight;
-        
-        var awayAverage = (lastSixGames.AwayHome.MoreThanTwoGoalsGames * 0.5 + lastSixGames.AwayAway.MoreThanTwoGoalsGames * 0.5) * LastSixGamesWeight  +
-                          allGames.AwayAway.MoreThanTwoGoalsGames * HistoricalGamesWeight +
-                          allGames.HeadToHead.MoreThanTwoScored * HeadToHeadGamesWeight +
-                          probability * PoisonProbabilityWeight;
-
-        var finalAverage = homeAverage * 0.50 + awayAverage * 0.50;
-        // Home and Away both are able at least 68% to score a goal and the previous probability is not bigger than current
-        // than this would be qualified.
-        if (homeAverage > 0.68 && awayAverage > 0.68 && gameProbability.Probability < finalAverage || gameProbability.ProbabilityKey == nameof(HalfTimeScoredGames))
-        {
-            gameProbability.Qualified = true;
-            gameProbability.Probability = finalAverage;
-            gameProbability.ProbabilityKey = nameof(MoreThanTwoGoalsGames);
-        }
-    }
-    
-    private static void TwoToThreeGoalsGames(double probability, NextGame lastSixGames, NextGame allGames, GameProbability gameProbability)
-    {
-        
-        var homeAverage = (lastSixGames.HomeHome.TwoToThreeGoalGames * 0.5 + lastSixGames.HomeAway.TwoToThreeGoalGames * 0.5) * LastSixGamesWeight  +
-                          allGames.HomeHome.TwoToThreeGoalGames * HistoricalGamesWeight +
-                          allGames.HeadToHead.TwoToThreeScored * HeadToHeadGamesWeight +
-                          probability * PoisonProbabilityWeight;
-        
-        var awayAverage = (lastSixGames.AwayHome.TwoToThreeGoalGames * 0.5 + lastSixGames.AwayAway.TwoToThreeGoalGames * 0.5) * LastSixGamesWeight  +
-                          allGames.AwayAway.TwoToThreeGoalGames * HistoricalGamesWeight +
-                          allGames.HeadToHead.TwoToThreeScored * HeadToHeadGamesWeight +
-                          probability * PoisonProbabilityWeight;
-
-        var finalAverage = homeAverage * 0.50 + awayAverage * 0.50;
-        // Home and Away both are able at least 68% to score more than two goals and the previous probability is not bigger than current
-        // than this would be qualified.
-        if (homeAverage > 0.68 && awayAverage > 0.68 && gameProbability.Probability < finalAverage || gameProbability.ProbabilityKey == nameof(HalfTimeScoredGames))
-        {
-            gameProbability.Qualified = true;
-            gameProbability.Probability = finalAverage;
-            gameProbability.ProbabilityKey = nameof(TwoToThreeGoalsGames);
-        }
-    }
-    
     private static void OneSideGoalsGames(double probability, NextGame lastSixGames, NextGame allGames, GameProbability gameProbability)
     {
-        var homeAverage = (lastSixGames.HomeHome.OneSideGoalGames * 0.5 + lastSixGames.HomeAway.OneSideGoalGames * 0.5)  * LastSixGamesWeight  +
-                          allGames.HomeHome.OneSideGoalGames * HistoricalGamesWeight +
+        var homeAverage = lastSixGames.Home.OneSideGoalGames * LastSixGamesWeight +
+                          allGames.Home.OneSideGoalGames * HistoricalGamesWeight +
                           allGames.HeadToHead.HomeSideScored * HeadToHeadGamesWeight +
                           probability * PoisonProbabilityWeight;
-        
-        var awayAverage = (lastSixGames.AwayHome.OneSideGoalGames * 0.5 + lastSixGames.AwayHome.OneSideGoalGames * 0.5)  * LastSixGamesWeight  +
-                          allGames.AwayAway.OneSideGoalGames * HistoricalGamesWeight +
+
+        var awayAverage = lastSixGames.Away.OneSideGoalGames * LastSixGamesWeight +
+                          allGames.Away.OneSideGoalGames * HistoricalGamesWeight +
                           allGames.HeadToHead.AwaySideScored * HeadToHeadGamesWeight +
                           probability * PoisonProbabilityWeight;
 
+        var limit = GetPassingLimitBy(gameProbability.League);
         var finalAverage = homeAverage * 0.50 + awayAverage * 0.50;
         // Home and Away both are able score two to three goals and the previous probability is not bigger than current
         // than this would be qualified.
-        if (homeAverage > 0.68 && awayAverage > 0.68 && gameProbability.Probability < finalAverage || gameProbability.ProbabilityKey == nameof(HalfTimeScoredGames))
+        if (homeAverage > limit && awayAverage > limit && gameProbability.Probability < finalAverage)
         {
             gameProbability.Qualified = true;
             gameProbability.Probability = finalAverage;
             gameProbability.ProbabilityKey = nameof(OneSideGoalsGames);
         }
     }
-    
-    private static void WinGames(double homeWinProbability, double awayProbability, NextGame lastSixGames, NextGame allGames, GameProbability gameProbability)
+
+    private static double GetPassingLimitBy(string league)
     {
-        var homeWinAverage = (lastSixGames.HomeHome.Win * 0.50 + lastSixGames.HomeAway.Win * 0.50) * LastSixGamesWeight +
-                             allGames.HomeHome.Win * HistoricalGamesWeight +
-                             allGames.HeadToHead.HomeWin * HeadToHeadGamesWeight +
-                             homeWinProbability * PoisonProbabilityWeight;
-        
-        var awayWinAverage = (lastSixGames.AwayHome.Win * 0.50 + lastSixGames.AwayAway.Win * 0.50) * LastSixGamesWeight +
-                             allGames.AwayAway.Win * HistoricalGamesWeight +
-                             allGames.HeadToHead.AwayWin * (HeadToHeadGamesWeight + 0.10) +
-                             awayProbability * PoisonProbabilityWeight;
+        switch (league)
+        {
+            // Championship and Serie A
+            case "E1":
+            case "I1":
+                return 0.58;
+            // Premier und Bundesliga
+            case "E0":
+            case "D1":
+                return 0.61;
+            case "F1":
+                return 0.64;
+            default:
+                return 0.68;
+        }
+    }
+    private static (double, double, double) GetMonteCarloWinProbability(double probWin, double probDraw)
+    {
+        const int numSimulations = 1000;
+        var winCount = 0;
+        var drawCount = 0;
+        var lossCount = 0;
+        var random = new Random();
 
-        var homeOneGoalAverage = (lastSixGames.HomeHome.BothScoreGames * 0.50 + lastSixGames.HomeAway.BothScoreGames * 0.50) * (LastSixGamesWeight + 0.15)  +
-                          allGames.HomeHome.BothScoreGames * HistoricalGamesWeight +
-                          allGames.HeadToHead.BothTeamScored * HeadToHeadGamesWeight;
-        
-        var awayOneGoalAverage = (lastSixGames.AwayHome.BothScoreGames * 0.50 + lastSixGames.AwayAway.BothScoreGames * 0.50) * (LastSixGamesWeight + 0.15)  +
-                                 allGames.AwayAway.BothScoreGames * HistoricalGamesWeight +
-                                 allGames.HeadToHead.BothTeamScored * (HeadToHeadGamesWeight + 0.10);
+        for (var i = 0; i < numSimulations; i++)
+        {
+            var outcome = random.NextGaussian(probWin, 0.5);
+            if (outcome <= probWin)
+            {
+                winCount++;
+            }
+            else if (outcome <= probWin + probDraw)
+            {
+                drawCount++;
+            }
+            else
+            {
+                lossCount++;
+            }
+        }
 
-        var homeHalftimeAverage = (lastSixGames.HomeHome.HalftimeGoalGames * 0.50 + lastSixGames.AwayHome.HalftimeGoalGames * 0.50) * (LastSixGamesWeight + 0.15)  +
-                                  allGames.HomeHome.HalftimeGoalGames * (HistoricalGamesWeight + 0.10) +
-                                  allGames.HeadToHead.HalfTimeScored * HeadToHeadGamesWeight;
-        
-        var awayHalftimeAverage = (lastSixGames.HomeAway.HalftimeGoalGames * 0.50 + lastSixGames.AwayAway.HalftimeGoalGames * 0.50) * (LastSixGamesWeight + 0.15)  +
-                                  allGames.AwayAway.HalftimeGoalGames * (HistoricalGamesWeight + 0.10) +
-                                  allGames.HeadToHead.HalfTimeScored * HeadToHeadGamesWeight;
-        
-        var testHomeAverage = homeWinAverage * 0.40 + homeOneGoalAverage * 0.30 + homeHalftimeAverage * 0.30;
-        var testAwayAverage = awayWinAverage * 0.40 + awayOneGoalAverage * 0.30 + awayHalftimeAverage * 0.30;
-        var difference = testHomeAverage > testAwayAverage
-            ? testHomeAverage - testAwayAverage
-            : testAwayAverage - testHomeAverage;
-        
-        if (homeWinAverage > awayWinAverage && homeOneGoalAverage > awayOneGoalAverage &&
-            gameProbability.Probability < 0.68 || gameProbability.ProbabilityKey == nameof(HalfTimeScoredGames))
-        {
-            gameProbability.Qualified = true;
-            gameProbability.Probability = testHomeAverage;
-            gameProbability.ProbabilityKey = "HomeWin";
-        }
-        if (homeWinAverage < awayWinAverage && homeOneGoalAverage < awayOneGoalAverage &&
-            gameProbability.Probability < 0.68 || gameProbability.ProbabilityKey == nameof(HalfTimeScoredGames))
-        {
-            gameProbability.Qualified = true;
-            gameProbability.Probability = testAwayAverage;
-            gameProbability.ProbabilityKey = "AwayWin";
-        }
-        /*
-        if (homeWinAverage > awayWinAverage && homeOneGoalAverage > awayOneGoalAverage &&
-            homeOneGoalAverage - awayOneGoalAverage > 0.25 && difference > 0.25 && gameProbability.Probability < 0.68 || gameProbability.ProbabilityKey == nameof(HalfTimeScoredGames))
-        {
-            gameProbability.Qualified = true;
-            gameProbability.Probability = testHomeAverage;
-            gameProbability.ProbabilityKey = "HomeWin";
-        }
-        if (homeWinAverage < awayWinAverage && homeOneGoalAverage < awayOneGoalAverage &&
-            awayOneGoalAverage - homeOneGoalAverage > 0.25 && difference > 0.25 && gameProbability.Probability < 0.68 || gameProbability.ProbabilityKey == nameof(HalfTimeScoredGames))
-        {
-            gameProbability.Qualified = true;
-            gameProbability.Probability = testAwayAverage;
-            gameProbability.ProbabilityKey = "AwayWin";
-        }*/
+        var winProb = (double)winCount / numSimulations;
+        var drawProb = (double)drawCount / numSimulations;
+        var lossProb = (double)lossCount / numSimulations;
+
+        return (winProb, drawProb, lossProb);
     }
 
     // Has individual weighting because the probability implemented yet.
     private static void HalfTimeScoredGames(NextGame lastSixGames, NextGame allGames, GameProbability gameProbability)
     {
-        var homeAverage = (lastSixGames.HomeHome.HalftimeGoalGames * 0.50 + lastSixGames.AwayHome.HalftimeGoalGames * 0.50) * (LastSixGamesWeight + 0.15)  +
-                          allGames.HomeHome.HalftimeGoalGames * (HistoricalGamesWeight + 0.10) +
-                          allGames.HeadToHead.HalfTimeScored * HeadToHeadGamesWeight;
-        
-        var awayAverage = (lastSixGames.AwayHome.HalftimeGoalGames * 0.50 + lastSixGames.AwayAway.HalftimeGoalGames * 0.50) * (LastSixGamesWeight + 0.15)  +
-                          allGames.AwayAway.HalftimeGoalGames * (HistoricalGamesWeight + 0.10) +
+        var homeAverage = lastSixGames.Home.HalftimeGoalGames * (LastSixGamesWeight + 0.15) +
+                          allGames.Home.HalftimeGoalGames * (HistoricalGamesWeight + 0.10) +
                           allGames.HeadToHead.HalfTimeScored * HeadToHeadGamesWeight;
 
-        gameProbability.HalftimeGoalAverage = homeAverage * 0.50 + awayAverage * 0.50;
+        var awayAverage = lastSixGames.Away.HalftimeGoalGames * (LastSixGamesWeight + 0.15) +
+                          allGames.Away.HalftimeGoalGames * (HistoricalGamesWeight + 0.10) +
+                          allGames.HeadToHead.HalfTimeScored * HeadToHeadGamesWeight;
+
+        var halftimeGoal = homeAverage * 0.50 + awayAverage * 0.50;
+        var limit = GetPassingLimitBy(gameProbability.League);
         // Home and Away both are able at least 68% to score a goal in halftime and the previous probability is not bigger than 68%
         // than this would be qualified.
-        if (homeAverage > 0.68 && awayAverage > 0.68 && gameProbability.Probability is null)
+        if (halftimeGoal > limit)
         {
-            gameProbability.Qualified = true;
-            gameProbability.Probability = gameProbability.HalftimeGoalAverage;
-            gameProbability.ProbabilityKey = nameof(HalfTimeScoredGames);
+            gameProbability.HalftimeGoalAverage = halftimeGoal;
         }
     }
-    
-    
+
+
     private static void TicketGenerated(List<Dictionary<string, double>> games)
     {
         var result = new Dictionary<string, double>();
@@ -569,51 +783,51 @@ public class AnalyseService
             var orderedGames = game.OrderByDescending(i => i.Value).FirstOrDefault();
             result.Add(orderedGames.Key, orderedGames.Value);
         }
-        
+
         var count = 0;
         foreach (var d in result.OrderByDescending(i => i.Value))
         {
             if (count == 0)
                 Console.WriteLine("###### Generated Super Poison Ticket #######");
-            
+
             if (count is 4 or 8 or 12)
                 Console.WriteLine("###############################\n\n");
-            
+
             if (count == 4)
                 Console.WriteLine("######## Generated Second Schein ###########");
-            
+
             if (count == 8)
                 Console.WriteLine("######## Generated Third Schein ###########");
-            
+
             Console.WriteLine(d.Key);
 
             count++;
         }
-        
+
     }
-    
+
     private static void GenerateTickets(Dictionary<string, double> gamesInOrder)
     {
         var count = 0;
-        
+
         foreach (var game in gamesInOrder)
         {
             if (count == 0)
                 Console.WriteLine("###### Generated Super Schein #######");
-            
+
             if (count is 4 or 8 or 12)
                 Console.WriteLine("###############################\n\n");
-            
-            
+
+
             if (count == 4)
                 Console.WriteLine("######## Generated Second Schein ###########");
-            
-            
+
+
             if (count == 8)
                 Console.WriteLine("######## Generated Third Schein ###########");
 
-            
-            
+
+
             count++;
         }
     }
@@ -624,21 +838,21 @@ public class AnalyseService
         var service = new PoissonService(_historicalGames);
         var execute = service.Execute(homeTeam, awayTeam, league);
 
-       // var cal = new CalculationService(service, _historicalGames, _upComingGames);
-      //  cal.Execute(homeTeam, awayTeam, league);
-        
+        // var cal = new CalculationService(service, _historicalGames, _upComingGames);
+        //  cal.Execute(homeTeam, awayTeam, league);
+
         var list = PickTheBestProbability(homeTeam, awayTeam, execute);
 
 
     }
 
     private Dictionary<string, double> PickTheBestProbability(
-        string homeTeam, string awayTeam, 
+        string homeTeam, string awayTeam,
         IList<PoissonProbability> analysePoisson, DateTime date = default, TimeSpan time = default)
     {
         date = date == default ? DateTime.Now.Date : date;
         time = time == default ? DateTime.Now.TimeOfDay : time;
-        
+
         var oddProbabilitiesInDescOrder = analysePoisson
             .Where(ia => ia.Key is "AwayWin" or "HomeWin" or "Draw")
             .OrderByDescending(ii => ii.Probability)
@@ -652,14 +866,14 @@ public class AnalyseService
         var list = new Dictionary<string, double>();
         probabilitiesInDescOrder.ForEach(item =>
         {
-            
+
             var match = $"{homeTeam}:{awayTeam}";
             if (DerbyTeams.GetDerbyMatches().Contains(match))
                 match = $"DERBY MATCH!! {match}";
-            
+
             switch (item.Key)
             {
-                case nameof(GameData.HomeWin):
+                case nameof(HistoricalGame.HomeWin):
                     if (item.Probability >= 0.70)
                     {
                         var msg = $"{date:d} {time:g}: {match} Home win = {Math.Round(item.Probability, 2)}%";
@@ -667,16 +881,16 @@ public class AnalyseService
                         Console.WriteLine(msg);
                     }
                     break;
-                case nameof(GameData.AwayWin): 
+                case nameof(HistoricalGame.AwayWin):
                     if (item.Probability >= 0.70)
                     {
-                        
+
                         var msg = $"{date:d} {time:g}: {match} Away win = {Math.Round(item.Probability, 2)}%";
                         list.Add(msg, item.Probability);
                         Console.WriteLine(msg);
                     }
                     break;
-                case nameof(GameData.Draw): 
+                case nameof(HistoricalGame.Draw):
                     if (item.Probability >= 0.68)
                     {
                         var msg = $"{date:d} {time:g}: {match} Draw =  {Math.Round(item.Probability, 2)}%";
@@ -684,7 +898,7 @@ public class AnalyseService
                         Console.WriteLine(msg);
                     }
                     break;
-                case nameof(GameData.BothTeamScore):
+                case nameof(HistoricalGame.BothTeamScore):
                     if (item.Probability > 0.64)
                     {
                         var msg = $"{date:d} {time:g}: {match} Both score = {Math.Round(item.Probability, 2)}%";
@@ -692,7 +906,7 @@ public class AnalyseService
                         Console.WriteLine(msg);
                     }
                     break;
-                case nameof(GameData.MoreThanTwoGoals):
+                case nameof(HistoricalGame.MoreThanTwoGoals):
                     if (item.Probability > 0.60)
                     {
                         var msg = $"{date:d} {time:g}: {match} More Than two goals = {Math.Round(item.Probability, 2)}%";
@@ -700,15 +914,15 @@ public class AnalyseService
                         Console.WriteLine(msg);
                     }
                     break;
-                case nameof(GameData.TwoToThree):
+                case nameof(HistoricalGame.TwoToThree):
                     if (item.Probability > 0.60)
-                    { 
+                    {
                         var msg = $"{date:d} {time:g}: {match} Two to three goals = {Math.Round(item.Probability, 2)}%";
                         list.Add(msg, item.Probability);
                         Console.WriteLine(msg);
                     }
                     break;
-                case nameof(GameData.LessThanTwoGoals):
+                case nameof(HistoricalGame.LessThanTwoGoals):
                     if (item.Probability > 0.70)
                     {
                         var msg = $"{date:d} {time:g}: {match} less than three goals = {Math.Round(item.Probability, 2)}%";
@@ -718,7 +932,7 @@ public class AnalyseService
                     break;
             }
         });
-        
+
         oddProbabilitiesInDescOrder.ForEach(item =>
         {
             var match = $"{homeTeam}:{awayTeam}";
@@ -727,7 +941,7 @@ public class AnalyseService
 
             switch (item.Key)
             {
-                case nameof(GameData.HomeWin):
+                case nameof(HistoricalGame.HomeWin):
                     if (item.Probability > 0.70)
                     {
                         var msg = $"{date:d} {time:g}: {match} Home win = {Math.Round(item.Probability, 2)}%";
@@ -735,25 +949,25 @@ public class AnalyseService
                         Console.WriteLine(msg);
                     }
                     break;
-                case nameof(GameData.AwayWin): 
+                case nameof(HistoricalGame.AwayWin):
                     if (item.Probability >= 0.70)
                     {
-                        
+
                         var msg = $"{date:d} {time:g}: {match} Away win = {Math.Round(item.Probability, 2)}%";
                         //list.Add(msg, item.Probability);
                         Console.WriteLine(msg);
                     }
                     break;
-                case nameof(GameData.Draw): 
+                case nameof(HistoricalGame.Draw):
                     if (item.Probability >= 0.68)
                     {
                         var msg = $"{date:d} {time:g}: {match} Draw =  {Math.Round(item.Probability, 2)}%";
-                       // list.Add(msg, item.Probability);
+                        // list.Add(msg, item.Probability);
                         Console.WriteLine(msg);
                     }
                     break;
             }
-            
+
         });
 
         return list;

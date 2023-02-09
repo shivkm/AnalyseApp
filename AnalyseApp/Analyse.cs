@@ -9,8 +9,8 @@ namespace AnalyseApp;
 public class Analyse
 {
     private const string FileDir = "C:\\shivm\\AnalyseApp\\data";
-    private List<GameData> _historicalGames = new();
-    private List<GameData> _upComingGames = new();
+    private List<HistoricalGame> _historicalGames = new();
+    private List<HistoricalGame> _upComingGames = new();
     private AnalyseService _analyseService;
 
     public Analyse ReadFilesHistoricalGames()
@@ -26,7 +26,7 @@ public class Analyse
             using var reader = new StreamReader(file);
             using var csv = new CsvReader(reader, config);
 
-            var currentFileGames = csv.GetRecords<GameData>();
+            var currentFileGames = csv.GetRecords<HistoricalGame>();
             _historicalGames.AddRange(currentFileGames);
         }
 
@@ -34,7 +34,7 @@ public class Analyse
         return this;
     }
 
-    public List<GameData> GetList()
+    public List<HistoricalGame> GetList()
     {
         return _historicalGames;
     }
@@ -51,7 +51,7 @@ public class Analyse
             using var reader = new StreamReader(file);
             using var csv = new CsvReader(reader, config);
 
-            var currentFileGames = csv.GetRecords<GameData>();
+            var currentFileGames = csv.GetRecords<HistoricalGame>();
 
             _upComingGames.AddRange(currentFileGames);
         }

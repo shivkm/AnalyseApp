@@ -3,7 +3,7 @@ using Microsoft.ML.Data;
 
 namespace AnalyseApp.Models;
 
-public record GameData
+public record HistoricalGame
 {
     public string Div { get; set; } = default!;
     public string Date { get; set; } = default!;

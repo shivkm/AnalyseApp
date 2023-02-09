@@ -1,8 +1,6 @@
-﻿using AnalyseApp.Commons.Enums;
-using AnalyseApp.Services;
+﻿using AnalyseApp.Services;
 
 var analysis = new AnalyseService();
-
 analysis.ReadHistoricalGames().ReadUpcomingGames().AnalyseGames();
  // .CreateMlFile("D1").CreateMlFile("E0")
  // .CreateMlFile("E1").CreateMlFile("E2")

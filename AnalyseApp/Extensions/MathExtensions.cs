@@ -14,31 +14,19 @@ public static class MathExtensions
     
     internal static double CalculateWeighting(this double left, double right, double leftWeight = 0.35)
     {
-        var rightWeight = 1 - leftWeight;
+        var rightWeight = 1.0 - leftWeight;
         var result = left * leftWeight + right * rightWeight;
         return Math.Round(result, 2);
     }
-    
-    internal static double GetPercent<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+}
+
+public static class RandomExtensions
+{
+    public static double NextGaussian(this Random random, double mean, double standardDeviation)
     {
-        var found = 0;
-        var total = 0;
-
-        var enumerable = source.ToList();
-        if (!enumerable.Any())
-            return 0;
-
-        foreach (var item in enumerable)
-        {
-            ++total;
-            if (predicate(item))
-            {
-                found += 1;
-            }
-        }
-
-        var value =  (double)found / total;
-
-        return Math.Round(value, 2);
+        var u1 = 1.0 - random.NextDouble();
+        var u2 = 1.0 - random.NextDouble();
+        var standardNormal = Math.Sqrt(-2.0 * Math.Log(u1)) * Math.Sin(2.0 * Math.PI * u2);
+        return mean + standardDeviation * standardNormal;
     }
 }

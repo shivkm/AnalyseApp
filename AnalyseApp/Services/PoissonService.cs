@@ -12,11 +12,11 @@ public interface IPoissonService
 
 public class PoissonService : IPoissonService
 {
-    private readonly IList<GameData> _currentSeason;
-    private readonly IList<GameData> _lastSixSeason;
+    private readonly IList<HistoricalGame> _currentSeason;
+    private readonly IList<HistoricalGame> _lastSixSeason;
     private readonly Dictionary<string, Dictionary<int[], double>> _poissonProbabilityDictionary = new ();
     
-    public PoissonService(IReadOnlyCollection<GameData> gameData)
+    public PoissonService(IReadOnlyCollection<HistoricalGame> gameData)
     {
         _currentSeason = gameData.GetGameDataBy(2022, 2023);
         _lastSixSeason = gameData.GetGameDataBy(2016, 2022);
@@ -24,30 +24,23 @@ public class PoissonService : IPoissonService
 
     public List<PoissonProbability> Execute(string homeTeam, string awayTeam, string league)
     {
-        var result = new List<PoissonProbability>();
         var currentSeason = AnalysePerformance(homeTeam, awayTeam, _currentSeason);
         var allSeasons = AnalysePerformance(homeTeam, awayTeam, _lastSixSeason);
 
-        foreach (var allSeason in allSeasons)
-        {
-            var currentSeasonProbability = currentSeason
+        return (from allSeason in allSeasons
+            let currentSeasonProbability = currentSeason
                 .Where(i => i.Key == allSeason.Key)
                 .Select(ii => ii.Value)
-                .FirstOrDefault();
-
-            
-             result.Add(new PoissonProbability
+                .FirstOrDefault()
+            select new PoissonProbability
             {
-                Key = allSeason.Key,
+                Key = allSeason.Key, 
                 Probability = allSeason.Value.CalculateWeighting(currentSeasonProbability)
-            });
-        }
-
-        return result;
+            }).ToList();
     }
  
     private Dictionary<string, double> AnalysePerformance(
-        string homeTeam, string awayTeam, IList<GameData> historicalData)
+        string homeTeam, string awayTeam, IList<HistoricalGame> historicalData)
     {
         // Retrieving the season of the league by year.
         
@@ -60,11 +53,11 @@ public class PoissonService : IPoissonService
         var expectedHomeGoal = homeMatches.Attack * awayMatches.Defense * homeMatches.LeagueScored;
         var expectedAwayGoal = awayMatches.Attack * homeMatches.Defense * homeMatches.LeagueConceded;
         var probabilities = PossibleProbabilities(expectedHomeGoal, expectedAwayGoal);
-                
+        
         _poissonProbabilityDictionary.Clear();
         return probabilities;
     }
-   
+    
     private Dictionary<string, double> PossibleProbabilities(double homeGoalAverage, double awayGoalAverage)
     {
         var output = new Dictionary<string, double>();
@@ -76,7 +69,7 @@ public class PoissonService : IPoissonService
                 var awayPoissonProbability = CalculatePoissonProbability(awayGoalAverage, awayScore);
                 
                 AddScoreProbabilities(homeScore, awayScore, homePoissonProbability * awayPoissonProbability);
-                AddOddProbabilities(homeScore, awayScore,homePoissonProbability * awayPoissonProbability);
+              //  AddOddProbabilities(homeScore, awayScore,homePoissonProbability * awayPoissonProbability);
 
             }
         }
@@ -100,7 +93,7 @@ public class PoissonService : IPoissonService
         {
             AddOrUpdateDictionary(homeScore, awayScore, probability, "BothTeamScore", result);
         }
-        if (homeScore + awayScore <= 3 && homeScore + awayScore > 1)
+        if (homeScore + awayScore == 3 || homeScore + awayScore == 2)
         {
             AddOrUpdateDictionary(homeScore, awayScore, probability, "TwoToThree", result);
         }
@@ -166,9 +159,8 @@ public class PoissonService : IPoissonService
 
         return probability;
     }
-
     
-    private static TeamStrength CalculateTeamStrengthBy(IList<GameData> gameData,
+    private static TeamStrength CalculateTeamStrengthBy(IList<HistoricalGame> gameData,
         string team, bool atHome = false)
     {
         var currentTeamGames = gameData.GetTeamMatchesBy(team, atHome);
@@ -182,7 +174,8 @@ public class PoissonService : IPoissonService
     }
     
     // Compute the average goals scored and conceded for all games in the season of the given league at home
-    private static PoissonAverage CalculateGoalAverage(ICollection<GameData> gameData, int count = 0, bool isHome = false, bool halftime = false)
+    private static PoissonAverage CalculateGoalAverage(
+        ICollection<HistoricalGame> gameData, int count = 0, bool isHome = false, bool halftime = false)
     {
         var scored = GetSumOfScoredGoals(gameData, isHome, halftime);
         var concededScored = GetSumOfConcededGoals(gameData, isHome, halftime);
@@ -196,7 +189,7 @@ public class PoissonService : IPoissonService
         return result;
     }
 
-    private static double GetSumOfScoredGoals(IEnumerable<GameData> gameData, bool isHome = false, bool halftime = false)
+    private static double GetSumOfScoredGoals(IEnumerable<HistoricalGame> gameData, bool isHome = false, bool halftime = false)
     {
         if (isHome)
             return halftime ? gameData.Sum(i => i.HTHG ?? 0) : gameData.Sum(i => i.FTHG ?? 0);
@@ -204,7 +197,7 @@ public class PoissonService : IPoissonService
         return halftime ? gameData.Sum(i => i.HTAG ?? 0) : gameData.Sum(i => i.FTAG ?? 0);
     }
     
-    private static double GetSumOfConcededGoals(IEnumerable<GameData> gameData, bool isHome = false, bool halftime = false)
+    private static double GetSumOfConcededGoals(IEnumerable<HistoricalGame> gameData, bool isHome = false, bool halftime = false)
     {
         if (isHome)
             return halftime ? gameData.Sum(i => i.HTAG ?? 0) : gameData.Sum(i => i.FTAG ?? 0);

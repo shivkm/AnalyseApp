@@ -45,10 +45,11 @@ public static class DerbyTeams
     {
         var result = new List<string>
         {
-            "Man City",
-            "Liverpool",
-            "Union Berlin",
             "Paris SG",
+            "Bayern Munich:Ein Frankfurt",
+            "Ein Frankfurt:Bayern Munich",
+            "Bayern Munich:FC Koln",
+            "FC Koln:Bayern Munich"
         };
 
         return result;

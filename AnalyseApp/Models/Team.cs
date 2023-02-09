@@ -44,11 +44,22 @@ public record GameProbability
     public string? Title { get; set; }
     public DateTime Date { get; set; }
     public DateTime Time { get; set; }
+    public string League { get; set; }
+    public string Msg { get; set; }
     public string? ProbabilityKey { get; set; }
-    public double? Probability { get; set; }
+    public double Probability { get; set; }
     public bool Qualified { get; set; }
-    public double? NoGoalAverage { get; set; }
-    public double? HalftimeGoalAverage { get; set; }
+    public double NoGoalAverage { get; set; }
+    public double HomeScoreAverage { get; set; }
+    public double HomeConcededAverage { get; set; }
+    public double AwayScoreAverage { get; set; }
+    public double AwayConcededAverage { get; set; }
+    public double HomeScoredGameAverage { get; set; }
+    public double AwayScoredGameAverage { get; set; }
+    public double HomeOverTwoGoalGameAverage { get; set; }
+    public double AwayOverTwoGoalGameAverage { get; set; }
+    public double HalftimeGoalAverage { get; set; }
+    public bool PossibleMoreThanTwoGoals { get; set; }
 }
 
 public class MatchData
