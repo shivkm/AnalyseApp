@@ -128,19 +128,30 @@ public class AnalyseService
                 .Take(1)
                 .ToList();
             
-            if (probability.Any(i => i.Probability == 0.00))
-                return;
-            
-            if (comingGame.HomeTeam == "Rotherham" || comingGame.HomeTeam == "Cambridge")
-            {
-                
-            }
-            var headToHeads = _historicalGames.GetHeadToHeadGamesBy(comingGame.HomeTeam, comingGame.AwayTeam);
-            
             // Last eight games average
             var homeTeamCurrentData = _historicalGames.GetCurrentSeasonGamesBy(comingGame.HomeTeam);
             var awayTeamCurrentData = _historicalGames.GetCurrentSeasonGamesBy(comingGame.AwayTeam);
+
+            if (probability.Any(i => i.Probability == 0.00))
+                return;
             
+            if (comingGame.HomeTeam == "Toulouse" || comingGame.HomeTeam == "Empoli")
+            {
+                var games = _historicalGames
+                    .GetGameDataBy(2022, 2023);
+        
+                var pastMatches = _historicalGames
+                    .Where(i => i.HomeTeam == comingGame.HomeTeam && i.AwayTeam == comingGame.AwayTeam ||
+                                i.HomeTeam == comingGame.AwayTeam && i.AwayTeam == comingGame.HomeTeam)
+                    .GetGameDataBy(2016, 2023);
+                var service = new HeadToHeadService();
+        
+                service.HeadToHeadNaiveBayesBy(pastMatches, comingGame.HomeTeam, comingGame.AwayTeam);
+                service.TeamAnalyse(games, comingGame.HomeTeam, comingGame.AwayTeam);
+            }
+            var headToHeads = _historicalGames.GetHeadToHeadGamesBy(comingGame.HomeTeam, comingGame.AwayTeam);
+            
+           
             // Current season and Poison zero zero games filter 
             if (IsZeroZero(homeTeamCurrentData, awayTeamCurrentData, headToHeads, probability))
             {

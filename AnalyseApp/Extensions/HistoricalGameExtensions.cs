@@ -22,52 +22,88 @@ internal static class HistoricalGameExtensions
         return filteredMatches;
     }
 
+    private static double WeightedAverage(IList<double> values, IList<double> weights)
+    {
+        if (values.Count != weights.Count)
+            throw new ArgumentException("Values and weights must have the same length.");
+
+        double weightedSum = 0;
+        double weightSum = 0;
+
+        for (var i = 0; i < values.Count; i++)
+        {
+            weightedSum += values[i] * weights[i];
+            weightSum += weights[i];
+        }
+
+        return weightedSum / weightSum;
+    }
+    
     internal static HeadToHead GetHeadToHeadGamesBy(this IList<HistoricalGame> historicalGames, string homeTeam, string awayTeam)
     {
-        var homeGames = historicalGames
-            .Where(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam)
-            .GetGameDataBy(2016, 2023);
-        
-        var awayGames = historicalGames
-            .Where(i => i.HomeTeam == awayTeam && i.AwayTeam == homeTeam)
+        // Get all head to head matches
+        var pastMatches = historicalGames
+            .Where(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam ||
+                                    i.HomeTeam == awayTeam && i.AwayTeam == homeTeam)
             .GetGameDataBy(2016, 2023);
 
-        var lastHomeNoGoalGame = homeGames
+        // check the last two matches wasn't 0:0 and the last match is not older than one year
+        var lastTwoZeroZeroGames = pastMatches
             .OrderByDescending(i => i.Date).Take(2)
-            .Any(i => i is { FTHG: 0, FTAG: 0 });
+            .Any(i => i is { FTHG: 0, FTAG: 0 } && DateTime.Parse(i.Date) > DateTime.Now.AddYears(-1));
         
-        var homeZeroGoalAverage = homeGames.Count(i => i.FTHG + i.FTAG == 0).Divide(homeGames.Count);
-        var bothScored = homeGames.Count(i => i is { FTHG: > 0, FTAG: > 0 }).Divide(homeGames.Count);
-        var twoToThreeGoal = homeGames.Count(i => i.FTHG + i.FTAG == 2 || i.FTHG + i.FTAG == 3).Divide(homeGames.Count);
-        var moreThanTwoGoals = homeGames.Count(i => i.FTHG + i.FTAG > 2).Divide(homeGames.Count);
-        var halftimeScoredGoal = homeGames.Count(i => i.HTAG + i.HTHG > 0).Divide(homeGames.Count);
-        var oneSideScore = homeGames.Count(i => i is { FTHG: > 0, FTAG: 0 } or { FTHG: 0, FTAG: > 0 }).Divide(homeGames.Count);
-        var lessThanThreeGoals = homeGames.Count(i => i.FTHG + i.FTAG < 3).Divide(homeGames.Count);
+        var homeGoalAverage = pastMatches
+            .Sum(m => m.HomeTeam == homeTeam ? m.FTHG  ?? 0 : m.FTAG ?? 0)
+            .Divide(pastMatches.Count);
         
-        var lastAwayNoGoalGame = awayGames
-            .OrderByDescending(i => i.Date).Take(2)
-            .Any(i => i is { FTHG: 0, FTAG: 0 });
+        var homeHalftimeGoalAverage = pastMatches
+            .Sum(m => m.HomeTeam == homeTeam ? m.HTHG  ?? 0 : m.HTAG ?? 0)
+            .Divide(pastMatches.Count);
         
-        var awayZeroGoalAverage = awayGames.Count(i => i.FTHG + i.FTAG == 0).Divide(awayGames.Count);
-        var awayBothScored = awayGames.Count(i => i is { FTHG: > 0, FTAG: > 0 }).Divide(awayGames.Count);
-        var awayTwoToThreeGoal = awayGames.Count(i => i.FTHG + i.FTAG == 2 || i.FTHG + i.FTAG == 3).Divide(awayGames.Count);
-        var awayMoreThanTwoGoals = awayGames.Count(i => i.FTHG + i.FTAG > 2).Divide(awayGames.Count);
-        var awayHalftimeScoredGoal = awayGames.Count(i => i.HTAG + i.HTHG > 0).Divide(awayGames.Count);
-        var awayOneSideScore = awayGames.Count(i => i is { FTHG: > 0, FTAG: 0 } or { FTHG: 0, FTAG: > 0 }).Divide(awayGames.Count);
-        var awayLessThanThreeGoals = homeGames.Count(i => i.FTHG + i.FTAG < 3).Divide(homeGames.Count);
+        var homeShotOnGoalsAverage = pastMatches
+            .Sum(m => m.HomeTeam == homeTeam ? m.HST  ?? 0 : m.AST ?? 0)
+            .Divide(pastMatches.Count);
+        
+        var homeShotAverage = pastMatches
+            .Sum(m => m.HomeTeam == homeTeam ? m.HS  ?? 0 : m.AS ?? 0)
+            .Divide(pastMatches.Count);
+
+        var homeShotAccuracy = homeShotOnGoalsAverage / homeGoalAverage;
+
+        var awayGoalAverage = pastMatches
+            .Sum(m => m.HomeTeam == awayTeam ? m.FTHG  ?? 0 : m.FTAG ?? 0)
+            .Divide(pastMatches.Count);
+        
+        var awayShotOnGoalsAverage = pastMatches
+            .Sum(m => m.HomeTeam == awayTeam ? m.HST  ?? 0 : m.AST ?? 0)
+            .Divide(pastMatches.Count);
+        
+        var awayHalftimeGoalAverage = pastMatches
+            .Sum(m => m.HomeTeam == awayTeam ? m.HTHG  ?? 0 : m.HTAG ?? 0)
+            .Divide(pastMatches.Count);
+        
+        var awayShotAverage = pastMatches
+            .Sum(m => m.HomeTeam == awayTeam ? m.HS  ?? 0 : m.AS ?? 0)
+            .Divide(pastMatches.Count);
+        
+        var awaySotAccuracy = awayShotOnGoalsAverage / awayShotAverage;
+        // Use Naive Bayes algorithm to predict the average scores
+        var homeWins = pastMatches.Count(m => m.HomeTeam == homeTeam ? m.FTR == "H" : m.FTR == "A");
+        var awayWins = pastMatches.Count(m => m.HomeTeam == awayTeam ? m.FTR == "H" : m.FTR == "A");
+        var draws = pastMatches.Count(m => m.FTR == "D");
 
         var headToHead = new HeadToHead
         {
-            GamesPlayed = homeGames.Count + awayGames.Count,
-            BothTeamScored = bothScored * 0.50 + awayBothScored * 0.50,
-            TwoToThreeScored = twoToThreeGoal * 0.50 + awayTwoToThreeGoal * 0.50,
-            MoreThanTwoScored = moreThanTwoGoals * 0.50 + awayMoreThanTwoGoals * 0.50,
-            HalfTimeScored = halftimeScoredGoal * 0.50 + awayHalftimeScoredGoal * 0.50,
-            NoScored = homeZeroGoalAverage * 0.50 + awayZeroGoalAverage * 0.50,
-            LastHomeGameZeroZero = lastHomeNoGoalGame,
-            LastAwayGameZeroZero = lastAwayNoGoalGame,
-            AwaySideScored = oneSideScore * 0.50 + awayOneSideScore * 0.50,
-            LessThanThreeGoal = lessThanThreeGoals * 0.50 + awayLessThanThreeGoals * 0.50,
+            GamesPlayed = pastMatches.Count,
+            HomeScoreAverage = homeGoalAverage + homeWins * homeGoalAverage + 
+                               homeHalftimeGoalAverage * homeGoalAverage +
+                               homeShotAccuracy * homeGoalAverage,
+            
+            AwayScoreAverage = awayGoalAverage + awayWins * awayGoalAverage + 
+                               awayHalftimeGoalAverage * awayGoalAverage +
+                               awaySotAccuracy * awayGoalAverage,
+            
+            LastTwoZeroZeroGames = lastTwoZeroZeroGames
         };
         
         return headToHead;
@@ -152,8 +188,83 @@ internal static class HistoricalGameExtensions
     internal static int GetNoGoalGameCount(this IEnumerable<HistoricalGame> currentMatches) =>
         currentMatches.Count(i => i is { FTHG: 0, FTAG: 0 });
 
-    internal static int GetShotsCountBy(this IEnumerable<HistoricalGame> currentMatches, string team) =>
-        currentMatches.Count(i => i.HS > 0 && i.HomeTeam == team || i.AS > 0 && i.AwayTeam == team);
+    internal static double GetGoalAverage(this IList<HistoricalGame> pastMatches, string team) =>
+        pastMatches.Sum(m => m.HomeTeam == team ? m.FTHG  ?? 0 : m.FTAG ?? 0).Divide(pastMatches.Count);
+    
+    /// <summary>
+    /// Calculate the average goal scored by team
+    /// </summary>
+    /// <param name="pastMatches">List of past matches</param>
+    /// <param name="team">The current team for calculating the average</param>
+    /// <param name="count">Provide the number of games played by team in current season.
+    /// This will be needed if you calculate the average of team scored in current season.</param>
+    /// <param name="atHome">This will give the average score of the team played at home</param>
+    /// <param name="general">This will give the average score of the team played at away</param>
+    /// <returns></returns>
+    internal static double GetGoalScoreAverage(this IList<HistoricalGame> pastMatches, 
+        string team, int count = 0, bool atHome = false, bool general = false)
+    {
+        var countValue = count > 0 ? count * pastMatches.NumberOfTeamsLeague() : pastMatches.Count;
+
+        var totalGoals = atHome 
+            ? pastMatches
+                .Where(i => i.HomeTeam == team)
+                .Sum(m => m.FTHG ?? 0)
+            
+            : pastMatches
+                .Where(i => i.AwayTeam == team)
+                .Sum(m => m.FTAG ?? 0);
+
+        if (!general) return totalGoals.Divide(countValue);
+        
+        var homeGoalSum = pastMatches.Where(i => i.HomeTeam == team).Sum(m => m.FTHG ?? 0);
+        var awayGoalSum = pastMatches.Where(i => i.AwayTeam == team).Sum(m => m.FTAG ?? 0);
+
+        totalGoals = homeGoalSum + awayGoalSum;
+
+        return totalGoals.Divide(countValue);
+    }
+    
+    /// <summary>
+    /// Calculate the average goal scored by team
+    /// </summary>
+    /// <param name="pastMatches">List of past matches</param>
+    /// <param name="team">The current team for calculating the average</param>
+    /// <param name="count">Provide the number of games played by team in current season.
+    /// This will be needed if you calculate the average of team scored in current season.</param>
+    /// <param name="atHome">This will give the average score of the team played at home</param>
+    /// <param name="general">This will give the average score of the team played at away</param>
+    /// <returns></returns>
+    internal static double GetGoalConcededAverage(this IList<HistoricalGame> pastMatches, 
+        string team, int count = 0, bool atHome = false, bool general = false)
+    {
+        var countValue = count > 0 ? count * pastMatches.NumberOfTeamsLeague() : pastMatches.Count;
+
+        var totalGoals = atHome 
+            ? pastMatches
+                .Where(i => i.HomeTeam == team)
+                .Sum(m => m.FTAG ?? 0)
+            
+            : pastMatches
+                .Where(i => i.AwayTeam == team)
+                .Sum(m => m.FTHG ?? 0);
+
+        if (!general) return totalGoals.Divide(countValue);
+        
+        var homeGoalSum = pastMatches.Where(i => i.HomeTeam == team).Sum(m => m.FTAG ?? 0);
+        var awayGoalSum = pastMatches.Where(i => i.AwayTeam == team).Sum(m => m.FTHG ?? 0);
+
+        totalGoals = homeGoalSum + awayGoalSum;
+
+        return totalGoals.Divide(countValue);
+    }
+    
+
+    internal static double GetGoalGameAverage(this IList<HistoricalGame> pastMatches) =>
+        pastMatches.Count(m => m is { FTHG: > 0, FTAG: > 0 }).Divide(pastMatches.Count);
+
+    internal static double GetNoGoalGameAverage(this IList<HistoricalGame> pastMatches) =>
+        pastMatches.Count(i => i is { FTHG: 0, FTAG: 0 }).Divide(pastMatches.Count);
 
     internal static int GetShotOnGoalsCountBy(this IEnumerable<HistoricalGame> currentMatches, string team) =>
         currentMatches.Count(i => i.HST > 0 && i.HomeTeam == team || i.AST > 0 && i.AwayTeam == team);

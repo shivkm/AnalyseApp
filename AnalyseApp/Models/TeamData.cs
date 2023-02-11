@@ -25,6 +25,8 @@ public record NextGame
 public record HeadToHead
 {
     public int GamesPlayed { get; set; }
+    public double HomeScoreAverage { get; set; }
+    public double AwayScoreAverage { get; set; }
     public double BothTeamScored { get; set; }
     public double MoreThanTwoScored { get; set; }
     public double TwoToThreeScored { get; set; }
@@ -34,7 +36,7 @@ public record HeadToHead
     public double AwaySideScored { get; set; }
     public double LessThanThreeGoal { get; set; }
     public bool LastHomeGameZeroZero { get; set; }
-    public bool LastAwayGameZeroZero { get; set; }
+    public bool LastTwoZeroZeroGames { get; set; }
     public double HomeWin { get; set; }
     public double AwayWin { get; set; }
     public double Draw { get; set; }

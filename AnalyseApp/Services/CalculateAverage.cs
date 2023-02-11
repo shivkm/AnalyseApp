@@ -11,6 +11,13 @@ public static class CalculateAverage
     private const double HeadToHeadGamesWeight = 0.30;
     private const double PoisonProbabilityWeight = 0.30;
 
+    
+    
+    
+   
+    
+    
+    
     public static void BothScoreGames(this NextGame lastEightGames, NextGame allGames, GameProbability gameProbability, double probability)
     {
         // Average of the games where both team scored at least one Goal

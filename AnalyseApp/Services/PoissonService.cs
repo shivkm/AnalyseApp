@@ -24,8 +24,8 @@ public class PoissonService : IPoissonService
 
     public List<PoissonProbability> Execute(string homeTeam, string awayTeam, string league)
     {
-        var currentSeason = AnalysePerformance(homeTeam, awayTeam, _currentSeason);
-        var allSeasons = AnalysePerformance(homeTeam, awayTeam, _lastSixSeason);
+        var currentSeason = AnalysePerformance(homeTeam, awayTeam, league, _currentSeason);
+        var allSeasons = AnalysePerformance(homeTeam, awayTeam, league, _lastSixSeason);
 
         return (from allSeason in allSeasons
             let currentSeasonProbability = currentSeason
@@ -39,19 +39,17 @@ public class PoissonService : IPoissonService
             }).ToList();
     }
  
-    private Dictionary<string, double> AnalysePerformance(
-        string homeTeam, string awayTeam, IList<HistoricalGame> historicalData)
+    private Dictionary<string, double> AnalysePerformance(string homeTeam, string awayTeam, string league,  IList<HistoricalGame> historicalData)
     {
         // Retrieving the season of the league by year.
-        
         if (!historicalData.TeamsAreInLeague(homeTeam, awayTeam))
             return new Dictionary<string, double>();
         
-        var homeMatches = CalculateTeamStrengthBy(historicalData, homeTeam, true);
-        var awayMatches = CalculateTeamStrengthBy(historicalData, awayTeam);
+        var homeMatches = CalculateTeamStrengthBy(historicalData, homeTeam, league, true);
+        var awayMatches = CalculateTeamStrengthBy(historicalData, awayTeam, league);
             
-        var expectedHomeGoal = homeMatches.Attack * awayMatches.Defense * homeMatches.LeagueScored;
-        var expectedAwayGoal = awayMatches.Attack * homeMatches.Defense * homeMatches.LeagueConceded;
+        var expectedHomeGoal = homeMatches.Attack * awayMatches.Defense * homeMatches.LeagueScoredAverage;
+        var expectedAwayGoal = awayMatches.Attack * homeMatches.Defense * homeMatches.LeagueConcededAverage;
         var probabilities = PossibleProbabilities(expectedHomeGoal, expectedAwayGoal);
         
         _poissonProbabilityDictionary.Clear();
@@ -160,48 +158,49 @@ public class PoissonService : IPoissonService
         return probability;
     }
     
-    private static TeamStrength CalculateTeamStrengthBy(IList<HistoricalGame> gameData,
-        string team, bool atHome = false)
+    private static TeamStrength CalculateTeamStrengthBy(IList<HistoricalGame> gameData, string team, string league, bool atHome = false)
     {
-        var currentTeamGames = gameData.GetTeamMatchesBy(team, atHome);
-        var leagueGames = CalculateGoalAverage(gameData, currentTeamGames.Count, atHome);
-        var currentGames =  CalculateGoalAverage(currentTeamGames, isHome: atHome);
+        var currentTeamGames = gameData
+            .Where(i => i.HomeTeam == team || i.AwayTeam == team)
+            .ToList();
 
-        var attack = currentGames.Scored.Divide(leagueGames.Scored);
-        var defense = currentGames.Conceded.Divide(leagueGames.Conceded);
+        var leagueTeamGames = gameData
+            .Where(i => i.Div == league)
+            .ToList();
+        
+        var leagueGoalAverage = CalculateGoalAverage(leagueTeamGames, team, currentTeamGames.Count, atHome);
+        var teamGoalAverage =  CalculateGoalAverage(currentTeamGames.ToList(), team, atHome: atHome);
 
-        return new TeamStrength(attack, defense, leagueGames.Scored, leagueGames.Conceded);
+         var attack = teamGoalAverage.Scored.Divide(leagueGoalAverage.Scored);
+        var defense = teamGoalAverage.Conceded.Divide(leagueGoalAverage.Conceded);
+
+        return new TeamStrength(
+            attack, 
+            defense, 
+            teamGoalAverage.Scored,
+            teamGoalAverage.Conceded,
+            leagueGoalAverage.Scored, 
+            leagueGoalAverage.Conceded);
     }
     
-    // Compute the average goals scored and conceded for all games in the season of the given league at home
-    private static PoissonAverage CalculateGoalAverage(
-        ICollection<HistoricalGame> gameData, int count = 0, bool isHome = false, bool halftime = false)
+    
+    /// <summary>
+    /// Compute the average goal scored and conceded for given team.
+    /// </summary>
+    /// <param name="gameData">List of the past games</param>
+    /// <param name="team">Current team calculating average</param>
+    /// <param name="count">provide if the League score</param>
+    /// <param name="atHome">provide if the League score</param>
+    /// <returns></returns>
+    private static GoalScoredAndConcededAverage CalculateGoalAverage(IList<HistoricalGame> gameData, string team, int count = 0, bool atHome = false)
     {
-        var scored = GetSumOfScoredGoals(gameData, isHome, halftime);
-        var concededScored = GetSumOfConcededGoals(gameData, isHome, halftime);
-        var countValue = (double)(count > 0 ? count * gameData.NumberOfTeamsLeague(): gameData.Count);
-
-        var averageScored = scored.Divide(countValue);
-        var averageConcededScored = concededScored.Divide(countValue);
+        var averageScored = gameData.GetGoalScoreAverage(team, count, atHome: atHome);
+        var averageConcededScored = gameData.GetGoalConcededAverage(team, count, atHome: atHome);
         
-        var result = new PoissonAverage(averageScored, averageConcededScored);
+        var result = new GoalScoredAndConcededAverage(averageScored, averageConcededScored);
         
         return result;
     }
 
-    private static double GetSumOfScoredGoals(IEnumerable<HistoricalGame> gameData, bool isHome = false, bool halftime = false)
-    {
-        if (isHome)
-            return halftime ? gameData.Sum(i => i.HTHG ?? 0) : gameData.Sum(i => i.FTHG ?? 0);
-
-        return halftime ? gameData.Sum(i => i.HTAG ?? 0) : gameData.Sum(i => i.FTAG ?? 0);
-    }
-    
-    private static double GetSumOfConcededGoals(IEnumerable<HistoricalGame> gameData, bool isHome = false, bool halftime = false)
-    {
-        if (isHome)
-            return halftime ? gameData.Sum(i => i.HTAG ?? 0) : gameData.Sum(i => i.FTAG ?? 0);
-        
-        return halftime ? gameData.Sum(i => i.HTHG ?? 0) : gameData.Sum(i => i.FTHG ?? 0);
-    }
+   
  }

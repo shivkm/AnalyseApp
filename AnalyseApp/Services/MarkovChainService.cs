@@ -4,6 +4,79 @@ using AnalyseApp.Models;
 
 namespace AnalyseApp.Services;
 
+public class MarkovChain
+{
+    private Dictionary<string, int> homeGoals;
+    private Dictionary<string, int> awayGoals;
+    private int totalGames;
+
+    public MarkovChain()
+    {
+        homeGoals = new Dictionary<string, int>();
+        awayGoals = new Dictionary<string, int>();
+        totalGames = 0;
+    }
+
+    public void AddGame(List<HistoricalGame> pastGames)
+    {
+        foreach (var match in pastGames)
+        {
+            // Count the number of goals scored by the home team
+            var key = match.HomeTeam + "-" + match.FTHG;
+            if (homeGoals.ContainsKey(key))
+            {
+                homeGoals[key]++;
+            }
+            else
+            {
+                homeGoals[key] = 1;
+            }
+
+            // Count the number of goals scored by the away team
+            key = match.AwayTeam + "-" + match.FTAG;
+            if (awayGoals.ContainsKey(key))
+            {
+                awayGoals[key]++;
+            }
+            else
+            {
+                awayGoals[key] = 1;
+            }
+
+            totalGames++;
+        }
+    }
+
+    public Tuple<double, double> PredictScore(string homeTeam, string awayTeam)
+    {
+        var homeGoalsScored = 0.0;
+        var awayGoalsScored = 0.0;
+
+        foreach (var homeGoal in homeGoals)
+        {
+            var parts = homeGoal.Key.Split('-');
+            if (parts[0] == homeTeam)
+            {
+                homeGoalsScored += (double)(homeGoal.Value * Convert.ToInt32(parts[1])) / totalGames;
+            }
+        }
+        
+        foreach (var awayGoal in awayGoals)
+        {
+            var parts = awayGoal.Key.Split('-');
+            if (parts[0] == awayTeam)
+            {
+                awayGoalsScored += (double)(awayGoal.Value * Convert.ToInt32(parts[1])) / totalGames;
+            }
+        }
+
+        return Tuple.Create(homeGoalsScored, awayGoalsScored);
+    }
+    
+}
+
+
+
 public record GameData
 {
     public string Team { get; set; }
