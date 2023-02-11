@@ -195,66 +195,43 @@ internal static class HistoricalGameExtensions
     /// Calculate the average goal scored by team
     /// </summary>
     /// <param name="pastMatches">List of past matches</param>
-    /// <param name="team">The current team for calculating the average</param>
     /// <param name="count">Provide the number of games played by team in current season.
     /// This will be needed if you calculate the average of team scored in current season.</param>
     /// <param name="atHome">This will give the average score of the team played at home</param>
-    /// <param name="general">This will give the average score of the team played at away</param>
     /// <returns></returns>
-    internal static double GetGoalScoreAverage(this IList<HistoricalGame> pastMatches, 
-        string team, int count = 0, bool atHome = false, bool general = false)
+    internal static double GetGoalScoreAverage(this IList<HistoricalGame> pastMatches, int count = 0, bool atHome = false)
     {
         var countValue = count > 0 ? count * pastMatches.NumberOfTeamsLeague() : pastMatches.Count;
 
         var totalGoals = atHome 
             ? pastMatches
-                .Where(i => i.HomeTeam == team)
                 .Sum(m => m.FTHG ?? 0)
             
             : pastMatches
-                .Where(i => i.AwayTeam == team)
                 .Sum(m => m.FTAG ?? 0);
-
-        if (!general) return totalGoals.Divide(countValue);
-        
-        var homeGoalSum = pastMatches.Where(i => i.HomeTeam == team).Sum(m => m.FTHG ?? 0);
-        var awayGoalSum = pastMatches.Where(i => i.AwayTeam == team).Sum(m => m.FTAG ?? 0);
-
-        totalGoals = homeGoalSum + awayGoalSum;
 
         return totalGoals.Divide(countValue);
     }
     
     /// <summary>
-    /// Calculate the average goal scored by team
+    /// Calculate the average goal conceded
     /// </summary>
-    /// <param name="pastMatches">List of past matches</param>
-    /// <param name="team">The current team for calculating the average</param>
+    /// <param name="pastMatches">List of past matches of the team or league</param>
     /// <param name="count">Provide the number of games played by team in current season.
     /// This will be needed if you calculate the average of team scored in current season.</param>
     /// <param name="atHome">This will give the average score of the team played at home</param>
-    /// <param name="general">This will give the average score of the team played at away</param>
     /// <returns></returns>
-    internal static double GetGoalConcededAverage(this IList<HistoricalGame> pastMatches, 
-        string team, int count = 0, bool atHome = false, bool general = false)
+    internal static double GetGoalConcededAverage(this IList<HistoricalGame> pastMatches,
+        int count = 0, bool atHome = false)
     {
         var countValue = count > 0 ? count * pastMatches.NumberOfTeamsLeague() : pastMatches.Count;
 
         var totalGoals = atHome 
             ? pastMatches
-                .Where(i => i.HomeTeam == team)
                 .Sum(m => m.FTAG ?? 0)
             
             : pastMatches
-                .Where(i => i.AwayTeam == team)
                 .Sum(m => m.FTHG ?? 0);
-
-        if (!general) return totalGoals.Divide(countValue);
-        
-        var homeGoalSum = pastMatches.Where(i => i.HomeTeam == team).Sum(m => m.FTAG ?? 0);
-        var awayGoalSum = pastMatches.Where(i => i.AwayTeam == team).Sum(m => m.FTHG ?? 0);
-
-        totalGoals = homeGoalSum + awayGoalSum;
 
         return totalGoals.Divide(countValue);
     }

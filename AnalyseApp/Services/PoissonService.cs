@@ -161,17 +161,17 @@ public class PoissonService : IPoissonService
     private static TeamStrength CalculateTeamStrengthBy(IList<HistoricalGame> gameData, string team, string league, bool atHome = false)
     {
         var currentTeamGames = gameData
-            .Where(i => i.HomeTeam == team || i.AwayTeam == team)
+            .Where(i => atHome ? i.HomeTeam == team : i.AwayTeam == team)
             .ToList();
 
         var leagueTeamGames = gameData
             .Where(i => i.Div == league)
             .ToList();
         
-        var leagueGoalAverage = CalculateGoalAverage(leagueTeamGames, team, currentTeamGames.Count, atHome);
-        var teamGoalAverage =  CalculateGoalAverage(currentTeamGames.ToList(), team, atHome: atHome);
+        var leagueGoalAverage = CalculateGoalAverage(leagueTeamGames, currentTeamGames.Count, atHome);
+        var teamGoalAverage =  CalculateGoalAverage(currentTeamGames.ToList(), atHome: atHome);
 
-         var attack = teamGoalAverage.Scored.Divide(leagueGoalAverage.Scored);
+        var attack = teamGoalAverage.Scored.Divide(leagueGoalAverage.Scored);
         var defense = teamGoalAverage.Conceded.Divide(leagueGoalAverage.Conceded);
 
         return new TeamStrength(
@@ -188,14 +188,13 @@ public class PoissonService : IPoissonService
     /// Compute the average goal scored and conceded for given team.
     /// </summary>
     /// <param name="gameData">List of the past games</param>
-    /// <param name="team">Current team calculating average</param>
     /// <param name="count">provide if the League score</param>
     /// <param name="atHome">provide if the League score</param>
     /// <returns></returns>
-    private static GoalScoredAndConcededAverage CalculateGoalAverage(IList<HistoricalGame> gameData, string team, int count = 0, bool atHome = false)
+    private static GoalScoredAndConcededAverage CalculateGoalAverage(IList<HistoricalGame> gameData, int count = 0, bool atHome = false)
     {
-        var averageScored = gameData.GetGoalScoreAverage(team, count, atHome: atHome);
-        var averageConcededScored = gameData.GetGoalConcededAverage(team, count, atHome: atHome);
+        var averageScored = gameData.GetGoalScoreAverage(count, atHome: atHome);
+        var averageConcededScored = gameData.GetGoalConcededAverage(count, atHome: atHome);
         
         var result = new GoalScoredAndConcededAverage(averageScored, averageConcededScored);
         
