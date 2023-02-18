@@ -108,8 +108,8 @@ public class CalculateService
         var currentAwayPoisonAndMonteCarlo  = _currentAwayPoison
             .First(i => i.Key == AtLeastOneGoal);
 
-        if (currentHomeMarkovChain.Probability > 0.50 &&
-            currentAwayMarkovChain.Probability > 0.50)
+        if (currentHomeMarkovChain.Probability > 0.60 &&
+            currentAwayMarkovChain.Probability > 0.60)
         {
             Console.WriteLine($"MarkovChain Poison Pass: {home}{currentHomeMarkovChain.Probability}%:{away}{currentAwayMarkovChain.Probability}%");
         }

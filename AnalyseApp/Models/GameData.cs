@@ -8,8 +8,12 @@ public class GameData
     public double ZeroOneGameAverageByTeam { get; set; }
     public double ZeroOneGameAverage { get; set; }
     public double ZeroZeroGameAverage { get; set; }
-    public int GoalsScored { get; set; }
-    public int GoalsConceded { get; set; }
+    public double GoalsScored { get; set; }
+    public double GoalsConceded { get; set; }
+    public bool LastThreeGamesScored { get; set; }
+    public bool ThreeGamesScored { get; set; }
+    public bool ThreeZeroZero { get; set; }
+    public bool ThreeZeroOne { get; set; }
 }
 
 public class HeadToHeadData
@@ -28,5 +32,10 @@ public class HeadToHeadData
     public double ZeroOneHomeGameAverage { get; set; }
     public double ZeroOneAwayGameAverage { get; set; }
     public double ZeroZeroGameAverage { get; set; }
+    
+    public bool ThreeZeroZeroGames { get; set; }
+    public bool ThreeZeroOneGames { get; set; }
+    public bool LastFourOverGames { get; set; }
+    public bool LastFourBothScored { get; set; }
     // Add more properties as needed
 }

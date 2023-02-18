@@ -94,6 +94,44 @@ internal static class HistoricalGameExtensions
         return (double) zeroZeroGames / totalGames;
     }
     
+    /// <summary>
+    /// calculate the accuracy of no goal scored by provided team
+    /// </summary>
+    /// <param name="games">List of teams games</param>
+    /// <param name="team">team name</param>
+    /// <returns>accuracy of no goal scored by team</returns>
+    internal static double CalculateScoredGoalAccuracy(this List<HistoricalGame> games, string team)
+    {
+        var homeScoreAverage = games.Where(i => i.HomeTeam == team).Sum(i => i.FTHG);
+        var awayScoreAverage = games.Where(i => i.AwayTeam == team).Sum(i => i.FTAG);
+        var totalGames = games.Count;
+
+        // Avoid division by zero
+        if (totalGames == 0)
+            return 0.0; 
+
+        return (homeScoreAverage ?? 0 + awayScoreAverage ?? 0).Divide(totalGames);
+    }
+    
+        
+    /// <summary>
+    /// calculate the accuracy of no goal scored by provided team
+    /// </summary>
+    /// <param name="games">List of teams games</param>
+    /// <param name="team">team name</param>
+    /// <returns>accuracy of no goal scored by team</returns>
+    internal static double CalculateConcededGoalAccuracy(this List<HistoricalGame> games, string team)
+    {
+        var homeScoreAverage = games.Where(i => i.HomeTeam == team).Sum(i => i.FTAG);
+        var awayScoreAverage = games.Where(i => i.AwayTeam == team).Sum(i => i.FTHG);
+        var totalGames = games.Count;
+
+        // Avoid division by zero
+        if (totalGames == 0)
+            return 0.0; 
+
+        return (homeScoreAverage ?? 0 + awayScoreAverage ?? 0).Divide(totalGames);
+    }
     
     internal static IList<HistoricalGame> GetGameDataBy(this IEnumerable<HistoricalGame> gameData, int startYear, int endYear)
     {
@@ -118,7 +156,7 @@ internal static class HistoricalGameExtensions
         var games = historicalGames
             .Where(i => i.HomeTeam == team || i.AwayTeam == team)
             .GetGameDataBy(2022, 2023)
-            .Take(4)
+            .Take(6)
             .ToList();
 
         return games;

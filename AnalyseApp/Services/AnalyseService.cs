@@ -126,10 +126,12 @@ public class AnalyseService
                  if (averageQualification.qualified)
                  {
                      var probability = GetPoisonProbability(comingGame.HomeTeam, comingGame.AwayTeam, comingGame.Div);
-                     count++;
-                     Console.WriteLine($"{comingGame.Date} {comingGame.HomeTeam}:{comingGame.AwayTeam} {probability.Key} {probability.Item2}%");
-                 }
-             }
+                     if (probability.Item2 > 0.61)
+                     {
+                         Console.WriteLine($"{comingGame.Date} {comingGame.HomeTeam}:{comingGame.AwayTeam} {probability.Key} {probability.Item2}%");
+                     }
+                 } 
+              }
              else
              {
                //  list.Add($"{comingGame.Date} {comingGame.HomeTeam}:{comingGame.AwayTeam} {filterDangersGames.msg}");
@@ -155,20 +157,17 @@ public class AnalyseService
         (GameData Home, GameData Away) lastSixGames, 
         (GameData Home, GameData Away) allGames, 
         HeadToHeadData headToHeads)
-    {
-        if (lastSixGames.Home.GoalsGameAverage < 0.50 || lastSixGames.Away.GoalsGameAverage < 0.50) 
-            return (false, $"failed because of last 6 games score average {lastSixGames.Home.GoalsGameAverage} {lastSixGames.Away.GoalsGameAverage} ");
-
-        if (lastSixGames.Home.HalftimeGoalAverage < 0.65 && lastSixGames.Away.HalftimeGoalAverage < 0.65) 
-            return (false, $"failed because of last 6 games halftime {lastSixGames.Home.HalftimeGoalAverage} {lastSixGames.Away.HalftimeGoalAverage} ");
-
+    { 
         if (allGames.Home.GoalsGameAverage < 0.60 || allGames.Away.GoalsGameAverage < 0.60)
             return (false, $"failed because of last 6 season score average  {allGames.Home.GoalsGameAverage} {allGames.Away.GoalsGameAverage}");
 
-        if (headToHeads.HomeGoalsGameAverage < 0.60 || headToHeads.AwayGoalsGameAverage < 0.60)
-            return (false, $"failed because of headToHeads score {headToHeads.HomeGoalsGameAverage} {headToHeads.AwayGoalsGameAverage}");
+        if (lastSixGames.Home.LastThreeGamesScored && lastSixGames.Away.LastThreeGamesScored) 
+            return (true, "");
 
-        return (true, "");
+        if (lastSixGames.Home.ThreeGamesScored && lastSixGames.Away.ThreeGamesScored && headToHeads.LastFourBothScored)
+            return (true, "");
+        
+        return (false, "SCHEIßE!! ");
 
     }
 
@@ -226,7 +225,10 @@ public class AnalyseService
     
     private HeadToHeadData GetHeadToHeadAnalysis(HistoricalGame comingGame)
     {
-        var headToHeads = _historicalGames.GetHeadToHeadGamesBy(comingGame.HomeTeam, comingGame.AwayTeam).ToList();
+        var headToHeads = _historicalGames
+            .GetHeadToHeadGamesBy(comingGame.HomeTeam, comingGame.AwayTeam)
+            .OrderByDescending(i => DateTime.Parse(i.Date))
+            .ToList();
 
         var headToHead = new HeadToHeadData
         {
@@ -239,7 +241,11 @@ public class AnalyseService
             ZeroOneHomeGameAverage = headToHeads.CalculateNoScoreGamesAccuracyBy(comingGame.HomeTeam, 1),
             ZeroOneAwayGameAverage = headToHeads.CalculateNoScoreGamesAccuracyBy(comingGame.AwayTeam, 1),
             HomeHalftimeGoalsScored = headToHeads.CalculateHalftimeScoreGamesAccuracy(comingGame.HomeTeam),
-            AwayHalftimeGoalsScored = headToHeads.CalculateHalftimeScoreGamesAccuracy(comingGame.AwayTeam)
+            AwayHalftimeGoalsScored = headToHeads.CalculateHalftimeScoreGamesAccuracy(comingGame.AwayTeam),
+            ThreeZeroZeroGames = headToHeads.Take(3).All(i => i is { FTAG: 0, FTHG:  0 }),
+            ThreeZeroOneGames = headToHeads.Take(3).All(i => i is { FTAG: > 0, FTHG:  0 } or { FTAG: 0, FTHG: > 0 }),
+            LastFourBothScored = headToHeads.Take(4).All(i => i is { FTAG: > 0, FTHG: > 0 }),
+            LastFourOverGames = headToHeads.Take(4).All(i => i.FTAG + i.FTHG > 2)
         };
        
         return headToHead;
@@ -254,15 +260,16 @@ public class AnalyseService
             ZeroOneGameAverageByTeam = games.CalculateNoScoreGamesAccuracyBy(team, 1),
             ZeroOneGameAverage = games.CalculateNoScoreGamesAccuracy(1),
             HalftimeGoalAverage = games.CalculateHalftimeScoreGamesAccuracy(team),
-            GoalsGameAverage = games.CalculateScoreGameAccuracy(team)
+            GoalsGameAverage = games.CalculateScoreGameAccuracy(team),
+            GoalsScored = games.CalculateScoredGoalAccuracy(team),
+            GoalsConceded = games.CalculateConcededGoalAccuracy(team),
+            LastThreeGamesScored = games.Count(i => i.HomeTeam == team && i.FTHG > 0 ||i.AwayTeam ==  team && i.FTAG > 0) > 3,
+            ThreeGamesScored = games.Count(i => i.HomeTeam == team && i.FTHG > 0 ||i.AwayTeam ==  team && i.FTAG > 0) == 3
         };
         
         return gameData;
     }
 
-    
-    
-    
     
     private static (bool Qualified,double probability, string indicator) BothTeamScore(
         GameQualification lastSixGames, 
