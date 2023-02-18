@@ -4,6 +4,6 @@ namespace AnalyseApp.Interfaces;
 
 public interface IAnalyseHandler
 {
-    IAnalyseHandler? SetNext(IAnalyseHandler? analyseHandler);
-    bool? Handle(double probability, NextGame lastSixGames, NextGame allGames);
+    IAnalyseHandler SetNext(IAnalyseHandler handler);
+    GameQualification HandleRequest(List<HistoricalGame> pastGames, GameQualification gameQualification, string homeTeam, string awayTeam);
 }

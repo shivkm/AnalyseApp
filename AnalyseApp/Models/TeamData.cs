@@ -13,6 +13,13 @@ public record TeamData
     public double ZeroGoalAverage { get; set; }
     public bool LastHomeGameZeroZero { get; set; }
     public bool LastAwayGameZeroZero { get; set; }
+    
+    // Define properties to store the data for a single team, including the three types of data you mentioned
+    public string TeamName { get; set; }
+    public List<GameData> LastSixSeasons { get; set; }
+    public List<GameData> LastSixGames { get; set; }
+    public List<HeadToHeadData> HeadToHead { get; set; }
+    // Add more properties as needed
 }
 
 public record NextGame

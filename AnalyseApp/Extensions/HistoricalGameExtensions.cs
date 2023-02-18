@@ -4,25 +4,160 @@ namespace AnalyseApp.Extensions;
 
 internal static class HistoricalGameExtensions
 {
+    /// <summary>
+    /// calculate the accuracy of at least one goal games
+    /// </summary>
+    /// <param name="games">List of teams games</param>
+    /// <param name="team">team name</param>
+    /// <returns>accuracy of at least one goal by team</returns>
+    internal static double CalculateScoreGameAccuracy(this List<HistoricalGame> games, string team)
+    {
+        var oneGoalGames = games
+            .Count(i => i.HomeTeam == team && i.FTHG > 0 || i.AwayTeam == team && i.FTAG > 0)
+            .Divide(games.Count);
+
+        return oneGoalGames;
+    }
+
+    /// <summary>
+    /// calculate the accuracy of halftime scored games
+    /// </summary>
+    /// <param name="games">List of teams games</param>
+    /// <param name="team">team name</param>
+    /// <returns>accuracy of at least one goal in halftime by team</returns>
+    internal static double CalculateHalftimeScoreGamesAccuracy(this List<HistoricalGame> games, string team)
+    {
+        var zeroZeroGames = games.Count(i => i.HomeTeam == team && i.HTHG > 0 || i.AwayTeam == team && i.HTAG > 0);
+        var totalGames = games.Count;
+
+        // Avoid division by zero
+        if (totalGames == 0)
+            return 0.0; 
+
+        return (double) zeroZeroGames / totalGames;
+    }
+
+    /// <summary>
+    /// calculate the accuracy of no goal scored by provided team
+    /// </summary>
+    /// <param name="games">List of teams games</param>
+    /// <param name="expectedGoals">expected goal</param>
+    /// <returns>accuracy of no goal scored by team</returns>
+    internal static double CalculateNoScoreGamesAccuracy(this List<HistoricalGame> games, int expectedGoals)
+    {
+        var zeroZeroGames = games.Count(i =>  i.FTHG == 0 && i.FTAG <= expectedGoals ||
+                                                            i.FTAG == 0 && i.FTHG <= expectedGoals);
+        var totalGames = games.Count;
+
+        // Avoid division by zero
+        if (totalGames == 0)
+            return 0.0; 
+
+        return (double) zeroZeroGames / totalGames;
+    }
     
-    internal static IList<HistoricalGame> GetGameDataBy(
-        this IEnumerable<HistoricalGame> gameData, int startYear, int endYear)
+    /// <summary>
+    /// calculate the accuracy of no goal scored by provided team
+    /// </summary>
+    /// <param name="games">List of teams games</param>
+    /// <param name="team">team name</param>
+    /// <param name="expectedGoals">expected goal</param>
+    /// <returns>accuracy of no goal scored by team</returns>
+    internal static double CalculateNoScoreGamesAccuracyBy(this List<HistoricalGame> games, string team, int expectedGoals)
+    {
+        var zeroZeroGames = games.Count(i => i.HomeTeam == team && i.FTHG == 0 && i.FTAG <= expectedGoals ||
+                                             i.AwayTeam == team && i.FTAG == 0 && i.FTHG <= expectedGoals);
+        var totalGames = games.Count;
+
+        // Avoid division by zero
+        if (totalGames == 0)
+            return 0.0; 
+
+        return (double) zeroZeroGames / totalGames;
+    }
+    
+    
+    /// <summary>
+    /// calculate the accuracy of 0:0 games
+    /// </summary>
+    /// <param name="games">List of teams games</param>
+    /// <returns>accuracy of 0:0</returns>
+    internal static double CalculateZeroZeroAccuracy(this List<HistoricalGame> games)
+    {
+        var zeroZeroGames = games.Count(i => i is { FTHG: 0, FTAG: 0 });
+        var totalGames = games.Count;
+
+        // Avoid division by zero
+        if (totalGames == 0)
+            return 0.0; 
+
+        return (double) zeroZeroGames / totalGames;
+    }
+    
+    
+    internal static IList<HistoricalGame> GetGameDataBy(this IEnumerable<HistoricalGame> gameData, int startYear, int endYear)
     {
         var startDate = new DateTime(startYear, 08, 01);
         var endDate = new DateTime(endYear, 06, 30);
 
         var filteredMatches = gameData.Where(i => 
-        {
-            var matchDate = DateTime.Parse(i.Date);
-            return matchDate >= startDate && matchDate <= endDate;
-        })
-        .OrderByDescending(i => DateTime.Parse(i.Date))
-        .ToList();
+            {
+                var matchDate = DateTime.Parse(i.Date);
+                return matchDate >= startDate && matchDate <= endDate;
+            })
+            .OrderByDescending(i => DateTime.Parse(i.Date))
+            .ToList();
 
         return filteredMatches;
     }
 
-    private static double WeightedAverage(IList<double> values, IList<double> weights)
+
+    
+    internal static List<HistoricalGame> GetLastSixGamesBy(this IEnumerable<HistoricalGame> historicalGames, string team)
+    {
+        var games = historicalGames
+            .Where(i => i.HomeTeam == team || i.AwayTeam == team)
+            .GetGameDataBy(2022, 2023)
+            .Take(4)
+            .ToList();
+
+        return games;
+    }
+    
+    internal static List<HistoricalGame> GetAllSeasonGamesBy(this IEnumerable<HistoricalGame> historicalGames, string team)
+    {
+        var games = historicalGames
+            .Where(i => i.HomeTeam == team || i.AwayTeam == team)
+            .GetGameDataBy(2016, 2023)
+            .ToList();
+        
+        return games;
+    }
+    
+    internal static IList<HistoricalGame> GetHeadToHeadGamesBy(this IEnumerable<HistoricalGame> historicalGames, string homeTeam, string awayTeam)
+    {
+        var games = historicalGames
+            .Where(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam ||
+                        i.HomeTeam == awayTeam && i.AwayTeam == homeTeam)
+            .GetGameDataBy(2016, 2023);
+        
+        return games;
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    private static double PossibleProbabilities(IList<double> values, IList<double> weights)
     {
         if (values.Count != weights.Count)
             throw new ArgumentException("Values and weights must have the same length.");
@@ -38,147 +173,7 @@ internal static class HistoricalGameExtensions
 
         return weightedSum / weightSum;
     }
-    
-    internal static HeadToHead GetHeadToHeadGamesBy(this IList<HistoricalGame> historicalGames, string homeTeam, string awayTeam)
-    {
-        // Get all head to head matches
-        var pastMatches = historicalGames
-            .Where(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam ||
-                                    i.HomeTeam == awayTeam && i.AwayTeam == homeTeam)
-            .GetGameDataBy(2016, 2023);
 
-        // check the last two matches wasn't 0:0 and the last match is not older than one year
-        var lastTwoZeroZeroGames = pastMatches
-            .OrderByDescending(i => i.Date).Take(2)
-            .Any(i => i is { FTHG: 0, FTAG: 0 } && DateTime.Parse(i.Date) > DateTime.Now.AddYears(-1));
-        
-        var homeGoalAverage = pastMatches
-            .Sum(m => m.HomeTeam == homeTeam ? m.FTHG  ?? 0 : m.FTAG ?? 0)
-            .Divide(pastMatches.Count);
-        
-        var homeHalftimeGoalAverage = pastMatches
-            .Sum(m => m.HomeTeam == homeTeam ? m.HTHG  ?? 0 : m.HTAG ?? 0)
-            .Divide(pastMatches.Count);
-        
-        var homeShotOnGoalsAverage = pastMatches
-            .Sum(m => m.HomeTeam == homeTeam ? m.HST  ?? 0 : m.AST ?? 0)
-            .Divide(pastMatches.Count);
-        
-        var homeShotAverage = pastMatches
-            .Sum(m => m.HomeTeam == homeTeam ? m.HS  ?? 0 : m.AS ?? 0)
-            .Divide(pastMatches.Count);
-
-        var homeShotAccuracy = homeShotOnGoalsAverage / homeGoalAverage;
-
-        var awayGoalAverage = pastMatches
-            .Sum(m => m.HomeTeam == awayTeam ? m.FTHG  ?? 0 : m.FTAG ?? 0)
-            .Divide(pastMatches.Count);
-        
-        var awayShotOnGoalsAverage = pastMatches
-            .Sum(m => m.HomeTeam == awayTeam ? m.HST  ?? 0 : m.AST ?? 0)
-            .Divide(pastMatches.Count);
-        
-        var awayHalftimeGoalAverage = pastMatches
-            .Sum(m => m.HomeTeam == awayTeam ? m.HTHG  ?? 0 : m.HTAG ?? 0)
-            .Divide(pastMatches.Count);
-        
-        var awayShotAverage = pastMatches
-            .Sum(m => m.HomeTeam == awayTeam ? m.HS  ?? 0 : m.AS ?? 0)
-            .Divide(pastMatches.Count);
-        
-        var awaySotAccuracy = awayShotOnGoalsAverage / awayShotAverage;
-        // Use Naive Bayes algorithm to predict the average scores
-        var homeWins = pastMatches.Count(m => m.HomeTeam == homeTeam ? m.FTR == "H" : m.FTR == "A");
-        var awayWins = pastMatches.Count(m => m.HomeTeam == awayTeam ? m.FTR == "H" : m.FTR == "A");
-        var draws = pastMatches.Count(m => m.FTR == "D");
-
-        var headToHead = new HeadToHead
-        {
-            GamesPlayed = pastMatches.Count,
-            HomeScoreAverage = homeGoalAverage + homeWins * homeGoalAverage + 
-                               homeHalftimeGoalAverage * homeGoalAverage +
-                               homeShotAccuracy * homeGoalAverage,
-            
-            AwayScoreAverage = awayGoalAverage + awayWins * awayGoalAverage + 
-                               awayHalftimeGoalAverage * awayGoalAverage +
-                               awaySotAccuracy * awayGoalAverage,
-            
-            LastTwoZeroZeroGames = lastTwoZeroZeroGames
-        };
-        
-        return headToHead;
-    }
-    
-    internal static TeamData GetCurrentSeasonGamesBy(this IList<HistoricalGame> historicalGames, string team)
-    {
-        var homeGames = historicalGames
-            .Where(i => i.HomeTeam == team)
-            .GetGameDataBy(2022, 2023);
-        
-        var awayGames = historicalGames
-            .Where(i => i.AwayTeam == team)
-            .GetGameDataBy(2022, 2023);
-
-        var teamData = GetTeamData(homeGames.Take(4).ToList(), awayGames.Take(4).ToList(), team);
-        
-        return teamData;
-    }
-    
-    internal static TeamData GetAllSeasonGamesBy(this IList<HistoricalGame> historicalGames, string team)
-    {
-        var homeGames = historicalGames
-            .Where(i => i.HomeTeam == team)
-            .GetGameDataBy(2016, 2022);
-        
-        var awayGames = historicalGames
-            .Where(i => i.AwayTeam == team)
-            .GetGameDataBy(2016, 2022);
-
-        var teamData = GetTeamData(homeGames, awayGames, team);
-
-        return teamData;
-    }
-
-    private static TeamData GetTeamData(ICollection<HistoricalGame> homeMatches, IList<HistoricalGame> awayMatches, string team)
-    {
-        var lastHomeNoGoalGame = homeMatches.OrderByDescending(i => i.Date).Take(1).Any(i => i is { FTHG: 0, FTAG: 0 });
-        var homeZeroGoalAverage = homeMatches.Count(i => i.FTHG == 0).Divide(homeMatches.Count);
-        var homeOneGoalAverage = homeMatches.Count(i => i.FTHG > 0).Divide(homeMatches.Count);
-        var homeHalftimeOneGoalAverage = homeMatches.Count(i => i.HTHG > 0).Divide(homeMatches.Count);
-        var homeHalftimeConcededAverage = homeMatches.Count(i => i.HTAG > 0).Divide(homeMatches.Count);
-        var homeGoalConcededAverage = homeMatches.Count(i => i.FTAG > 0).Divide(homeMatches.Count);
-        
-        var lastAwayNoGoalGame = awayMatches.OrderByDescending(i => i.Date).Take(1).Any(i => i is { FTHG: 0, FTAG: 0 });
-        var awayZeroGoalAverage = awayMatches.Count(i => i.FTAG == 0).Divide(homeMatches.Count);
-        var awayOneGoalAverage = awayMatches.Count(i => i.FTAG > 0).Divide(homeMatches.Count);
-        var awayHalftimeOneGoalAverage = awayMatches.Count(i => i.FTAG > 0).Divide(homeMatches.Count);
-        var awayGoalConcededAverage = awayMatches.Count(i => i.FTHG > 0).Divide(homeMatches.Count);
-        var awayHalftimeConcededAverage = awayMatches.Count(i => i.HTHG > 0).Divide(homeMatches.Count);
-
-        var goalAverage = homeOneGoalAverage * 0.50 + awayOneGoalAverage * 0.50;
-        var halftimeGoalAverage = homeHalftimeOneGoalAverage * 0.50 + awayHalftimeOneGoalAverage * 0.50;
-        var concededAverage = homeGoalConcededAverage * 0.50 + awayGoalConcededAverage * 0.50;
-        var halftimeConcededAverage = homeHalftimeConcededAverage * 0.50 + awayHalftimeConcededAverage * 0.50;
-        var zeroGaolAverage = homeZeroGoalAverage * 0.50 + awayZeroGoalAverage * 0.50;
-
-        var teamData = new TeamData
-        {
-            Team = team,
-            GoalAverage = goalAverage,
-            OneGoalQualified = goalAverage > 0.58,
-            ConcededAverage = concededAverage,
-            ConcededQualified = concededAverage > 0.58,
-            HalftimeGoalAverage = halftimeGoalAverage,
-            HalftimeConcededAverage = halftimeConcededAverage,
-            HalftimeOneGoalQualified = halftimeGoalAverage > 0.68,
-            ZeroGoalAverage = zeroGaolAverage,
-            LastHomeGameZeroZero = lastHomeNoGoalGame,
-            LastAwayGameZeroZero = lastAwayNoGoalGame
-        };
-
-        return teamData;
-    }
-    
     internal static int GetWinGamesCountBy(this IEnumerable<HistoricalGame> currentMatches, string team) =>
         currentMatches.Count(i => i.FTR == "H" && i.HomeTeam == team || i.FTR == "A" && i.AwayTeam == team);
     
@@ -278,7 +273,7 @@ internal static class HistoricalGameExtensions
         currentMatches.Where(i => i.HomeTeam == team).Sum(i => i.HTAG ?? 0) +
         currentMatches.Where(i => i.AwayTeam == team).Sum(i => i.HTHG ?? 0);
     
-    internal static int GetHalftimeGoalScoredGamesCount(this IEnumerable<HistoricalGame> currentMatches) =>
+    internal static int GetHalftimeGoalGamesCount(this IEnumerable<HistoricalGame> currentMatches) =>
         currentMatches.Count(i => i.HTHG > 0 || i.HTAG > 0);
 
     
@@ -291,16 +286,6 @@ internal static class HistoricalGameExtensions
 
         return teams.Any(i => i == homeTeam) && teams.Any(i => i != awayTeam);
     }
-    
-    // Checking if the given home team and away team are part of the current league.
-    internal static bool TeamIsInLeague(this IEnumerable<HistoricalGame> gameData, string team)
-    {
-        var teams = gameData.Select(i => i.HomeTeam)
-            .Distinct()
-            .ToList();
-
-        return teams.Any(i => i == team);
-    }
 
     
     internal static int NumberOfTeamsLeague(this ICollection<HistoricalGame> gameData)
@@ -310,26 +295,5 @@ internal static class HistoricalGameExtensions
             .ToList();
 
         return teams.Count;
-    }
-
-    internal static IList<HistoricalGame> GetTeamMatchesBy(this IList<HistoricalGame> gameData, string team, bool atHome = false)
-    {
-        var result = gameData
-            .Where(i => atHome ? i.HomeTeam == team : i.AwayTeam == team)
-            .ToList();
-
-        return result;
-    }
-    
-    
-    
-    
-    internal static IList<HistoricalGame> GetMatchesBy(this IEnumerable<HistoricalGame> games, Func<HistoricalGame, bool> predicate)
-    {
-        var currentSession = games
-            .Where(predicate)
-            .ToList();
-
-        return currentSession;
     }
 }

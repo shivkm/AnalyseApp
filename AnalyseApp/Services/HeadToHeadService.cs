@@ -1,4 +1,6 @@
-﻿using AnalyseApp.Extensions;
+﻿using AnalyseApp.Algorithm;
+using AnalyseApp.Extensions;
+using AnalyseApp.Generics;
 using AnalyseApp.Models;
 using MathNet.Numerics.Distributions;
 
