@@ -115,7 +115,7 @@ internal static class HistoricalGameExtensions
     
         
     /// <summary>
-    /// calculate the accuracy of no goal scored by provided team
+    /// calculate the accuracy of goal conceded by provided team
     /// </summary>
     /// <param name="games">List of teams games</param>
     /// <param name="team">team name</param>

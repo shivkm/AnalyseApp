@@ -39,7 +39,7 @@ public class PoissonService : IPoissonService
             }).ToList();
     }
  
-    private Dictionary<string, double> AnalysePerformance(string homeTeam, string awayTeam, string league,  IList<HistoricalGame> historicalData)
+    public Dictionary<string, double> AnalysePerformance(string homeTeam, string awayTeam, string league,  IList<HistoricalGame> historicalData)
     {
         // Retrieving the season of the league by year.
         if (!historicalData.TeamsAreInLeague(homeTeam, awayTeam))
@@ -52,7 +52,7 @@ public class PoissonService : IPoissonService
         var expectedAwayGoal = awayMatches.Attack * homeMatches.Defense * homeMatches.LeagueConcededAverage;
         var probabilities = PossibleProbabilities(expectedHomeGoal, expectedAwayGoal);
         
-        _poissonProbabilityDictionary.Clear();
+       // _poissonProbabilityDictionary.Clear();
         return probabilities;
     }
     
@@ -67,8 +67,6 @@ public class PoissonService : IPoissonService
                 var awayPoissonProbability = CalculatePoissonProbability(awayGoalAverage, awayScore);
                 
                 AddScoreProbabilities(homeScore, awayScore, homePoissonProbability * awayPoissonProbability);
-              //  AddOddProbabilities(homeScore, awayScore,homePoissonProbability * awayPoissonProbability);
-
             }
         }
         
@@ -94,14 +92,6 @@ public class PoissonService : IPoissonService
         if (homeScore + awayScore == 3 || homeScore + awayScore == 2)
         {
             AddOrUpdateDictionary(homeScore, awayScore, probability, "TwoToThree", result);
-        }
-        if (homeScore is 0 && awayScore is 0)
-        {
-            AddOrUpdateDictionary(homeScore, awayScore, probability, "ZeroZeroGoals", result);
-        }
-        if (homeScore is 1 or 2 && awayScore is 0 || awayScore is 1 or 2 && homeScore is 0)
-        {
-            AddOrUpdateDictionary(homeScore, awayScore, probability, "OneSideGoal", result);
         }
         if (homeScore + awayScore < 3)
         {

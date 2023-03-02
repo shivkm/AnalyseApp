@@ -12,8 +12,8 @@ public class GameData
     public double GoalsConceded { get; set; }
     public bool LastThreeGamesScored { get; set; }
     public bool ThreeGamesScored { get; set; }
-    public bool ThreeZeroZero { get; set; }
-    public bool ThreeZeroOne { get; set; }
+    public List<MarkovChainResult> MarkovChainProbability { get; set; }
+    public double MonteCarloProbability { get; set; }
 }
 
 public class HeadToHeadData

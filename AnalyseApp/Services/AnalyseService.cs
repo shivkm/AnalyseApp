@@ -12,45 +12,16 @@ public class AnalyseService
     private const string FileDir = "C:\\shivm\\AnalyseApp\\data";
     private List<HistoricalGame> _historicalGames = new();
     private List<HistoricalGame> _upComingGames = new();
-    private readonly HalftimeGoalHandler _halftimeGoalHandler;
-    private readonly NoGoalGameHandler _noGoalGameHandler;
+    private CalculateService _calculateService;
     
-    
-    
-    
-    
-    private readonly OneSideGoalGameAverage oneSideGoalGameHandler;
-    private readonly ZeroZeroGameHandler zeroZeroResultGameHandler;
-    private readonly PoissonHandler poissonHandler;
-    private readonly MarkovChainHandler markovChainHandler;
     private bool oneSideScoreSuggestLessThanThreeGoal = false;
     private bool oneSideScoreTwoToThreeGoal = false;
     private bool oneSideScoreSuggestMoreThanTwoGoal = false;
     
-    // Rajev
-    //private const double LastSixGamesWeight = 0.40;
-    //private const double HistoricalGamesWeight = 0.20;
-    //private const double HeadToHeadGamesWeight = 0.25;
-    //private const double PoisonProbabilityWeight = 0.15;
-    // WK/SM
-    private const double LastSixGamesWeight = 0.30;
-    private const double HistoricalGamesWeight = 0.10;
-    private const double HeadToHeadGamesWeight = 0.30;
-    private const double PoisonProbabilityWeight = 0.30;
-    // Shivm
-    //private const double LastSixGamesWeight = 0.30;
-    //private const double HistoricalGamesWeight = 0.10;
-    //private const double HeadToHeadGamesWeight = 0.30;
-    //private const double PoisonProbabilityWeight = 0.30;
 
     public AnalyseService()
     {
-        _halftimeGoalHandler       = new HalftimeGoalHandler();
-        _noGoalGameHandler         = new NoGoalGameHandler();
-        oneSideGoalGameHandler    = new OneSideGoalGameAverage();
-        zeroZeroResultGameHandler = new ZeroZeroGameHandler();
-        poissonHandler            = new PoissonHandler();
-        markovChainHandler        = new MarkovChainHandler();
+        _calculateService = new CalculateService(_historicalGames);
     }
     internal AnalyseService ReadHistoricalGames()
     {
@@ -118,17 +89,16 @@ public class AnalyseService
             var headToHeads = GetHeadToHeadAnalysis(comingGame);
 
              var filterDangersGames = FilterDangersGames(lastSixGames, allGames, headToHeads);
-            
              if (filterDangersGames.qualified)
              {
                  var averageQualification = FilterAverageQualification(lastSixGames, allGames, headToHeads);
-
-                 if (averageQualification.qualified)
+                 if (averageQualification)
                  {
                      var probability = GetPoisonProbability(comingGame.HomeTeam, comingGame.AwayTeam, comingGame.Div);
-                     if (probability.Item2 > 0.61)
+                    
+                     if ( probability.Value > 0.60)
                      {
-                         Console.WriteLine($"{comingGame.Date} {comingGame.HomeTeam}:{comingGame.AwayTeam} {probability.Key} {probability.Item2}%");
+                         Console.WriteLine($"{comingGame.Date} {comingGame.HomeTeam}:{comingGame.AwayTeam} {probability.Key} {probability.Value}%");
                      }
                  } 
               }
@@ -144,31 +114,25 @@ public class AnalyseService
         list.ForEach(i => Console.WriteLine($"{i}\t"));
     }
 
-    private (string? Key, double) GetPoisonProbability(string homeTeam, string awayTeam, string league)
+    private KeyValuePair<string, double> GetPoisonProbability(string homeTeam, string awayTeam, string league)
     {
         var service = new PoissonService(_historicalGames);
-        var probab = service.Execute(homeTeam, awayTeam, league).MaxBy(i => i.Probability)
-            ;
+        var probability = service.AnalysePerformance(homeTeam, awayTeam, league, _historicalGames)
+            .FirstOrDefault();
 
-        return (probab?.Key, probab?.Probability ?? 0);
+        return probability;
     }
 
-    private (bool qualified, string msg) FilterAverageQualification(
+    private static bool FilterAverageQualification(
         (GameData Home, GameData Away) lastSixGames, 
         (GameData Home, GameData Away) allGames, 
         HeadToHeadData headToHeads)
-    { 
-        if (allGames.Home.GoalsGameAverage < 0.60 || allGames.Away.GoalsGameAverage < 0.60)
-            return (false, $"failed because of last 6 season score average  {allGames.Home.GoalsGameAverage} {allGames.Away.GoalsGameAverage}");
+    {
+        if (allGames.Home.GoalsGameAverage > 0.60 && allGames.Away.GoalsGameAverage > 0.60 &&
+            lastSixGames.Home.LastThreeGamesScored && lastSixGames.Away.LastThreeGamesScored) 
+            return true;
 
-        if (lastSixGames.Home.LastThreeGamesScored && lastSixGames.Away.LastThreeGamesScored) 
-            return (true, "");
-
-        if (lastSixGames.Home.ThreeGamesScored && lastSixGames.Away.ThreeGamesScored && headToHeads.LastFourBothScored)
-            return (true, "");
-        
-        return (false, "SCHEIßE!! ");
-
+        return lastSixGames.Home.ThreeGamesScored && lastSixGames.Away.ThreeGamesScored && headToHeads.LastFourBothScored;
     }
 
     private (bool qualified, string msg) FilterDangersGames(
@@ -189,8 +153,7 @@ public class AnalyseService
         if (allGames.Home.ZeroOneGameAverage > 0.40 || allGames.Away.ZeroOneGameAverage > 0.40)
             return (false, $"failed because of last 6 season 0:1 {allGames.Home.ZeroOneGameAverage} {allGames.Away.ZeroOneGameAverage}");
         
-        if (headToHeads is { MatchesPlayed: > 8, ZeroZeroGameAverage: < 0.40, ZeroOneAwayGameAverage: < 0.45, ZeroOneHomeGameAverage: < 0.45 } or
-            { MatchesPlayed: >= 3, ZeroZeroGameAverage: < 0.34, ZeroOneAwayGameAverage: < 0.34, ZeroOneHomeGameAverage: < 0.34 })
+        if (headToHeads is { ThreeZeroZeroGames: false, ThreeZeroOneGames: false })
             return (true, "");
         
         return (false, $"failed because of head to head count: {headToHeads.MatchesPlayed} 0:0 {headToHeads.ZeroZeroGameAverage} 0:1  {headToHeads.ZeroOneHomeGameAverage} {headToHeads.ZeroOneAwayGameAverage}");
@@ -251,7 +214,7 @@ public class AnalyseService
         return headToHead;
     }
 
-    private static GameData GetTeamData(List<HistoricalGame> games, string team)
+    private GameData GetTeamData(List<HistoricalGame> games, string team)
     {
         var gameData = new GameData
         {
@@ -264,7 +227,8 @@ public class AnalyseService
             GoalsScored = games.CalculateScoredGoalAccuracy(team),
             GoalsConceded = games.CalculateConcededGoalAccuracy(team),
             LastThreeGamesScored = games.Count(i => i.HomeTeam == team && i.FTHG > 0 ||i.AwayTeam ==  team && i.FTAG > 0) > 3,
-            ThreeGamesScored = games.Count(i => i.HomeTeam == team && i.FTHG > 0 ||i.AwayTeam ==  team && i.FTAG > 0) == 3
+            ThreeGamesScored = games.Count(i => i.HomeTeam == team && i.FTHG > 0 ||i.AwayTeam ==  team && i.FTAG > 0) == 3,
+            MarkovChainProbability = _calculateService.TeamMarkovChainProbability(games, team)
         };
         
         return gameData;

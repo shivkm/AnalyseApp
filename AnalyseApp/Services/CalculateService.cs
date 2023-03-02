@@ -10,7 +10,7 @@ namespace AnalyseApp.Services;
 public class CalculateService
 {
     private const string ZeroGoal = "ZeroGoal";
-    private const string AtLeastOneGoal = "atLeastOneGoal";
+    private const string Score = "atLeastOneGoal";
     private const string MoreThanOneGoal = "MoreThanOneGoal";
     private const string BothTeamScoreGoal = "BothTeamScoreGoal";
     private const string MoreThanTwoGoals = "MoreThanTwoGoals";
@@ -97,16 +97,16 @@ public class CalculateService
     {
         // Select the AtLeastOneGoal property to filter the passing stage
         var currentHomeMarkovChain  = _currentHomeMarkovChain
-            .First(i => i.Key == AtLeastOneGoal);
+            .First(i => i.Key == Score);
         
         var currentAwayMarkovChain  = _currentAwayMarkovChain
-            .First(i => i.Key == AtLeastOneGoal);
+            .First(i => i.Key == Score);
         
         var currentHomePoisonAndMonteCarlo  = _currentHomPoison
-            .First(i => i.Key == AtLeastOneGoal);
+            .First(i => i.Key == Score);
         
         var currentAwayPoisonAndMonteCarlo  = _currentAwayPoison
-            .First(i => i.Key == AtLeastOneGoal);
+            .First(i => i.Key == Score);
 
         if (currentHomeMarkovChain.Probability > 0.60 &&
             currentAwayMarkovChain.Probability > 0.60)
@@ -210,7 +210,7 @@ public class CalculateService
         return result;
     }
 
-    private List<MarkovChainResult> TeamMarkovChainProbability(IList<HistoricalGame> pastGames, string team)
+    public List<MarkovChainResult> TeamMarkovChainProbability(IList<HistoricalGame> pastGames, string team)
     {
         var homeTeamGames = pastGames
             .Where(i => i.HomeTeam == team)
@@ -235,8 +235,7 @@ public class CalculateService
         var result = probabilities
             .GroupBy(p => p.Key)
             .Select(g => new MarkovChainResult(
-                g.Key, 
-                g.Sum(i => i.Probability))
+                g.Key, g.Sum(i => i.Probability))
             ).ToList();
 
         return result;
@@ -337,7 +336,7 @@ public class CalculateService
         }
         var key = score switch
         {
-            > 0 => AtLeastOneGoal,
+            > 0 => Score,
             0 => ZeroGoal,
             _ => MoreThanOneGoal
         };
@@ -356,7 +355,7 @@ public class CalculateService
         return probability;
     }
     
-    private static double MonteCarlo(double scoreAverage)
+    public double MonteCarlo(double scoreAverage)
     {
         const int simulationIterations = 10000;
         var goalsScored  = 0;
