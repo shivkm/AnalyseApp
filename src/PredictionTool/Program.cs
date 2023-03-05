@@ -32,7 +32,7 @@ var host = Host.CreateDefaultBuilder(args)
             ctx.DefaultRequestHeaders.Add("X-Auth-Token", token);
         });
         services.AddScoped<IFileProcessor, FileProcessor>();
-        services.AddScoped<ITeamStrengthCalculator, TeamStrengthCalculator>();
+        services.AddScoped<ICalculatorService, CalculatorService>();
         services.AddScoped<IFilterService, FilterService>();
         services.AddScoped<IAnalyseService, AnalyseService>();
         services.AddHostedService<Worker>();

@@ -87,28 +87,26 @@ public static class GameExtensions
     /// <returns>accuracy of no goal scored by team</returns>
     internal static double CalculateConcededGoalAccuracy(this List<Game> games, string team)
     {
-        var homeScoreAverage = games.Where(i => i.Home == team).Sum(i => i.FullTimeAwayScore);
-        var awayScoreAverage = games.Where(i => i.Away == team).Sum(i => i.FullTimeHomeScore);
+        var homeScoreAverage = games.Where(i => i.Home == team).Sum(i => i.FullTimeAwayScore ?? 0);
+        var awayScoreAverage = games.Where(i => i.Away == team).Sum(i => i.FullTimeHomeScore ?? 0);
         var totalGames = games.Count;
 
-        // Avoid division by zero
-        return totalGames == 0 ? 0.0 : (homeScoreAverage ?? 0 + awayScoreAverage ?? 0).Divide(totalGames);
+        return (homeScoreAverage + awayScoreAverage).Divide(totalGames);
     }
     
     /// <summary>
-    /// calculate the accuracy of goal conceded by provided team
+    /// calculate the accuracy of goal scored by provided team
     /// </summary>
     /// <param name="games">List of teams games</param>
     /// <param name="team">team name</param>
     /// <returns>accuracy of no goal scored by team</returns>
     internal static double CalculateScoredGoalAccuracy(this List<Game> games, string team)
     {
-        var homeScoreAverage = games.Where(i => i.Home == team).Sum(i => i.FullTimeHomeScore);
-        var awayScoreAverage = games.Where(i => i.Away == team).Sum(i => i.FullTimeAwayScore);
+        var homeScoreAverage = games.Where(i => i.Home == team).Sum(i => i.FullTimeHomeScore ?? 0);
+        var awayScoreAverage = games.Where(i => i.Away == team).Sum(i => i.FullTimeAwayScore ?? 0);
         var totalGames = games.Count;
 
-        // Avoid division by zero
-        return totalGames == 0 ? 0.0 : (homeScoreAverage ?? 0 + awayScoreAverage ?? 0).Divide(totalGames);
+        return (homeScoreAverage + awayScoreAverage).Divide(totalGames);
     }
 
 

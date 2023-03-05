@@ -2,7 +2,5 @@
 
 public record GameProbability(
     string Key,
-    double PoissonProbability,
-    double HomeMarkovChainScoreProbability,
-    double AwayMarkovChainScoreProbability
+    double Probability
 );

@@ -14,10 +14,10 @@ public class TeamStrengthCalculatorUnitTests
         // ARRANGE
         var mockGames = GetMockedGamesBy("Man United");
         var fileProcessor = Substitute.For<IFileProcessor>();
-        var calcService = new TeamStrengthCalculator(fileProcessor);
+        var calcService = new CalculatorService(fileProcessor);
         
         // ACT
-        var act = TeamStrengthCalculator.PossibleProbabilities(0.64, 2.10);
+        var act = CalculatorService.PossibleProbabilities(0.64, 2.10);
         
         // ASSERT
     }

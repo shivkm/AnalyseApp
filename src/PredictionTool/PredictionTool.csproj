@@ -19,6 +19,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Accord" Version="3.8.0" />
+      <PackageReference Include="Accord.Neuro" Version="3.8.0" />
+      <PackageReference Include="Accord.Statistics" Version="3.8.0" />
       <PackageReference Include="CsvHelper" Version="30.0.1" />
       <PackageReference Include="EPPlus" Version="6.1.2" />
       <PackageReference Include="Microsoft.Extensions.Configuration" Version="7.0.0" />
@@ -26,6 +29,8 @@
       <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
       <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
+      <PackageReference Include="Microsoft.ML" Version="2.0.1" />
+      <PackageReference Include="Microsoft.ML.TensorFlow" Version="2.0.1" />
       <PackageReference Include="NPOI" Version="2.6.0" />
     </ItemGroup>
 

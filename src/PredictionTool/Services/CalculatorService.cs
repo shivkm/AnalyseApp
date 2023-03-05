@@ -5,10 +5,11 @@ using PredictionTool.Models;
 
 namespace PredictionTool.Services;
 
-public class TeamStrengthCalculator: ITeamStrengthCalculator
+public class CalculatorService: ICalculatorService
 {
-    public TeamStrengthCalculator() { }
-    
+
+    public CalculatorService() { }
+
     /// <summary>
     /// This method will calculate all upcoming games Team strength based on which field they are playing with poisson distribution.
     /// To do that the current season games will be used
@@ -19,10 +20,10 @@ public class TeamStrengthCalculator: ITeamStrengthCalculator
         
         var games = historicalGames.GetCurrentSeasonGamesBy(2022, 2023, league);
         var allGames = historicalGames.GetCurrentSeasonGamesBy(2016, 2022, league);
+
         
         var currentAnalyse = AnalysePerformance(homeTeam, awayTeam, league, games);
         var allGamesAnalyse = AnalysePerformance(homeTeam, awayTeam, league, allGames);
-
 
         var probabilities = new List<PoissonProbability>();
         foreach (var probability in currentAnalyse)
@@ -38,8 +39,7 @@ public class TeamStrengthCalculator: ITeamStrengthCalculator
             });
         }
 
-        var homeMarkovChain = TeamMarkovChainProbability(historicalGames, homeTeam);
-        var awayMarkovChain = TeamMarkovChainProbability(historicalGames, awayTeam);
+        
         var topProbability = probabilities
             .Where(i => i.Probability > 0.60)
             .ToList();
@@ -47,71 +47,10 @@ public class TeamStrengthCalculator: ITeamStrengthCalculator
         if (topProbability.Count > 0)
         {
             var probability = topProbability.MaxBy(i => i.Probability);
-            result.Add(new GameProbability(
-                $"{homeTeam}:{awayTeam} - {probability.Key}",
-                probability.Probability,
-                homeMarkovChain,
-                awayMarkovChain
-            ));
-
-         //   result.ForEach(i => Console.WriteLine($"{i}\t"));
+            result.Add(new GameProbability(probability.Key, probability.Probability));
         }
         
         return result;
-    }
-
-
-    private static double TeamMarkovChainProbability(IEnumerable<Game> pastGames, string team)
-    {
-        var goalsScored = new Dictionary<int, int>();
-        var totalGames = 0;
-
-        foreach (var match in pastGames)
-        {
-            if (match.Home != team && match.Away != team)
-                continue;
-            
-            var goals = match.Home == team ? match.FullTimeHomeScore ?? 0 : match.FullTimeAwayScore ?? 0;
-
-            if (goalsScored.ContainsKey(goals))
-            {
-                goalsScored[goals]++;
-            }
-            else
-            {
-                goalsScored[goals] = 1;
-            }
-
-            totalGames++;
-        }
-
-        var goalsScoredSum = goalsScored.Sum(goal => (double)(goal.Value * goal.Key) / totalGames);
-
-        var probabilities = Enumerable.Range(0, 11)
-            .Select(score =>
-            {
-                var probability = CalculatePoissonProbability(goalsScoredSum, score);
-                return new MarkovChainResult(KeyBasedOnGoal(score), probability);
-            })
-            .GroupBy(p => p.Key)
-            .Select(g => new MarkovChainResult(
-                g.Key, 
-                g.Sum(i => i.Probability)))
-            .ToList();
-
-        return probabilities.First(i => i.Key == "Score").Probability;
-    }
-    
-    private static string KeyBasedOnGoal(int score)
-    {
-        var key = score switch
-        {
-            > 0 => "Score",
-            0 => "NoScore",
-            _ => throw new ArgumentOutOfRangeException(nameof(score), score, null)
-        };
-        
-        return key;
     }
 
     private static List<PoissonProbability> AnalysePerformance(
@@ -219,9 +158,10 @@ public class TeamStrengthCalculator: ITeamStrengthCalculator
     /// <param name="count">provide if the League score</param>
     /// <param name="atHome">provide if the League score</param>
     /// <returns></returns>
-    private static (double scoreAvg, double concededAvg) CalculateGoalAverage(IList<Game> games, int count = 0, bool atHome = false)
+    private static (double scoreAvg, double concededAvg) CalculateGoalAverage(ICollection<Game> games, int count = 0, bool atHome = false)
     {
         var totalGames = count == 0 ? games.Count : count * games.NumberOfTeamsLeague();
+        
         var averageScored = games
             .Sum(i => atHome ? i.FullTimeHomeScore ?? 0 : i.FullTimeAwayScore ?? 0)
             .Divide(totalGames);

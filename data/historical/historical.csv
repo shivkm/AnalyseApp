@@ -1,236 +1,202 @@
 DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHomeScore,HalftimeAwayScore,FullTimeResult
-07/22/2022 00:00:00,B1,0,Standard,Gent,2,2,1,0,D
-07/23/2022 00:00:00,B1,0,Charleroi,Eupen,3,1,1,0,H
-07/23/2022 00:00:00,B1,0,Kortrijk,Oud-Heverlee Leuven,0,2,0,0,A
-07/23/2022 00:00:00,B1,0,Waregem,Seraing,2,0,0,0,H
-07/23/2022 00:00:00,B1,0,St Truiden,St. Gilloise,1,1,1,0,D
-07/24/2022 00:00:00,B1,0,Club Brugge,Genk,3,2,1,1,H
-07/24/2022 00:00:00,B1,0,Mechelen,Antwerp,0,2,0,2,A
-07/24/2022 00:00:00,B1,0,Anderlecht,Oostende,2,0,1,0,H
-07/24/2022 00:00:00,B1,0,Westerlo,Cercle Brugge,2,0,1,0,H
-07/29/2022 00:00:00,B1,0,St. Gilloise,Charleroi,1,0,0,0,H
-07/30/2022 00:00:00,B1,0,Cercle Brugge,Anderlecht,1,0,0,0,H
-07/30/2022 00:00:00,B1,0,Oostende,Mechelen,2,1,2,0,H
-07/30/2022 00:00:00,B1,0,Oud-Heverlee Leuven,Westerlo,2,0,1,0,H
-07/30/2022 00:00:00,B1,0,Gent,St Truiden,1,1,1,0,D
-07/31/2022 00:00:00,B1,0,Genk,Standard,3,1,3,1,H
-07/31/2022 00:00:00,B1,0,Eupen,Club Brugge,2,1,2,1,H
-07/31/2022 00:00:00,B1,0,Seraing,Kortrijk,0,1,0,0,A
-07/31/2022 00:00:00,B1,0,Antwerp,Waregem,1,0,0,0,H
-08/05/2022 00:00:00,B1,0,Club Brugge,Waregem,1,1,0,0,D
-08/06/2022 00:00:00,B1,0,Genk,Eupen,4,2,3,1,H
-08/06/2022 00:00:00,B1,0,Charleroi,Oostende,1,3,0,1,A
-08/06/2022 00:00:00,B1,0,Kortrijk,St Truiden,0,0,0,0,D
-08/06/2022 00:00:00,B1,0,Mechelen,St. Gilloise,3,0,1,0,H
-08/07/2022 00:00:00,B1,0,Standard,Cercle Brugge,2,0,2,0,H
-08/07/2022 00:00:00,B1,0,Gent,Westerlo,2,1,2,1,H
-08/07/2022 00:00:00,B1,0,Anderlecht,Seraing,3,1,3,0,H
-08/07/2022 00:00:00,B1,0,Antwerp,Oud-Heverlee Leuven,4,2,2,1,H
-08/12/2022 00:00:00,B1,0,Oostende,Gent,1,3,1,2,A
-08/13/2022 00:00:00,B1,0,Westerlo,Standard,4,2,1,0,H
-08/13/2022 00:00:00,B1,0,Cercle Brugge,Mechelen,0,0,0,0,D
-08/13/2022 00:00:00,B1,0,Seraing,Charleroi,0,1,0,0,A
-08/13/2022 00:00:00,B1,0,St. Gilloise,Kortrijk,2,1,1,0,H
-08/14/2022 00:00:00,B1,0,St Truiden,Anderlecht,0,3,0,2,A
-08/14/2022 00:00:00,B1,0,Eupen,Antwerp,0,1,0,0,A
-08/14/2022 00:00:00,B1,0,Oud-Heverlee Leuven,Club Brugge,0,3,0,2,A
-08/14/2022 00:00:00,B1,0,Waregem,Genk,1,4,1,3,A
-08/19/2022 00:00:00,B1,0,Eupen,Seraing,1,3,0,3,A
-08/20/2022 00:00:00,B1,0,Oostende,St Truiden,0,1,0,1,A
-08/20/2022 00:00:00,B1,0,Genk,Cercle Brugge,2,1,1,0,H
-08/21/2022 00:00:00,B1,0,Club Brugge,Kortrijk,2,1,2,1,H
-08/21/2022 00:00:00,B1,0,Waregem,Charleroi,1,3,1,1,A
-08/21/2022 00:00:00,B1,0,Standard,Oud-Heverlee Leuven,1,3,0,2,A
-08/21/2022 00:00:00,B1,0,Mechelen,Westerlo,5,4,1,1,H
-08/26/2022 00:00:00,B1,0,Charleroi,Club Brugge,1,3,1,2,A
-08/27/2022 00:00:00,B1,0,Seraing,Genk,0,4,0,1,A
-08/27/2022 00:00:00,B1,0,Cercle Brugge,Waregem,1,1,1,1,D
-08/27/2022 00:00:00,B1,0,Oud-Heverlee Leuven,Oostende,2,1,0,1,H
-08/27/2022 00:00:00,B1,0,St Truiden,Mechelen,3,1,0,0,H
-08/28/2022 00:00:00,B1,0,Gent,Antwerp,1,2,1,2,A
-08/28/2022 00:00:00,B1,0,Kortrijk,Standard,0,1,0,0,A
-08/28/2022 00:00:00,B1,0,St. Gilloise,Anderlecht,2,1,2,1,H
-08/28/2022 00:00:00,B1,0,Westerlo,Eupen,0,1,0,0,A
-08/31/2022 00:00:00,B1,0,Antwerp,St. Gilloise,4,2,4,1,H
-09/01/2022 00:00:00,B1,0,Anderlecht,Gent,0,1,0,0,A
-09/02/2022 00:00:00,B1,0,Club Brugge,Cercle Brugge,4,0,1,0,H
-09/03/2022 00:00:00,B1,0,Genk,St Truiden,0,0,0,0,D
-09/03/2022 00:00:00,B1,0,Eupen,Kortrijk,0,1,0,0,A
-09/03/2022 00:00:00,B1,0,Mechelen,Seraing,2,3,2,1,A
-09/03/2022 00:00:00,B1,0,Standard,Oostende,1,0,0,0,H
-09/04/2022 00:00:00,B1,0,Anderlecht,Oud-Heverlee Leuven,2,2,0,1,D
-09/04/2022 00:00:00,B1,0,Antwerp,Westerlo,3,0,1,0,H
-09/04/2022 00:00:00,B1,0,Charleroi,Gent,2,1,1,1,H
-09/04/2022 00:00:00,B1,0,Waregem,St. Gilloise,1,3,0,1,A
-09/09/2022 00:00:00,B1,0,St Truiden,Standard,1,2,0,2,A
-09/10/2022 00:00:00,B1,0,Kortrijk,Mechelen,1,4,0,2,A
-09/10/2022 00:00:00,B1,0,Oostende,Eupen,1,0,0,0,H
-09/10/2022 00:00:00,B1,0,Seraing,Club Brugge,0,2,0,0,A
-09/10/2022 00:00:00,B1,0,Oud-Heverlee Leuven,Charleroi,3,2,1,1,H
-09/11/2022 00:00:00,B1,0,Westerlo,Anderlecht,2,1,1,0,H
-09/11/2022 00:00:00,B1,0,Cercle Brugge,Antwerp,0,2,0,1,A
-09/11/2022 00:00:00,B1,0,St. Gilloise,Genk,1,2,0,1,A
-09/11/2022 00:00:00,B1,0,Gent,Waregem,2,0,0,0,H
-09/16/2022 00:00:00,B1,0,Antwerp,Seraing,2,1,2,1,H
-09/17/2022 00:00:00,B1,0,Mechelen,Oud-Heverlee Leuven,0,0,0,0,D
-09/17/2022 00:00:00,B1,0,Cercle Brugge,Oostende,2,2,2,0,D
-09/17/2022 00:00:00,B1,0,Waregem,St Truiden,0,3,0,1,A
-09/17/2022 00:00:00,B1,0,Charleroi,Westerlo,2,3,1,2,A
-09/18/2022 00:00:00,B1,0,Genk,Gent,1,0,0,0,H
-09/18/2022 00:00:00,B1,0,Eupen,St. Gilloise,1,2,1,1,A
-09/18/2022 00:00:00,B1,0,Standard,Club Brugge,3,0,1,0,H
-09/18/2022 00:00:00,B1,0,Anderlecht,Kortrijk,4,1,1,0,H
-09/30/2022 00:00:00,B1,0,Standard,Seraing,0,2,0,1,A
-10/01/2022 00:00:00,B1,0,Oud-Heverlee Leuven,St. Gilloise,0,3,0,2,A
-10/01/2022 00:00:00,B1,0,Oostende,Genk,1,2,1,1,A
-10/01/2022 00:00:00,B1,0,Westerlo,Waregem,2,0,1,0,H
-10/01/2022 00:00:00,B1,0,Club Brugge,Mechelen,3,0,1,0,H
-10/02/2022 00:00:00,B1,0,Anderlecht,Charleroi,0,1,0,0,A
-10/02/2022 00:00:00,B1,0,Gent,Cercle Brugge,3,4,0,1,A
-10/02/2022 00:00:00,B1,0,Kortrijk,Antwerp,2,1,2,0,H
-10/02/2022 00:00:00,B1,0,St Truiden,Eupen,0,1,0,0,A
-10/07/2022 00:00:00,B1,0,Antwerp,St Truiden,2,0,1,0,H
-10/08/2022 00:00:00,B1,0,Genk,Kortrijk,2,1,1,0,H
-10/08/2022 00:00:00,B1,0,Seraing,Oostende,1,1,0,0,D
-10/08/2022 00:00:00,B1,0,Waregem,Oud-Heverlee Leuven,2,5,1,0,A
-10/08/2022 00:00:00,B1,0,Club Brugge,Westerlo,0,2,0,0,A
-10/09/2022 00:00:00,B1,0,Mechelen,Anderlecht,1,3,1,0,A
-10/09/2022 00:00:00,B1,0,Eupen,Gent,0,4,0,2,A
-10/09/2022 00:00:00,B1,0,Charleroi,Standard,0,1,0,1,A
-10/09/2022 00:00:00,B1,0,St. Gilloise,Cercle Brugge,2,1,1,0,H
-10/14/2022 00:00:00,B1,0,Westerlo,Seraing,2,2,2,1,D
-10/15/2022 00:00:00,B1,0,Kortrijk,Waregem,1,3,1,0,A
-10/15/2022 00:00:00,B1,0,Cercle Brugge,Eupen,5,1,3,1,H
-10/15/2022 00:00:00,B1,0,St Truiden,Charleroi,2,1,1,0,H
-10/15/2022 00:00:00,B1,0,Oud-Heverlee Leuven,Genk,0,1,0,1,A
-10/16/2022 00:00:00,B1,0,Standard,Antwerp,3,0,3,0,H
-10/16/2022 00:00:00,B1,0,Gent,Mechelen,3,0,1,0,H
-10/16/2022 00:00:00,B1,0,Anderlecht,Club Brugge,0,1,0,0,A
-10/16/2022 00:00:00,B1,0,Oostende,St. Gilloise,1,6,0,2,A
-10/18/2022 00:00:00,B1,0,Charleroi,Kortrijk,2,2,2,0,D
-10/18/2022 00:00:00,B1,0,Eupen,Oud-Heverlee Leuven,4,2,2,2,H
-10/18/2022 00:00:00,B1,0,Genk,Westerlo,6,1,5,1,H
-10/18/2022 00:00:00,B1,0,Seraing,Cercle Brugge,0,1,0,1,A
-10/19/2022 00:00:00,B1,0,St. Gilloise,Gent,2,0,1,0,H
-10/19/2022 00:00:00,B1,0,Club Brugge,St Truiden,3,0,1,0,H
-10/19/2022 00:00:00,B1,0,Mechelen,Standard,2,0,0,0,H
-10/20/2022 00:00:00,B1,0,Antwerp,Oostende,3,0,1,0,H
-10/20/2022 00:00:00,B1,0,Waregem,Anderlecht,3,2,1,1,H
-10/21/2022 00:00:00,B1,0,Cercle Brugge,Charleroi,4,1,1,0,H
-10/22/2022 00:00:00,B1,0,Kortrijk,Westerlo,0,2,0,0,A
-10/22/2022 00:00:00,B1,0,Mechelen,Eupen,2,1,1,1,H
-10/22/2022 00:00:00,B1,0,St Truiden,Oud-Heverlee Leuven,0,0,0,0,D
-10/22/2022 00:00:00,B1,0,St. Gilloise,Club Brugge,2,2,1,2,D
-10/23/2022 00:00:00,B1,0,Antwerp,Genk,1,3,1,2,A
-10/23/2022 00:00:00,B1,0,Gent,Seraing,2,1,1,1,H
-10/23/2022 00:00:00,B1,0,Oostende,Waregem,2,1,1,0,H
-10/28/2022 00:00:00,B1,0,Genk,Mechelen,3,1,1,1,H
-10/29/2022 00:00:00,B1,0,Waregem,Standard,0,3,0,0,A
-10/29/2022 00:00:00,B1,0,Kortrijk,Cercle Brugge,1,1,0,1,D
-10/29/2022 00:00:00,B1,0,Westerlo,St Truiden,2,3,0,2,A
-10/29/2022 00:00:00,B1,0,Club Brugge,Oostende,4,2,2,0,H
-10/30/2022 00:00:00,B1,0,Anderlecht,Eupen,4,2,2,1,H
-10/30/2022 00:00:00,B1,0,Seraing,St. Gilloise,1,2,0,0,A
-10/30/2022 00:00:00,B1,0,Oud-Heverlee Leuven,Gent,1,1,0,1,D
-10/30/2022 00:00:00,B1,0,Charleroi,Antwerp,1,0,1,0,H
-11/04/2022 00:00:00,B1,0,Genk,Charleroi,4,1,2,0,H
-11/05/2022 00:00:00,B1,0,Mechelen,Waregem,2,2,2,0,D
-11/05/2022 00:00:00,B1,0,Cercle Brugge,Oud-Heverlee Leuven,2,1,1,1,H
-11/05/2022 00:00:00,B1,0,Seraing,St Truiden,1,2,1,0,A
-11/05/2022 00:00:00,B1,0,Eupen,Standard,2,0,0,0,H
-11/06/2022 00:00:00,B1,0,Gent,Club Brugge,2,0,2,0,H
-11/06/2022 00:00:00,B1,0,St. Gilloise,Westerlo,1,1,0,1,D
-11/06/2022 00:00:00,B1,0,Antwerp,Anderlecht,0,0,0,0,D
-11/06/2022 00:00:00,B1,0,Oostende,Kortrijk,3,1,1,1,H
-11/11/2022 00:00:00,B1,0,Oud-Heverlee Leuven,Seraing,5,0,4,0,H
-11/12/2022 00:00:00,B1,0,Westerlo,Oostende,6,0,3,0,H
-11/12/2022 00:00:00,B1,0,St Truiden,Cercle Brugge,0,1,0,0,A
-11/12/2022 00:00:00,B1,0,Waregem,Eupen,5,5,2,3,D
-11/13/2022 00:00:00,B1,0,Club Brugge,Antwerp,2,2,1,0,D
-11/13/2022 00:00:00,B1,0,Standard,St. Gilloise,2,3,0,1,A
-11/13/2022 00:00:00,B1,0,Anderlecht,Genk,0,2,0,1,A
-11/13/2022 00:00:00,B1,0,Kortrijk,Gent,0,4,0,2,A
-12/23/2022 00:00:00,B1,0,Seraing,Eupen,0,1,0,0,A
-12/23/2022 00:00:00,B1,0,Gent,Standard,0,0,0,0,D
-12/23/2022 00:00:00,B1,0,Mechelen,Cercle Brugge,1,1,0,1,D
-12/26/2022 00:00:00,B1,0,Club Brugge,Oud-Heverlee Leuven,1,1,1,0,D
-12/26/2022 00:00:00,B1,0,St. Gilloise,Oostende,3,0,0,0,H
-12/26/2022 00:00:00,B1,0,Kortrijk,Genk,1,0,0,0,H
-12/26/2022 00:00:00,B1,0,Charleroi,Anderlecht,0,1,0,0,A
-12/27/2022 00:00:00,B1,0,St Truiden,Waregem,2,0,1,0,H
-12/27/2022 00:00:00,B1,0,Westerlo,Antwerp,3,3,1,0,D
-01/06/2023 00:00:00,B1,0,Standard,St Truiden,1,1,0,0,D
-01/07/2023 00:00:00,B1,0,Eupen,Charleroi,1,2,1,0,A
-01/07/2023 00:00:00,B1,0,Cercle Brugge,Westerlo,0,1,0,1,A
-01/07/2023 00:00:00,B1,0,Oostende,Seraing,1,2,1,1,A
-01/07/2023 00:00:00,B1,0,Antwerp,Gent,2,0,1,0,H
-01/08/2023 00:00:00,B1,0,Genk,Club Brugge,3,1,1,1,H
-01/08/2023 00:00:00,B1,0,Waregem,Mechelen,2,0,1,0,H
-01/08/2023 00:00:00,B1,0,Anderlecht,St. Gilloise,1,3,0,0,A
-01/08/2023 00:00:00,B1,0,Oud-Heverlee Leuven,Kortrijk,2,3,1,1,A
-01/13/2023 00:00:00,B1,0,Westerlo,Oud-Heverlee Leuven,1,2,0,0,A
-01/14/2023 00:00:00,B1,0,Seraing,Standard,1,1,1,1,D
-01/14/2023 00:00:00,B1,0,Eupen,St Truiden,0,2,0,1,A
-01/14/2023 00:00:00,B1,0,Mechelen,Oostende,2,1,1,0,H
-01/14/2023 00:00:00,B1,0,Genk,Waregem,1,0,1,0,H
-01/15/2023 00:00:00,B1,0,Club Brugge,Anderlecht,1,1,0,0,D
-01/15/2023 00:00:00,B1,0,Gent,Kortrijk,2,1,1,0,H
-01/15/2023 00:00:00,B1,0,St. Gilloise,Antwerp,2,0,1,0,H
-01/15/2023 00:00:00,B1,0,Charleroi,Cercle Brugge,2,1,1,1,H
-01/17/2023 00:00:00,B1,0,Oud-Heverlee Leuven,Eupen,1,1,1,0,D
-01/17/2023 00:00:00,B1,0,Standard,Mechelen,2,0,1,0,H
-01/17/2023 00:00:00,B1,0,Westerlo,Genk,2,3,0,2,A
-01/18/2023 00:00:00,B1,0,Cercle Brugge,St. Gilloise,1,1,0,0,D
-01/18/2023 00:00:00,B1,0,Oostende,Antwerp,0,3,0,2,A
-01/18/2023 00:00:00,B1,0,Anderlecht,Waregem,2,3,2,1,A
-01/18/2023 00:00:00,B1,0,Kortrijk,Seraing,3,2,2,1,H
-01/19/2023 00:00:00,B1,0,Gent,Charleroi,0,0,0,0,D
-01/19/2023 00:00:00,B1,0,St Truiden,Club Brugge,1,1,0,1,D
-01/21/2023 00:00:00,B1,0,Waregem,Westerlo,1,1,0,1,D
-01/21/2023 00:00:00,B1,0,Mechelen,Kortrijk,3,2,2,1,H
-01/21/2023 00:00:00,B1,0,Oostende,Cercle Brugge,1,2,0,1,A
-01/21/2023 00:00:00,B1,0,St. Gilloise,Oud-Heverlee Leuven,1,0,0,0,H
-01/22/2023 00:00:00,B1,0,Antwerp,Standard,4,1,3,1,H
-01/22/2023 00:00:00,B1,0,Seraing,Anderlecht,0,1,0,0,A
-01/22/2023 00:00:00,B1,0,Club Brugge,Charleroi,2,2,1,2,D
-01/22/2023 00:00:00,B1,0,St Truiden,Gent,0,3,0,2,A
-01/27/2023 00:00:00,B1,0,Standard,Eupen,3,1,2,1,H
-01/28/2023 00:00:00,B1,0,Westerlo,Mechelen,2,0,1,0,H
-01/28/2023 00:00:00,B1,0,Kortrijk,Oostende,2,2,1,1,D
-01/28/2023 00:00:00,B1,0,Oud-Heverlee Leuven,St Truiden,1,1,0,1,D
-01/28/2023 00:00:00,B1,0,Charleroi,St. Gilloise,0,1,0,1,A
-01/29/2023 00:00:00,B1,0,Anderlecht,Antwerp,0,0,0,0,D
-01/29/2023 00:00:00,B1,0,Cercle Brugge,Gent,3,2,0,0,H
-01/29/2023 00:00:00,B1,0,Waregem,Club Brugge,1,2,1,2,A
-01/29/2023 00:00:00,B1,0,Genk,Seraing,4,0,2,0,H
-02/01/2023 00:00:00,B1,0,Eupen,Genk,1,1,1,1,D
-02/03/2023 00:00:00,B1,0,Oostende,Anderlecht,0,2,0,1,A
-02/04/2023 00:00:00,B1,0,Cercle Brugge,Standard,1,1,0,0,D
-02/04/2023 00:00:00,B1,0,Eupen,Westerlo,1,1,0,1,D
-02/04/2023 00:00:00,B1,0,Seraing,Oud-Heverlee Leuven,2,1,1,1,H
-02/04/2023 00:00:00,B1,0,St Truiden,Kortrijk,1,0,1,0,H
-02/05/2023 00:00:00,B1,0,Antwerp,Club Brugge,0,0,0,0,D
-02/05/2023 00:00:00,B1,0,Mechelen,Charleroi,2,2,2,0,D
-02/05/2023 00:00:00,B1,0,Gent,Genk,2,3,1,1,A
-02/05/2023 00:00:00,B1,0,St. Gilloise,Waregem,4,0,1,0,H
-02/10/2023 00:00:00,B1,0,Oud-Heverlee Leuven,Cercle Brugge,0,0,0,0,D
-02/10/2023 00:00:00,B1,0,Club Brugge,St. Gilloise,1,1,1,1,D
-02/10/2023 00:00:00,B1,0,Eupen,Mechelen,2,1,0,1,H
-02/11/2023 00:00:00,B1,0,Westerlo,Gent,3,3,2,2,D
-02/11/2023 00:00:00,B1,0,Charleroi,Seraing,3,0,1,0,H
-02/12/2023 00:00:00,B1,0,Genk,Antwerp,0,1,0,0,A
-02/12/2023 00:00:00,B1,0,Anderlecht,St Truiden,3,1,0,0,H
-02/12/2023 00:00:00,B1,0,Standard,Kortrijk,0,2,0,0,A
-02/12/2023 00:00:00,B1,0,Waregem,Oostende,1,1,1,0,D
-02/17/2023 00:00:00,B1,0,Mechelen,Genk,2,2,1,1,D
-02/18/2023 00:00:00,B1,0,Antwerp,Eupen,2,0,2,0,H
-02/18/2023 00:00:00,B1,0,Oostende,Charleroi,0,0,0,0,D
-02/18/2023 00:00:00,B1,0,Seraing,Waregem,1,1,0,1,D
-02/18/2023 00:00:00,B1,0,St. Gilloise,Standard,2,4,1,2,A
-02/19/2023 00:00:00,B1,0,Cercle Brugge,Club Brugge,2,2,0,1,D
-02/19/2023 00:00:00,B1,0,Gent,Oud-Heverlee Leuven,2,0,0,0,H
-02/19/2023 00:00:00,B1,0,Kortrijk,Anderlecht,2,2,0,1,D
-02/19/2023 00:00:00,B1,0,St Truiden,Westerlo,0,1,0,1,A
+08/05/2022 00:00:00,D1,0,Ein Frankfurt,Bayern Munich,1,6,0,5,A
+08/06/2022 00:00:00,D1,0,Augsburg,Freiburg,0,4,0,0,A
+08/06/2022 00:00:00,D1,0,Bochum,Mainz,1,2,1,1,A
+08/06/2022 00:00:00,D1,0,M'gladbach,Hoffenheim,3,1,1,1,H
+08/06/2022 00:00:00,D1,0,Union Berlin,Hertha,3,1,1,0,H
+08/06/2022 00:00:00,D1,0,Wolfsburg,Werder Bremen,2,2,1,2,D
+08/06/2022 00:00:00,D1,0,Dortmund,Leverkusen,1,0,1,0,H
+08/07/2022 00:00:00,D1,0,Stuttgart,RB Leipzig,1,1,1,1,D
+08/07/2022 00:00:00,D1,0,FC Koln,Schalke 04,3,1,0,0,H
+08/12/2022 00:00:00,D1,0,Freiburg,Dortmund,1,3,1,0,A
+08/13/2022 00:00:00,D1,0,Hertha,Ein Frankfurt,1,1,1,0,D
+08/13/2022 00:00:00,D1,0,Hoffenheim,Bochum,3,2,2,2,H
+08/13/2022 00:00:00,D1,0,Leverkusen,Augsburg,1,2,1,1,A
+08/13/2022 00:00:00,D1,0,RB Leipzig,FC Koln,2,2,1,1,D
+08/13/2022 00:00:00,D1,0,Werder Bremen,Stuttgart,2,2,1,1,D
+08/13/2022 00:00:00,D1,0,Schalke 04,M'gladbach,2,2,1,0,D
+08/14/2022 00:00:00,D1,0,Mainz,Union Berlin,0,0,0,0,D
+08/14/2022 00:00:00,D1,0,Bayern Munich,Wolfsburg,2,0,2,0,H
+08/19/2022 00:00:00,D1,0,M'gladbach,Hertha,1,0,1,0,H
+08/20/2022 00:00:00,D1,0,Augsburg,Mainz,1,2,1,1,A
+08/20/2022 00:00:00,D1,0,Dortmund,Werder Bremen,2,3,1,0,A
+08/20/2022 00:00:00,D1,0,Leverkusen,Hoffenheim,0,3,0,2,A
+08/20/2022 00:00:00,D1,0,Stuttgart,Freiburg,0,1,0,1,A
+08/20/2022 00:00:00,D1,0,Wolfsburg,Schalke 04,0,0,0,0,D
+08/20/2022 00:00:00,D1,0,Union Berlin,RB Leipzig,2,1,2,0,H
+08/21/2022 00:00:00,D1,0,Ein Frankfurt,FC Koln,1,1,0,0,D
+08/21/2022 00:00:00,D1,0,Bochum,Bayern Munich,0,7,0,4,A
+08/26/2022 00:00:00,D1,0,Freiburg,Bochum,1,0,0,0,H
+08/27/2022 00:00:00,D1,0,Hertha,Dortmund,0,1,0,1,A
+08/27/2022 00:00:00,D1,0,Hoffenheim,Augsburg,1,0,1,0,H
+08/27/2022 00:00:00,D1,0,Mainz,Leverkusen,0,3,0,3,A
+08/27/2022 00:00:00,D1,0,RB Leipzig,Wolfsburg,2,0,1,0,H
+08/27/2022 00:00:00,D1,0,Schalke 04,Union Berlin,1,6,1,3,A
+08/27/2022 00:00:00,D1,0,Bayern Munich,M'gladbach,1,1,0,1,D
+08/28/2022 00:00:00,D1,0,FC Koln,Stuttgart,0,0,0,0,D
+08/28/2022 00:00:00,D1,0,Werder Bremen,Ein Frankfurt,3,4,2,3,A
+09/02/2022 00:00:00,D1,0,Dortmund,Hoffenheim,1,0,1,0,H
+09/03/2022 00:00:00,D1,0,Bochum,Werder Bremen,0,2,0,0,A
+09/03/2022 00:00:00,D1,0,Leverkusen,Freiburg,2,3,1,0,A
+09/03/2022 00:00:00,D1,0,Stuttgart,Schalke 04,1,1,1,1,D
+09/03/2022 00:00:00,D1,0,Union Berlin,Bayern Munich,1,1,1,1,D
+09/03/2022 00:00:00,D1,0,Wolfsburg,FC Koln,2,4,1,3,A
+09/03/2022 00:00:00,D1,0,Ein Frankfurt,RB Leipzig,4,0,2,0,H
+09/04/2022 00:00:00,D1,0,Augsburg,Hertha,0,2,0,0,A
+09/04/2022 00:00:00,D1,0,M'gladbach,Mainz,0,1,0,0,A
+09/09/2022 00:00:00,D1,0,Werder Bremen,Augsburg,0,1,0,0,A
+09/10/2022 00:00:00,D1,0,Bayern Munich,Stuttgart,2,2,1,0,D
+09/10/2022 00:00:00,D1,0,Ein Frankfurt,Wolfsburg,0,1,0,0,A
+09/10/2022 00:00:00,D1,0,Hertha,Leverkusen,2,2,0,0,D
+09/10/2022 00:00:00,D1,0,Hoffenheim,Mainz,4,1,0,0,H
+09/10/2022 00:00:00,D1,0,RB Leipzig,Dortmund,3,0,2,0,H
+09/10/2022 00:00:00,D1,0,Schalke 04,Bochum,3,1,1,0,H
+09/11/2022 00:00:00,D1,0,FC Koln,Union Berlin,0,1,0,1,A
+09/11/2022 00:00:00,D1,0,Freiburg,M'gladbach,0,0,0,0,D
+09/16/2022 00:00:00,D1,0,Mainz,Hertha,1,1,0,1,D
+09/17/2022 00:00:00,D1,0,Augsburg,Bayern Munich,1,0,0,0,H
+09/17/2022 00:00:00,D1,0,Dortmund,Schalke 04,1,0,0,0,H
+09/17/2022 00:00:00,D1,0,Leverkusen,Werder Bremen,1,1,0,0,D
+09/17/2022 00:00:00,D1,0,Stuttgart,Ein Frankfurt,1,3,0,1,A
+09/17/2022 00:00:00,D1,0,M'gladbach,RB Leipzig,3,0,2,0,H
+09/18/2022 00:00:00,D1,0,Union Berlin,Wolfsburg,2,0,0,0,H
+09/18/2022 00:00:00,D1,0,Bochum,FC Koln,1,1,1,0,D
+09/18/2022 00:00:00,D1,0,Hoffenheim,Freiburg,0,0,0,0,D
+09/30/2022 00:00:00,D1,0,Bayern Munich,Leverkusen,4,0,3,0,H
+10/01/2022 00:00:00,D1,0,Ein Frankfurt,Union Berlin,2,0,2,0,H
+10/01/2022 00:00:00,D1,0,FC Koln,Dortmund,3,2,0,1,H
+10/01/2022 00:00:00,D1,0,Freiburg,Mainz,2,1,2,0,H
+10/01/2022 00:00:00,D1,0,RB Leipzig,Bochum,4,0,2,0,H
+10/01/2022 00:00:00,D1,0,Wolfsburg,Stuttgart,3,2,2,2,H
+10/01/2022 00:00:00,D1,0,Werder Bremen,M'gladbach,5,1,4,0,H
+10/02/2022 00:00:00,D1,0,Hertha,Hoffenheim,1,1,1,1,D
+10/02/2022 00:00:00,D1,0,Schalke 04,Augsburg,2,3,1,2,A
+10/07/2022 00:00:00,D1,0,Hoffenheim,Werder Bremen,1,2,1,1,A
+10/08/2022 00:00:00,D1,0,Augsburg,Wolfsburg,1,1,0,1,D
+10/08/2022 00:00:00,D1,0,Bochum,Ein Frankfurt,3,0,0,0,H
+10/08/2022 00:00:00,D1,0,Leverkusen,Schalke 04,4,0,2,0,H
+10/08/2022 00:00:00,D1,0,Mainz,RB Leipzig,1,1,1,0,D
+10/08/2022 00:00:00,D1,0,Dortmund,Bayern Munich,2,2,0,1,D
+10/09/2022 00:00:00,D1,0,M'gladbach,FC Koln,5,2,2,1,H
+10/09/2022 00:00:00,D1,0,Hertha,Freiburg,2,2,1,1,D
+10/09/2022 00:00:00,D1,0,Stuttgart,Union Berlin,0,1,0,0,A
+10/14/2022 00:00:00,D1,0,Schalke 04,Hoffenheim,0,3,0,2,A
+10/15/2022 00:00:00,D1,0,Ein Frankfurt,Leverkusen,5,1,1,0,H
+10/15/2022 00:00:00,D1,0,Stuttgart,Bochum,4,1,2,1,H
+10/15/2022 00:00:00,D1,0,Werder Bremen,Mainz,0,2,0,1,A
+10/15/2022 00:00:00,D1,0,Wolfsburg,M'gladbach,2,2,1,1,D
+10/15/2022 00:00:00,D1,0,RB Leipzig,Hertha,3,2,3,0,H
+10/16/2022 00:00:00,D1,0,FC Koln,Augsburg,3,2,0,1,H
+10/16/2022 00:00:00,D1,0,Union Berlin,Dortmund,2,0,2,0,H
+10/16/2022 00:00:00,D1,0,Bayern Munich,Freiburg,5,0,2,0,H
+10/21/2022 00:00:00,D1,0,Mainz,FC Koln,5,0,3,0,H
+10/22/2022 00:00:00,D1,0,Augsburg,RB Leipzig,3,3,1,0,D
+10/22/2022 00:00:00,D1,0,Dortmund,Stuttgart,5,0,3,0,H
+10/22/2022 00:00:00,D1,0,Freiburg,Werder Bremen,2,0,0,0,H
+10/22/2022 00:00:00,D1,0,Hoffenheim,Bayern Munich,0,2,0,2,A
+10/22/2022 00:00:00,D1,0,Leverkusen,Wolfsburg,2,2,1,1,D
+10/22/2022 00:00:00,D1,0,M'gladbach,Ein Frankfurt,1,3,0,3,A
+10/23/2022 00:00:00,D1,0,Bochum,Union Berlin,2,1,1,0,H
+10/23/2022 00:00:00,D1,0,Hertha,Schalke 04,2,1,0,0,H
+10/28/2022 00:00:00,D1,0,Werder Bremen,Hertha,1,0,0,0,H
+10/29/2022 00:00:00,D1,0,Bayern Munich,Mainz,6,2,3,1,H
+10/29/2022 00:00:00,D1,0,RB Leipzig,Leverkusen,2,0,1,0,H
+10/29/2022 00:00:00,D1,0,Stuttgart,Augsburg,2,1,1,1,H
+10/29/2022 00:00:00,D1,0,Wolfsburg,Bochum,4,0,2,0,H
+10/29/2022 00:00:00,D1,0,Ein Frankfurt,Dortmund,1,2,1,1,A
+10/30/2022 00:00:00,D1,0,Union Berlin,M'gladbach,2,1,0,1,H
+10/30/2022 00:00:00,D1,0,Schalke 04,Freiburg,0,2,0,1,A
+10/30/2022 00:00:00,D1,0,FC Koln,Hoffenheim,1,1,1,1,D
+11/04/2022 00:00:00,D1,0,M'gladbach,Stuttgart,3,1,2,1,H
+11/05/2022 00:00:00,D1,0,Augsburg,Ein Frankfurt,1,2,1,1,A
+11/05/2022 00:00:00,D1,0,Dortmund,Bochum,3,0,3,0,H
+11/05/2022 00:00:00,D1,0,Hertha,Bayern Munich,2,3,2,3,A
+11/05/2022 00:00:00,D1,0,Hoffenheim,RB Leipzig,1,3,0,1,A
+11/05/2022 00:00:00,D1,0,Mainz,Wolfsburg,0,3,0,1,A
+11/05/2022 00:00:00,D1,0,Werder Bremen,Schalke 04,2,1,1,0,H
+11/06/2022 00:00:00,D1,0,Leverkusen,Union Berlin,5,0,0,0,H
+11/06/2022 00:00:00,D1,0,Freiburg,FC Koln,2,0,0,0,H
+11/08/2022 00:00:00,D1,0,Wolfsburg,Dortmund,2,0,1,0,H
+11/08/2022 00:00:00,D1,0,Bayern Munich,Werder Bremen,6,1,4,1,H
+11/08/2022 00:00:00,D1,0,Bochum,M'gladbach,2,1,2,0,H
+11/08/2022 00:00:00,D1,0,Stuttgart,Hertha,2,1,1,1,H
+11/09/2022 00:00:00,D1,0,FC Koln,Leverkusen,1,2,1,0,A
+11/09/2022 00:00:00,D1,0,Ein Frankfurt,Hoffenheim,4,2,3,1,H
+11/09/2022 00:00:00,D1,0,RB Leipzig,Freiburg,3,1,0,0,H
+11/09/2022 00:00:00,D1,0,Schalke 04,Mainz,1,0,1,0,H
+11/09/2022 00:00:00,D1,0,Union Berlin,Augsburg,2,2,2,2,D
+11/11/2022 00:00:00,D1,0,M'gladbach,Dortmund,4,2,3,2,H
+11/12/2022 00:00:00,D1,0,Augsburg,Bochum,0,1,0,0,A
+11/12/2022 00:00:00,D1,0,Hertha,FC Koln,2,0,1,0,H
+11/12/2022 00:00:00,D1,0,Hoffenheim,Wolfsburg,1,2,1,1,A
+11/12/2022 00:00:00,D1,0,Leverkusen,Stuttgart,2,0,1,0,H
+11/12/2022 00:00:00,D1,0,Werder Bremen,RB Leipzig,1,2,0,1,A
+11/12/2022 00:00:00,D1,0,Schalke 04,Bayern Munich,0,2,0,1,A
+11/13/2022 00:00:00,D1,0,Mainz,Ein Frankfurt,1,1,1,0,D
+11/13/2022 00:00:00,D1,0,Freiburg,Union Berlin,4,1,4,0,H
+01/20/2023 00:00:00,D1,0,RB Leipzig,Bayern Munich,1,1,0,1,D
+01/21/2023 00:00:00,D1,0,Bochum,Hertha,3,1,2,0,H
+01/21/2023 00:00:00,D1,0,Ein Frankfurt,Schalke 04,3,0,1,0,H
+01/21/2023 00:00:00,D1,0,Stuttgart,Mainz,1,1,1,1,D
+01/21/2023 00:00:00,D1,0,Union Berlin,Hoffenheim,3,1,0,1,H
+01/21/2023 00:00:00,D1,0,Wolfsburg,Freiburg,6,0,3,0,H
+01/21/2023 00:00:00,D1,0,FC Koln,Werder Bremen,7,1,5,1,H
+01/22/2023 00:00:00,D1,0,Dortmund,Augsburg,4,3,2,2,H
+01/22/2023 00:00:00,D1,0,M'gladbach,Leverkusen,2,3,0,2,A
+01/24/2023 00:00:00,D1,0,Schalke 04,RB Leipzig,1,6,0,4,A
+01/24/2023 00:00:00,D1,0,Bayern Munich,FC Koln,1,1,0,1,D
+01/24/2023 00:00:00,D1,0,Hertha,Wolfsburg,0,5,0,3,A
+01/24/2023 00:00:00,D1,0,Hoffenheim,Stuttgart,2,2,1,1,D
+01/25/2023 00:00:00,D1,0,Mainz,Dortmund,1,2,1,1,A
+01/25/2023 00:00:00,D1,0,Augsburg,M'gladbach,1,0,0,0,H
+01/25/2023 00:00:00,D1,0,Freiburg,Ein Frankfurt,1,1,0,1,D
+01/25/2023 00:00:00,D1,0,Leverkusen,Bochum,2,0,1,0,H
+01/25/2023 00:00:00,D1,0,Werder Bremen,Union Berlin,1,2,1,1,A
+01/27/2023 00:00:00,D1,0,RB Leipzig,Stuttgart,2,1,1,0,H
+01/28/2023 00:00:00,D1,0,Freiburg,Augsburg,3,1,2,1,H
+01/28/2023 00:00:00,D1,0,Hertha,Union Berlin,0,2,0,1,A
+01/28/2023 00:00:00,D1,0,Hoffenheim,M'gladbach,1,4,0,2,A
+01/28/2023 00:00:00,D1,0,Mainz,Bochum,5,2,3,0,H
+01/28/2023 00:00:00,D1,0,Werder Bremen,Wolfsburg,2,1,1,0,H
+01/28/2023 00:00:00,D1,0,Bayern Munich,Ein Frankfurt,1,1,1,0,D
+01/29/2023 00:00:00,D1,0,Schalke 04,FC Koln,0,0,0,0,D
+01/29/2023 00:00:00,D1,0,Leverkusen,Dortmund,0,2,0,1,A
+02/03/2023 00:00:00,D1,0,Augsburg,Leverkusen,1,0,0,0,H
+02/04/2023 00:00:00,D1,0,Bochum,Hoffenheim,5,2,3,0,H
+02/04/2023 00:00:00,D1,0,Dortmund,Freiburg,5,1,1,1,H
+02/04/2023 00:00:00,D1,0,Ein Frankfurt,Hertha,3,0,2,0,H
+02/04/2023 00:00:00,D1,0,FC Koln,RB Leipzig,0,0,0,0,D
+02/04/2023 00:00:00,D1,0,Union Berlin,Mainz,2,1,1,0,H
+02/04/2023 00:00:00,D1,0,M'gladbach,Schalke 04,0,0,0,0,D
+02/05/2023 00:00:00,D1,0,Stuttgart,Werder Bremen,0,2,0,0,A
+02/05/2023 00:00:00,D1,0,Wolfsburg,Bayern Munich,2,4,1,3,A
+02/10/2023 00:00:00,D1,0,Schalke 04,Wolfsburg,0,0,0,0,D
+02/11/2023 00:00:00,D1,0,Bayern Munich,Bochum,3,0,1,0,H
+02/11/2023 00:00:00,D1,0,Freiburg,Stuttgart,2,1,0,1,H
+02/11/2023 00:00:00,D1,0,Hoffenheim,Leverkusen,1,3,0,1,A
+02/11/2023 00:00:00,D1,0,Mainz,Augsburg,3,1,2,1,H
+02/11/2023 00:00:00,D1,0,Werder Bremen,Dortmund,0,2,0,0,A
+02/11/2023 00:00:00,D1,0,RB Leipzig,Union Berlin,1,2,1,0,A
+02/12/2023 00:00:00,D1,0,Hertha,M'gladbach,4,1,1,1,H
+02/12/2023 00:00:00,D1,0,FC Koln,Ein Frankfurt,3,0,0,0,H
+02/17/2023 00:00:00,D1,0,Augsburg,Hoffenheim,1,0,0,0,H
+02/18/2023 00:00:00,D1,0,Bochum,Freiburg,0,2,0,1,A
+02/18/2023 00:00:00,D1,0,M'gladbach,Bayern Munich,3,2,1,1,H
+02/18/2023 00:00:00,D1,0,Stuttgart,FC Koln,3,0,1,0,H
+02/18/2023 00:00:00,D1,0,Wolfsburg,RB Leipzig,0,3,0,1,A
+02/18/2023 00:00:00,D1,0,Ein Frankfurt,Werder Bremen,2,0,1,0,H
+02/19/2023 00:00:00,D1,0,Union Berlin,Schalke 04,0,0,0,0,D
+02/19/2023 00:00:00,D1,0,Dortmund,Hertha,4,1,2,0,H
+02/19/2023 00:00:00,D1,0,Leverkusen,Mainz,2,3,1,2,A
+02/24/2023 00:00:00,D1,0,Mainz,M'gladbach,4,0,1,0,H
+02/25/2023 00:00:00,D1,0,FC Koln,Wolfsburg,0,2,0,1,A
+02/25/2023 00:00:00,D1,0,Hertha,Augsburg,2,0,0,0,H
+02/25/2023 00:00:00,D1,0,Hoffenheim,Dortmund,0,1,0,1,A
+02/25/2023 00:00:00,D1,0,RB Leipzig,Ein Frankfurt,2,1,2,0,H
+02/25/2023 00:00:00,D1,0,Werder Bremen,Bochum,3,0,2,0,H
+02/25/2023 00:00:00,D1,0,Schalke 04,Stuttgart,2,1,2,0,H
+02/26/2023 00:00:00,D1,0,Freiburg,Leverkusen,1,1,1,0,D
+02/26/2023 00:00:00,D1,0,Bayern Munich,Union Berlin,3,0,3,0,H
 07/29/2016 00:00:00,B1,0,Mechelen,Club Brugge,0,2,0,2,A
 07/30/2016 00:00:00,B1,0,Charleroi,Waasland-Beveren,1,0,0,0,H
 07/30/2016 00:00:00,B1,0,Mouscron,Anderlecht,1,2,1,0,A
@@ -6076,6 +6042,16 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/18/2023 00:00:00,E0,0,Newcastle,Liverpool,0,2,0,2,A
 02/19/2023 00:00:00,E0,0,Man United,Leicester,3,0,1,0,H
 02/19/2023 00:00:00,E0,0,Tottenham,West Ham,2,0,0,0,H
+02/24/2023 00:00:00,E0,0,Fulham,Wolves,1,1,0,1,D
+02/25/2023 00:00:00,E0,0,Everton,Aston Villa,0,2,0,0,A
+02/25/2023 00:00:00,E0,0,Leeds,Southampton,1,0,0,0,H
+02/25/2023 00:00:00,E0,0,Leicester,Arsenal,0,1,0,0,A
+02/25/2023 00:00:00,E0,0,West Ham,Nott'm Forest,4,0,0,0,H
+02/25/2023 00:00:00,E0,0,Bournemouth,Man City,1,4,0,3,A
+02/25/2023 00:00:00,E0,0,Crystal Palace,Liverpool,0,0,0,0,D
+02/26/2023 00:00:00,E0,0,Tottenham,Chelsea,2,0,0,0,H
+03/01/2023 00:00:00,E0,0,Arsenal,Everton,4,0,2,0,H
+03/01/2023 00:00:00,E0,0,Liverpool,Wolves,2,0,0,0,H
 08/13/2016 00:00:00,E0,0,Burnley,Swansea,0,1,0,0,A
 08/13/2016 00:00:00,E0,0,Crystal Palace,West Brom,0,1,0,0,A
 08/13/2016 00:00:00,E0,0,Everton,Tottenham,1,1,1,0,D
@@ -8747,6 +8723,20 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/21/2023 00:00:00,E1,0,Norwich,Birmingham,3,1,2,0,H
 02/21/2023 00:00:00,E1,0,Rotherham,Sunderland,2,1,1,0,H
 02/21/2023 00:00:00,E1,0,Swansea,Stoke,1,3,1,2,A
+02/25/2023 00:00:00,E1,0,Coventry,Sunderland,2,1,1,0,H
+02/25/2023 00:00:00,E1,0,Birmingham,Luton,0,1,0,0,A
+02/25/2023 00:00:00,E1,0,Bristol City,Hull,1,0,0,0,H
+02/25/2023 00:00:00,E1,0,Burnley,Huddersfield,4,0,3,0,H
+02/25/2023 00:00:00,E1,0,Norwich,Cardiff,2,0,2,0,H
+02/25/2023 00:00:00,E1,0,Preston,Wigan,2,1,0,1,H
+02/25/2023 00:00:00,E1,0,QPR,Blackburn,1,3,1,2,A
+02/25/2023 00:00:00,E1,0,Reading,Blackpool,3,1,1,0,H
+02/25/2023 00:00:00,E1,0,Sheffield United,Watford,1,0,0,0,H
+02/25/2023 00:00:00,E1,0,Stoke,Millwall,0,1,0,1,A
+02/25/2023 00:00:00,E1,0,West Brom,Middlesbrough,2,0,2,0,H
+02/27/2023 00:00:00,E1,0,Swansea,Rotherham,1,1,1,0,D
+02/28/2023 00:00:00,E1,0,Preston,Coventry,0,0,0,0,D
+02/28/2023 00:00:00,E1,0,Luton,Millwall,2,2,0,1,D
 08/05/2016 00:00:00,E1,0,Fulham,Newcastle,1,0,1,0,H
 08/06/2016 00:00:00,E1,0,Birmingham,Cardiff,0,0,0,0,D
 08/06/2016 00:00:00,E1,0,Blackburn,Norwich,1,4,0,3,A
@@ -12437,6 +12427,22 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/18/2023 00:00:00,E2,0,Wycombe,Bolton,1,0,1,0,H
 02/21/2023 00:00:00,E2,0,Fleetwood Town,Cambridge,1,0,0,0,H
 02/21/2023 00:00:00,E2,0,Morecambe,Port Vale,1,0,0,0,H
+02/25/2023 00:00:00,E2,0,Oxford,Bristol Rvs,0,3,0,2,A
+02/25/2023 00:00:00,E2,0,Barnsley,Derby,4,1,3,1,H
+02/25/2023 00:00:00,E2,0,Bolton,Port Vale,2,1,2,1,H
+02/25/2023 00:00:00,E2,0,Burton,Accrington,0,0,0,0,D
+02/25/2023 00:00:00,E2,0,Charlton,Sheffield Weds,0,1,0,1,A
+02/25/2023 00:00:00,E2,0,Exeter,Cambridge,2,0,1,0,H
+02/25/2023 00:00:00,E2,0,Fleetwood Town,Morecambe,1,0,1,0,H
+02/25/2023 00:00:00,E2,0,Forest Green,Lincoln,1,1,0,1,D
+02/25/2023 00:00:00,E2,0,Milton Keynes Dons,Ipswich,0,1,0,1,A
+02/25/2023 00:00:00,E2,0,Peterboro,Plymouth,5,2,2,1,H
+02/25/2023 00:00:00,E2,0,Portsmouth,Cheltenham,4,0,3,0,H
+02/25/2023 00:00:00,E2,0,Shrewsbury,Wycombe,2,0,1,0,H
+02/28/2023 00:00:00,E2,0,Derby,Cheltenham,2,0,1,0,H
+02/28/2023 00:00:00,E2,0,Lincoln,Milton Keynes Dons,1,1,1,0,D
+02/28/2023 00:00:00,E2,0,Peterboro,Charlton,0,0,0,0,D
+02/28/2023 00:00:00,E2,0,Portsmouth,Bolton,3,1,0,0,H
 08/06/2016 00:00:00,E2,0,Bolton,Sheffield United,1,0,1,0,H
 08/06/2016 00:00:00,E2,0,Bradford,Port Vale,0,0,0,0,D
 08/06/2016 00:00:00,E2,0,Bury,Charlton,2,0,0,0,H
@@ -15837,6 +15843,16 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/19/2023 00:00:00,F1,0,Troyes,Montpellier,0,1,0,0,A
 02/19/2023 00:00:00,F1,0,Lens,Nantes,3,1,2,1,H
 02/19/2023 00:00:00,F1,0,Toulouse,Marseille,2,3,1,0,A
+02/24/2023 00:00:00,F1,0,Lille,Brest,2,1,0,1,H
+02/25/2023 00:00:00,F1,0,Angers,Lyon,1,3,0,1,A
+02/25/2023 00:00:00,F1,0,Montpellier,Lens,1,1,0,1,D
+02/26/2023 00:00:00,F1,0,Lorient,Auxerre,0,1,0,0,A
+02/26/2023 00:00:00,F1,0,Ajaccio,Troyes,2,1,0,1,H
+02/26/2023 00:00:00,F1,0,Clermont,Strasbourg,1,1,0,1,D
+02/26/2023 00:00:00,F1,0,Nantes,Rennes,0,1,0,1,A
+02/26/2023 00:00:00,F1,0,Reims,Toulouse,3,0,2,0,H
+02/26/2023 00:00:00,F1,0,Monaco,Nice,0,3,0,3,A
+02/26/2023 00:00:00,F1,0,Marseille,Paris SG,0,3,0,2,A
 08/12/2016 00:00:00,F1,0,Bastia,Paris SG,0,1,0,0,A
 08/12/2016 00:00:00,F1,0,Monaco,Guingamp,2,2,0,2,D
 08/13/2016 00:00:00,F1,0,Bordeaux,St Etienne,3,2,1,0,H
@@ -20665,6 +20681,16 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/19/2023 00:00:00,I1,0,Spezia,Juventus,0,2,0,1,A
 02/19/2023 00:00:00,I1,0,Roma,Verona,1,0,1,0,H
 02/20/2023 00:00:00,I1,0,Torino,Cremonese,2,2,1,0,D
+02/25/2023 00:00:00,I1,0,Empoli,Napoli,0,2,0,2,A
+02/25/2023 00:00:00,I1,0,Lecce,Sassuolo,0,1,0,0,A
+02/26/2023 00:00:00,I1,0,Bologna,Inter,1,0,0,0,H
+02/26/2023 00:00:00,I1,0,Salernitana,Monza,3,0,0,0,H
+02/26/2023 00:00:00,I1,0,Udinese,Spezia,2,2,1,1,D
+02/26/2023 00:00:00,I1,0,Milan,Atalanta,2,0,1,0,H
+02/27/2023 00:00:00,I1,0,Verona,Fiorentina,0,3,0,2,A
+02/27/2023 00:00:00,I1,0,Lazio,Sampdoria,1,0,0,0,H
+02/28/2023 00:00:00,I1,0,Cremonese,Roma,2,1,1,0,H
+02/28/2023 00:00:00,I1,0,Juventus,Torino,4,2,2,2,H
 08/20/2016 00:00:00,I1,0,Juventus,Fiorentina,2,1,1,0,H
 08/20/2016 00:00:00,I1,0,Roma,Udinese,4,0,0,0,H
 08/21/2016 00:00:00,I1,0,Atalanta,Lazio,3,4,0,3,A
@@ -23165,6 +23191,16 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/19/2023 00:00:00,SP1,0,Ath Madrid,Ath Bilbao,1,0,0,0,H
 02/19/2023 00:00:00,SP1,0,Barcelona,Cadiz,2,0,2,0,H
 02/20/2023 00:00:00,SP1,0,Getafe,Valencia,1,0,0,0,H
+02/24/2023 00:00:00,SP1,0,Elche,Betis,2,3,2,0,A
+02/25/2023 00:00:00,SP1,0,Espanol,Mallorca,2,1,1,1,H
+02/25/2023 00:00:00,SP1,0,Cadiz,Vallecano,1,0,0,0,H
+02/25/2023 00:00:00,SP1,0,Real Madrid,Ath Madrid,1,1,0,0,D
+02/25/2023 00:00:00,SP1,0,Valencia,Sociedad,1,0,1,0,H
+02/26/2023 00:00:00,SP1,0,Ath Bilbao,Girona,2,3,1,3,A
+02/26/2023 00:00:00,SP1,0,Celta,Valladolid,3,0,2,0,H
+02/26/2023 00:00:00,SP1,0,Almeria,Barcelona,1,0,1,0,H
+02/26/2023 00:00:00,SP1,0,Sevilla,Osasuna,2,3,0,1,A
+02/27/2023 00:00:00,SP1,0,Villarreal,Getafe,2,1,1,1,H
 08/19/2016 00:00:00,SP1,0,La Coruna,Eibar,2,1,0,0,H
 08/19/2016 00:00:00,SP1,0,Malaga,Osasuna,1,1,0,0,D
 08/20/2016 00:00:00,SP1,0,Barcelona,Betis,6,2,3,1,H

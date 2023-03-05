@@ -1,4 +1,5 @@
-﻿using PredictionTool.Interfaces;
+﻿using PredictionTool.Extensions;
+using PredictionTool.Interfaces;
 using PredictionTool.Models;
 
 namespace PredictionTool.Services;
@@ -6,24 +7,26 @@ namespace PredictionTool.Services;
 public class AnalyseService: IAnalyseService
 {
     private readonly IFileProcessor _fileProcessor;
-    private readonly ITeamStrengthCalculator _teamStrengthCalculator;
+    private readonly ICalculatorService _calculatorService;
     private readonly IFilterService _filterService;
 
     public AnalyseService(
-        IFileProcessor fileProcessor, IFilterService filterService, ITeamStrengthCalculator teamStrengthCalculator)
+        IFileProcessor fileProcessor, IFilterService filterService,
+        ICalculatorService calculatorService)
     {
         _fileProcessor = fileProcessor;
         _filterService = filterService;
-        _teamStrengthCalculator = teamStrengthCalculator;
+        _calculatorService = calculatorService;
     }
 
-    public async  Task StartAnalyseAsync()
+    public async Task StartAnalyseAsync()
     {
         // Change this to load data backward for test
         var historicalEnd = new DateTime(2023, 02, 16);
-        var endDate = DateTime.Now;
-        //await _fileProcessor.CreateUpcomingFixtureBy(default);
-        var historicalGames = _fileProcessor.GetHistoricalGamesBy(historicalEnd);
+        var endDate = DateTime.Now.AddDays(5);
+         //await _fileProcessor.CreateUpcomingFixtureBy(default);
+       // await _fileProcessor.CreateHistoricalGamesFile(default);
+        var historicalGames = _fileProcessor.GetHistoricalGamesBy(endDate);
         var upcomingGames = _fileProcessor.GetUpcomingGamesBy(endDate);
         var result = new List<QualifiedGames>();
 
@@ -36,21 +39,23 @@ public class AnalyseService: IAnalyseService
                 upcomingGame.League
             );
             
-            var gameProbabilities = _teamStrengthCalculator.Calculate(
+            var gameProbabilities = _calculatorService.Calculate(
                 historicalGames,
                 upcomingGame.Home,
                 upcomingGame.Away,
                 upcomingGame.League
             );
 
+            if (upcomingGame.Home == "Inter")
+            {
+                
+            }
+            
             var qualified = _filterService.FilterGames(
                 qualifiedGame,
                 gameProbabilities,
                 historicalGames
             );
-
-            if (qualified.Probability == 0)
-                continue;
 
             result.Add(qualifiedGame with
             {
@@ -62,4 +67,5 @@ public class AnalyseService: IAnalyseService
         Console.WriteLine($"count: {result.Count}");
         result.ForEach(i => Console.WriteLine($"{i}\t"));
     }
+
 }
