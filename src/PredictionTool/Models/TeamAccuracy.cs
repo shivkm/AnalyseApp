@@ -7,6 +7,8 @@ public record TeamAccuracy(
     double AwayConcededAvg, 
     double HomeScoreProbability, 
     double AwayScoreProbability,
+    double HomeScoredGameAverage,
+    double AwayScoredGameAverage,
     bool HomeLastFiveOver,
     bool AwayLastFiveOver,
     bool HomeLastFiveWon,

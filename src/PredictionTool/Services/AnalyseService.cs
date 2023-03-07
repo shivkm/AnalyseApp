@@ -22,11 +22,11 @@ public class AnalyseService: IAnalyseService
     public async Task StartAnalyseAsync()
     {
         // Change this to load data backward for test
-        var historicalEnd = new DateTime(2023, 02, 16);
+        var historicalEnd = new DateTime(2023, 02, 22);
         var endDate = DateTime.Now.AddDays(5);
-         //await _fileProcessor.CreateUpcomingFixtureBy(default);
-       // await _fileProcessor.CreateHistoricalGamesFile(default);
-        var historicalGames = _fileProcessor.GetHistoricalGamesBy(endDate);
+        //await _fileProcessor.CreateUpcomingFixtureBy(default);
+        //await _fileProcessor.CreateHistoricalGamesFile(default);
+        var historicalGames = _fileProcessor.GetHistoricalGamesBy(historicalEnd);
         var upcomingGames = _fileProcessor.GetUpcomingGamesBy(endDate);
         var result = new List<QualifiedGames>();
 
@@ -46,11 +46,6 @@ public class AnalyseService: IAnalyseService
                 upcomingGame.League
             );
 
-            if (upcomingGame.Home == "Inter")
-            {
-                
-            }
-            
             var qualified = _filterService.FilterGames(
                 qualifiedGame,
                 gameProbabilities,

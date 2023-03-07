@@ -66,12 +66,12 @@ public class FileProcessor : IFileProcessor
         var fixtures = new List<Game>();
         var leagues = new[]
         {
-            new { League = League.BL1, MatchDay = 23 },
-            new { League = League.PL, MatchDay = 26 },
-            new { League = League.PD, MatchDay = 24 },
-            new { League = League.SA, MatchDay = 25 },
-            new { League = League.ELC, MatchDay = 35 },
-            new { League = League.FL1, MatchDay = 26 },
+            new { League = League.BL1, MatchDay = 21 },
+            new { League = League.PL, MatchDay = 25 },
+            new { League = League.PD, MatchDay = 23 },
+            new { League = League.SA, MatchDay = 24 },
+            new { League = League.ELC, MatchDay = 34 },
+            new { League = League.FL1, MatchDay = 25 },
         };
 
         foreach (var league in leagues)

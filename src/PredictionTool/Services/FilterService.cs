@@ -1,4 +1,6 @@
 ﻿using MathNet.Numerics.Distributions;
+using Microsoft.ML;
+using Microsoft.ML.Data;
 using PredictionTool.Extensions;
 using PredictionTool.Interfaces;
 using PredictionTool.Models;
@@ -15,6 +17,7 @@ public class FilterService: IFilterService
     private const string ZeroGoal = "ZeroGoal";
     private const double MinScored = 0.60;
     private const double MaxConceded = 1.20;
+    private const double MinProbability = 0.68;
     
     public FilterService() { }
     
@@ -33,15 +36,16 @@ public class FilterService: IFilterService
         // calculate the team score mode
         var teamsMode = CalculateModeBy(qualifiedGames.Home, qualifiedGames.Away, games);
 
+        var linearReg = GetLinearClassificationAnalysisBy(qualifiedGames.Home, qualifiedGames.Away, historicalGames);
         // markov chain average used to calculate poisson prabability
         var homeMarkovChain = TeamMarkovChainProbability(historicalGames, qualifiedGames.Home);
         var awayMarkovChain = TeamMarkovChainProbability(historicalGames, qualifiedGames.Away);
 
-        if (qualifiedGames.Home == "Inter")
+        if (qualifiedGames.Home == "Milan")
         {
             
         }
-        var overTwoGoals = OverTwoGoalsAnalysisBy(currentForms, headToHeads, teamsMode);
+        var overTwoGoals = BothScoreAnalysisBy(currentForms, headToHeads, teamsMode);
         if (overTwoGoals.Qualified)
         {
             Console.WriteLine($"{qualifiedGames.DateTime} {qualifiedGames.Home}:{qualifiedGames.Away} {overTwoGoals.Key}");
@@ -54,14 +58,24 @@ public class FilterService: IFilterService
     
     
 
-    private static bool BothScoreAnalysisBy(TeamAccuracy currentForm, HeadToHead headToHead)
+    private static (bool Qualified, string Key) BothScoreAnalysisBy(TeamAccuracy currentForm, HeadToHead headToHead, (int home, int away) teamMode)
     {
-        // Home and away both have 68% probability to score in current form
-        if (currentForm is { HomeScoreProbability: > MinScored + 0.1, AwayScoreProbability: > MinScored + 0.1 })
-            return true;
-        
-        // Head to head must strong
-        return headToHead is { PlayedMatches: >= 4, BothScoredAvg: >= MinScored };
+        if (currentForm is 
+            {
+                HomeScoreProbability: > MinProbability,
+                AwayScoreProbability: > MinProbability
+            } and
+            {
+                HomeScoredGameAverage: > MinScored,
+                AwayScoredGameAverage: > MinScored
+            })
+        {
+            if (teamMode is { home: > 0, away: > 0 })
+            {
+                return (true, "Both team score");
+            }
+        }
+        return (false, "");
     }
     
     private static (bool Qualified, string Key) OverTwoGoalsAnalysisBy(TeamAccuracy currentForm, HeadToHead headToHead, (int home, int away) teamMode)
@@ -168,7 +182,7 @@ public class FilterService: IFilterService
         
         var awayLastFiveGamesWon = awayCurrentGames.OrderByDescending(i => i.DateTime)
             .Take(5).All(i => i.FullTimeResult == "H" && i.Home == away || i.FullTimeResult == "A" && i.Away == away);
-        
+
         return new TeamAccuracy(
             homeScoredAvg,
             awayScoredAvg, 
@@ -176,6 +190,8 @@ public class FilterService: IFilterService
             awayConcededAvg, 
             homeProbability,
             awayProbability,
+            homeCurrentOneGoalAvg,
+            awayCurrentOneGoalAvg,
             homeLastFiveGamesOver,
             awayLastFiveGamesOver,
             homeLastFiveGamesWon,
@@ -215,7 +231,73 @@ public class FilterService: IFilterService
                             i.FullTimeHomeScore + i.FullTimeAwayScore == 3)
             .Divide(headToHeadGames.Count);
 
+       
         return new HeadToHead(headToHeadGames.Count, bothScoredAvg, moreThanTwoGoals, twoToThreeGoals);
+    }
+
+    private bool GetLinearClassificationAnalysisBy(string home, string away, List<Game> historicalGames)
+    {
+        var games = historicalGames
+            .Where(i => i.Home == home && i.Away == away || i.Away == home && i.Home == away)
+            .OrderByDescending(o => o.DateTime)
+            .ToList();
+
+        // Create MLContext
+        var mlContext = new MLContext();
+        var currentData = new GameData { Home = home, Away = away }; 
+        
+        // Load data into memory
+        var data = mlContext.Data.LoadFromEnumerable(games.Select(s => new GameData
+        {
+            Home = s.Home,
+            Away = s.Away,
+            Score = s.FullTimeHomeScore + s.FullTimeAwayScore > 3,
+            HomeScore = Convert.ToSingle(s.FullTimeHomeScore),
+            AwayScore = Convert.ToSingle(s.FullTimeAwayScore)
+        }));
+
+        // Split data into training and testing sets
+        var trainData = mlContext.Data.TrainTestSplit(data, testFraction: 0.2);
+
+        // Define data preparation pipeline
+        var dataPipeline = mlContext.Transforms.Conversion.MapValueToKey("Key", "Score")
+            .Append(mlContext.Transforms.Categorical.OneHotEncoding("Home"))
+            .Append(mlContext.Transforms.Categorical.OneHotEncoding("Away"))
+            .Append(mlContext.Transforms.Concatenate("Features", "Home", "Away", "HomeScore", "AwayScore"))
+            .Append(mlContext.Transforms.NormalizeMinMax("Features"))
+            .Append(mlContext.Transforms.Conversion.MapKeyToValue("Label", "Key"));
+
+        // Define trainer algorithm
+        var trainer = mlContext.BinaryClassification.Trainers.SdcaLogisticRegression();
+        var trainer2 = mlContext.Regression.Trainers.LbfgsPoissonRegression();
+
+        
+        // Define training pipeline
+        var trainingPipeline = dataPipeline.Append(trainer);
+        var trainingPipeline2 = dataPipeline.Append(trainer2);
+        
+        // Train the model
+        var model = trainingPipeline.Fit(trainData.TrainSet);
+        var model2 = trainingPipeline2.Fit(trainData.TrainSet);
+        
+        // Evaluate the model
+        var predictions = model.Transform(trainData.TestSet);
+        var metrics = mlContext.BinaryClassification.Evaluate(predictions);
+        Console.WriteLine($"Accuracy: {metrics.Accuracy:P2}");
+        
+        // Evaluate the model
+        var predictions2 = model2.Transform(trainData.TestSet);
+        var metrics2 = mlContext.Regression.Evaluate(predictions2);
+        Console.WriteLine($"Accuracy: {metrics2.RSquared:P2}");
+
+        // Test the model with new data
+        var predictionEngine = mlContext.Model.CreatePredictionEngine<GameData, Prediction>(model);
+        var prediction = predictionEngine.Predict(currentData);
+        var isOver = prediction.Over;
+      //  Console.WriteLine($"Prediction: {(isOver ? "Over" : "Under")}");
+
+        return true;
+
     }
     
     private static double TeamMarkovChainProbability(IEnumerable<Game> pastGames, string team)
@@ -327,4 +409,27 @@ public class FilterService: IFilterService
 
         return mode;
     }
+}
+
+public class GameData
+{ 
+    [LoadColumn(0)]
+    public string Home { get; set; }
+
+    [LoadColumn(1)]
+    public string Away { get; set; }
+
+    [LoadColumn(2)]
+    public bool Score { get; set; }
+    
+    [LoadColumn(3)]
+    public float HomeScore { get; set; }
+    [LoadColumn(4)]
+    public float AwayScore { get; set; }
+}
+
+public class Prediction
+{
+    [ColumnName("Score")]
+    public float Over { get; set; }
 }
