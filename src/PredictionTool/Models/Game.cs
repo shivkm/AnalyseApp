@@ -31,4 +31,12 @@ public record HistoricalGame
     public int? HTHG { get; set; } = default!;
     public int? HTAG { get; set; } = default!;
     public string HTR { get; set; } = default!;
+    [Optional]
+    public int? HS { get; set; }
+    [Optional]
+    public int? AS { get; set; }
+    [Optional]
+    public int? HST { get; set; }
+    [Optional]
+    public int? AST { get; set; }
 }

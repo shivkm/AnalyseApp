@@ -31,6 +31,7 @@
       <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
       <PackageReference Include="Microsoft.Extensions.Options" Version="7.0.1" />
       <PackageReference Include="Microsoft.ML" Version="2.0.1" />
+      <PackageReference Include="Microsoft.ML.FastTree" Version="2.0.1" />
       <PackageReference Include="Microsoft.ML.TensorFlow" Version="2.0.1" />
       <PackageReference Include="NPOI" Version="2.6.0" />
     </ItemGroup>

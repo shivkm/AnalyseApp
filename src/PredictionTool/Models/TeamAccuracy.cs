@@ -1,16 +1,16 @@
 ﻿namespace PredictionTool.Models;
 
 public record TeamAccuracy(
-    double HomeScoredAvg, 
-    double AwayScoredAvg, 
-    double HomeConcededAvg, 
-    double AwayConcededAvg, 
     double HomeScoreProbability, 
     double AwayScoreProbability,
-    double HomeScoredGameAverage,
-    double AwayScoredGameAverage,
-    bool HomeLastFiveOver,
-    bool AwayLastFiveOver,
-    bool HomeLastFiveWon,
-    bool AwayLastFiveWon
+    double HomeHalftimeScoreProbability, 
+    double AwayHalftimeScoreProbability,
+    double HomeScoredGameAvg,
+    double AwayScoredGameAvg,
+    double HomeShotsOnGoalsAvg,
+    double AwayShotsOnGoalsAvg,
+    bool HomeLastFourOver,
+    bool AwayLastFourOver,
+    bool HomeLastThreeWon,
+    bool AwayLastThreeWon
 );

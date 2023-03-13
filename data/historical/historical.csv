@@ -1950,6 +1950,24 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/19/2023 00:00:00,D1,0,Union Berlin,Schalke 04,0,0,0,0,D
 02/19/2023 00:00:00,D1,0,Dortmund,Hertha,4,1,2,0,H
 02/19/2023 00:00:00,D1,0,Leverkusen,Mainz,2,3,1,2,A
+02/24/2023 00:00:00,D1,0,Mainz,M'gladbach,4,0,1,0,H
+02/25/2023 00:00:00,D1,0,FC Koln,Wolfsburg,0,2,0,1,A
+02/25/2023 00:00:00,D1,0,Hertha,Augsburg,2,0,0,0,H
+02/25/2023 00:00:00,D1,0,Hoffenheim,Dortmund,0,1,0,1,A
+02/25/2023 00:00:00,D1,0,RB Leipzig,Ein Frankfurt,2,1,2,0,H
+02/25/2023 00:00:00,D1,0,Werder Bremen,Bochum,3,0,2,0,H
+02/25/2023 00:00:00,D1,0,Schalke 04,Stuttgart,2,1,2,0,H
+02/26/2023 00:00:00,D1,0,Freiburg,Leverkusen,1,1,1,0,D
+02/26/2023 00:00:00,D1,0,Bayern Munich,Union Berlin,3,0,3,0,H
+03/03/2023 00:00:00,D1,0,Dortmund,RB Leipzig,2,1,2,0,H
+03/04/2023 00:00:00,D1,0,Augsburg,Werder Bremen,2,1,1,1,H
+03/04/2023 00:00:00,D1,0,Bochum,Schalke 04,0,2,0,1,A
+03/04/2023 00:00:00,D1,0,Mainz,Hoffenheim,1,0,1,0,H
+03/04/2023 00:00:00,D1,0,M'gladbach,Freiburg,0,0,0,0,D
+03/04/2023 00:00:00,D1,0,Union Berlin,FC Koln,0,0,0,0,D
+03/04/2023 00:00:00,D1,0,Stuttgart,Bayern Munich,1,2,0,1,A
+03/05/2023 00:00:00,D1,0,Leverkusen,Hertha,4,1,2,0,H
+03/05/2023 00:00:00,D1,0,Wolfsburg,Ein Frankfurt,2,2,2,2,D
 08/26/2016 00:00:00,D1,0,Bayern Munich,Werder Bremen,6,0,2,0,H
 08/27/2016 00:00:00,D1,0,Augsburg,Wolfsburg,0,2,0,1,A
 08/27/2016 00:00:00,D1,0,Dortmund,Mainz,2,1,1,0,H
@@ -3975,6 +3993,24 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/19/2023 00:00:00,D2,0,Hamburg,Bielefeld,2,1,1,0,H
 02/19/2023 00:00:00,D2,0,Heidenheim,Nurnberg,5,0,3,0,H
 02/19/2023 00:00:00,D2,0,Sandhausen,Karlsruhe,0,3,0,1,A
+02/24/2023 00:00:00,D2,0,Fortuna Dusseldorf,Braunschweig,3,1,2,0,H
+02/24/2023 00:00:00,D2,0,Karlsruhe,Regensburg,1,0,1,0,H
+02/25/2023 00:00:00,D2,0,Holstein Kiel,Paderborn,1,1,0,1,D
+02/25/2023 00:00:00,D2,0,Kaiserslautern,Greuther Furth,3,1,1,0,H
+02/25/2023 00:00:00,D2,0,Nurnberg,Sandhausen,1,0,0,0,H
+02/25/2023 00:00:00,D2,0,Darmstadt,Hamburg,1,1,0,1,D
+02/26/2023 00:00:00,D2,0,Bielefeld,Heidenheim,0,1,0,0,A
+02/26/2023 00:00:00,D2,0,Hannover,Magdeburg,1,2,0,0,A
+02/26/2023 00:00:00,D2,0,St Pauli,Hansa Rostock,1,0,1,0,H
+03/03/2023 00:00:00,D2,0,Magdeburg,Kaiserslautern,2,0,1,0,H
+03/03/2023 00:00:00,D2,0,Paderborn,St Pauli,1,2,0,2,A
+03/04/2023 00:00:00,D2,0,Hamburg,Nurnberg,3,0,1,0,H
+03/04/2023 00:00:00,D2,0,Regensburg,Fortuna Dusseldorf,0,1,0,0,A
+03/04/2023 00:00:00,D2,0,Sandhausen,Holstein Kiel,1,1,0,0,D
+03/04/2023 00:00:00,D2,0,Heidenheim,Darmstadt,1,0,0,0,H
+03/05/2023 00:00:00,D2,0,Braunschweig,Bielefeld,3,3,2,3,D
+03/05/2023 00:00:00,D2,0,Greuther Furth,Hannover,1,1,0,0,D
+03/05/2023 00:00:00,D2,0,Hansa Rostock,Karlsruhe,0,2,0,2,A
 08/05/2016 00:00:00,D2,0,Kaiserslautern,Hannover,0,4,0,1,A
 08/06/2016 00:00:00,D2,0,Bochum,Union Berlin,2,1,0,0,H
 08/06/2016 00:00:00,D2,0,Dresden,Nurnberg,1,1,0,1,D
@@ -6052,6 +6088,16 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/26/2023 00:00:00,E0,0,Tottenham,Chelsea,2,0,0,0,H
 03/01/2023 00:00:00,E0,0,Arsenal,Everton,4,0,2,0,H
 03/01/2023 00:00:00,E0,0,Liverpool,Wolves,2,0,0,0,H
+03/04/2023 00:00:00,E0,0,Man City,Newcastle,2,0,1,0,H
+03/04/2023 00:00:00,E0,0,Arsenal,Bournemouth,3,2,0,1,H
+03/04/2023 00:00:00,E0,0,Aston Villa,Crystal Palace,1,0,1,0,H
+03/04/2023 00:00:00,E0,0,Brighton,West Ham,4,0,1,0,H
+03/04/2023 00:00:00,E0,0,Chelsea,Leeds,1,0,0,0,H
+03/04/2023 00:00:00,E0,0,Wolves,Tottenham,1,0,0,0,H
+03/04/2023 00:00:00,E0,0,Southampton,Leicester,1,0,1,0,H
+03/05/2023 00:00:00,E0,0,Nott'm Forest,Everton,2,2,1,2,D
+03/05/2023 00:00:00,E0,0,Liverpool,Man United,7,0,1,0,H
+03/06/2023 00:00:00,E0,0,Brentford,Fulham,3,2,1,1,H
 08/13/2016 00:00:00,E0,0,Burnley,Swansea,0,1,0,0,A
 08/13/2016 00:00:00,E0,0,Crystal Palace,West Brom,0,1,0,0,A
 08/13/2016 00:00:00,E0,0,Everton,Tottenham,1,1,1,0,D
@@ -8737,6 +8783,21 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/27/2023 00:00:00,E1,0,Swansea,Rotherham,1,1,1,0,D
 02/28/2023 00:00:00,E1,0,Preston,Coventry,0,0,0,0,D
 02/28/2023 00:00:00,E1,0,Luton,Millwall,2,2,0,1,D
+03/03/2023 00:00:00,E1,0,Hull,West Brom,2,0,1,0,H
+03/04/2023 00:00:00,E1,0,Blackburn,Sheffield United,1,0,1,0,H
+03/04/2023 00:00:00,E1,0,Cardiff,Bristol City,2,0,0,0,H
+03/04/2023 00:00:00,E1,0,Blackpool,Burnley,0,0,0,0,D
+03/04/2023 00:00:00,E1,0,Huddersfield,Coventry,0,4,0,1,A
+03/04/2023 00:00:00,E1,0,Luton,Swansea,1,0,1,0,H
+03/04/2023 00:00:00,E1,0,Middlesbrough,Reading,5,0,2,0,H
+03/04/2023 00:00:00,E1,0,Millwall,Norwich,2,3,1,1,A
+03/04/2023 00:00:00,E1,0,Rotherham,QPR,3,1,1,0,H
+03/04/2023 00:00:00,E1,0,Sunderland,Stoke,1,5,0,1,A
+03/04/2023 00:00:00,E1,0,Watford,Preston,0,0,0,0,D
+03/04/2023 00:00:00,E1,0,Wigan,Birmingham,1,1,0,1,D
+03/07/2023 00:00:00,E1,0,Huddersfield,Bristol City,0,0,0,0,D
+03/07/2023 00:00:00,E1,0,Reading,Sheffield United,0,1,0,0,A
+03/07/2023 00:00:00,E1,0,West Brom,Wigan,1,0,1,0,H
 08/05/2016 00:00:00,E1,0,Fulham,Newcastle,1,0,1,0,H
 08/06/2016 00:00:00,E1,0,Birmingham,Cardiff,0,0,0,0,D
 08/06/2016 00:00:00,E1,0,Blackburn,Norwich,1,4,0,3,A
@@ -12443,6 +12504,25 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/28/2023 00:00:00,E2,0,Lincoln,Milton Keynes Dons,1,1,1,0,D
 02/28/2023 00:00:00,E2,0,Peterboro,Charlton,0,0,0,0,D
 02/28/2023 00:00:00,E2,0,Portsmouth,Bolton,3,1,0,0,H
+03/04/2023 00:00:00,E2,0,Morecambe,Bolton,0,0,0,0,D
+03/04/2023 00:00:00,E2,0,Accrington,Forest Green,2,1,1,1,H
+03/04/2023 00:00:00,E2,0,Bristol Rvs,Barnsley,0,0,0,0,D
+03/04/2023 00:00:00,E2,0,Cambridge,Portsmouth,0,1,0,0,A
+03/04/2023 00:00:00,E2,0,Cheltenham,Fleetwood Town,1,0,0,0,H
+03/04/2023 00:00:00,E2,0,Derby,Shrewsbury,2,2,2,0,D
+03/04/2023 00:00:00,E2,0,Ipswich,Burton,4,0,3,0,H
+03/04/2023 00:00:00,E2,0,Lincoln,Oxford,1,0,1,0,H
+03/04/2023 00:00:00,E2,0,Plymouth,Charlton,2,0,0,0,H
+03/04/2023 00:00:00,E2,0,Port Vale,Milton Keynes Dons,1,0,1,0,H
+03/04/2023 00:00:00,E2,0,Sheffield Weds,Peterboro,1,0,0,0,H
+03/04/2023 00:00:00,E2,0,Wycombe,Exeter,1,1,1,0,D
+03/07/2023 00:00:00,E2,0,Barnsley,Portsmouth,3,1,2,0,H
+03/07/2023 00:00:00,E2,0,Cambridge,Morecambe,1,1,1,1,D
+03/07/2023 00:00:00,E2,0,Cheltenham,Lincoln,0,0,0,0,D
+03/07/2023 00:00:00,E2,0,Ipswich,Accrington,3,0,1,0,H
+03/07/2023 00:00:00,E2,0,Peterboro,Shrewsbury,2,1,1,1,H
+03/07/2023 00:00:00,E2,0,Wycombe,Fleetwood Town,2,0,1,0,H
+03/07/2023 00:00:00,E2,0,Plymouth,Derby,2,1,0,1,H
 08/06/2016 00:00:00,E2,0,Bolton,Sheffield United,1,0,1,0,H
 08/06/2016 00:00:00,E2,0,Bradford,Port Vale,0,0,0,0,D
 08/06/2016 00:00:00,E2,0,Bury,Charlton,2,0,0,0,H
@@ -15853,6 +15933,16 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/26/2023 00:00:00,F1,0,Reims,Toulouse,3,0,2,0,H
 02/26/2023 00:00:00,F1,0,Monaco,Nice,0,3,0,3,A
 02/26/2023 00:00:00,F1,0,Marseille,Paris SG,0,3,0,2,A
+03/03/2023 00:00:00,F1,0,Nice,Auxerre,1,1,1,1,D
+03/04/2023 00:00:00,F1,0,Lens,Lille,1,1,1,0,D
+03/04/2023 00:00:00,F1,0,Paris SG,Nantes,4,2,2,2,H
+03/05/2023 00:00:00,F1,0,Troyes,Monaco,2,2,1,0,D
+03/05/2023 00:00:00,F1,0,Montpellier,Angers,5,0,3,0,H
+03/05/2023 00:00:00,F1,0,Reims,Ajaccio,1,0,0,0,H
+03/05/2023 00:00:00,F1,0,Strasbourg,Brest,0,1,0,1,A
+03/05/2023 00:00:00,F1,0,Toulouse,Clermont,0,1,0,0,A
+03/05/2023 00:00:00,F1,0,Lyon,Lorient,0,0,0,0,D
+03/05/2023 00:00:00,F1,0,Rennes,Marseille,0,1,0,0,A
 08/12/2016 00:00:00,F1,0,Bastia,Paris SG,0,1,0,0,A
 08/12/2016 00:00:00,F1,0,Monaco,Guingamp,2,2,0,2,D
 08/13/2016 00:00:00,F1,0,Bordeaux,St Etienne,3,2,1,0,H
@@ -20691,6 +20781,16 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/27/2023 00:00:00,I1,0,Lazio,Sampdoria,1,0,0,0,H
 02/28/2023 00:00:00,I1,0,Cremonese,Roma,2,1,1,0,H
 02/28/2023 00:00:00,I1,0,Juventus,Torino,4,2,2,2,H
+03/03/2023 00:00:00,I1,0,Napoli,Lazio,0,1,0,0,A
+03/04/2023 00:00:00,I1,0,Monza,Empoli,2,1,1,0,H
+03/04/2023 00:00:00,I1,0,Atalanta,Udinese,0,0,0,0,D
+03/04/2023 00:00:00,I1,0,Fiorentina,Milan,2,1,0,0,H
+03/05/2023 00:00:00,I1,0,Spezia,Verona,0,0,0,0,D
+03/05/2023 00:00:00,I1,0,Sampdoria,Salernitana,0,0,0,0,D
+03/05/2023 00:00:00,I1,0,Inter,Lecce,2,0,1,0,H
+03/05/2023 00:00:00,I1,0,Roma,Juventus,1,0,0,0,H
+03/06/2023 00:00:00,I1,0,Sassuolo,Cremonese,3,2,2,0,H
+03/06/2023 00:00:00,I1,0,Torino,Bologna,1,0,1,0,H
 08/20/2016 00:00:00,I1,0,Juventus,Fiorentina,2,1,1,0,H
 08/20/2016 00:00:00,I1,0,Roma,Udinese,4,0,0,0,H
 08/21/2016 00:00:00,I1,0,Atalanta,Lazio,3,4,0,3,A
@@ -23201,6 +23301,16 @@ DateTime,League,GameDay,Home,Away,FullTimeHomeScore,FullTimeAwayScore,HalftimeHo
 02/26/2023 00:00:00,SP1,0,Almeria,Barcelona,1,0,1,0,H
 02/26/2023 00:00:00,SP1,0,Sevilla,Osasuna,2,3,0,1,A
 02/27/2023 00:00:00,SP1,0,Villarreal,Getafe,2,1,1,1,H
+03/03/2023 00:00:00,SP1,0,Sociedad,Cadiz,0,0,0,0,D
+03/04/2023 00:00:00,SP1,0,Getafe,Girona,3,2,3,0,H
+03/04/2023 00:00:00,SP1,0,Almeria,Villarreal,0,2,0,0,A
+03/04/2023 00:00:00,SP1,0,Mallorca,Elche,0,1,0,0,A
+03/04/2023 00:00:00,SP1,0,Ath Madrid,Sevilla,6,1,2,1,H
+03/05/2023 00:00:00,SP1,0,Valladolid,Espanol,2,1,1,0,H
+03/05/2023 00:00:00,SP1,0,Barcelona,Valencia,1,0,1,0,H
+03/05/2023 00:00:00,SP1,0,Vallecano,Ath Bilbao,0,0,0,0,D
+03/05/2023 00:00:00,SP1,0,Betis,Real Madrid,0,0,0,0,D
+03/06/2023 00:00:00,SP1,0,Osasuna,Celta,0,0,0,0,D
 08/19/2016 00:00:00,SP1,0,La Coruna,Eibar,2,1,0,0,H
 08/19/2016 00:00:00,SP1,0,Malaga,Osasuna,1,1,0,0,D
 08/20/2016 00:00:00,SP1,0,Barcelona,Betis,6,2,3,1,H
