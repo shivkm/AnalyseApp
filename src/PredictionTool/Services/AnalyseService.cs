@@ -25,11 +25,11 @@ public class AnalyseService: IAnalyseService
     public async Task StartAnalyseAsync()
     {
         // Change this to load data backward for test
-        var historicalEnd = new DateTime(2023, 02, 22);
+        var historicalEnd = new DateTime(2023, 02, 28);
         var endDate = DateTime.Now;
         //await _fileProcessor.CreateUpcomingFixtureBy(default);
         //await _fileProcessor.CreateHistoricalGamesFile(default);
-        var historicalGames = _fileProcessor.GetHistoricalGamesBy(endDate);
+        var historicalGames = _fileProcessor.GetHistoricalGamesBy(historicalEnd);
         var upcomingGames = _fileProcessor.GetUpcomingGamesBy(endDate);
         var result = new List<QualifiedGames>();
 
@@ -45,15 +45,27 @@ public class AnalyseService: IAnalyseService
             var home = teamFormCalculator.CalculateForm(upcomingGame.Home, 6);
             var away = teamFormCalculator.CalculateForm(upcomingGame.Away, 6);
             
-            AnalyzeTactics(upcomingGame.Home, upcomingGame.Away, home,away);
+            AnalyzeOddTactics(upcomingGame, home,away, homeOverall, awayOverall);
             var goal = PredictBothTeamsToScore(home, away);
         }
         
         //Console.WriteLine($"count: {result.Count}");
        // result.ForEach(i => Console.WriteLine($"{i}\t"));
     }
-    public void AnalyzeTactics(string homeTeam, string awayTeam, TeamForm homeForm, TeamForm awayForm)
+    
+    /// <summary>
+    /// Analyse based on team performance which team will win or is a draw match
+    /// </summary>
+    /// <param name="homeTeam">home team name</param>
+    /// <param name="awayTeam">away team name</param>
+    /// <param name="homeForm">home team calculated form</param>
+    /// <param name="awayForm">away team calculated form</param>
+    private static void AnalyzeOddTactics(Game game, TeamForm homeForm, TeamForm awayForm, TeamForm overallHome, TeamForm overallAway)
     {
+        if (game.Away == "Barcelona")
+        {
+            
+        }
         var homeScore = homeForm.GoalProbability * awayForm.ConcededProbability * homeForm.GoalsForPerGame;
         var awayScore = awayForm.GoalProbability * homeForm.ConcededProbability * awayForm.GoalsForPerGame;
 
@@ -62,15 +74,17 @@ public class AnalyseService: IAnalyseService
 
         if (homeScore > awayScore && homeScore > 0.85)
         {
-           // Console.WriteLine($"{homeTeam} is favored to win.");
+            Console.WriteLine($"{game.DateTime} {game.Home} is favored to win.");
         }
         else if (homeScore < awayScore && awayScore > 0.85)
         {
-            //Console.WriteLine($"{awayTeam} is favored to win.");
+            Console.WriteLine($"{game.DateTime} {game.Away} is favored to win.");
         }
-        else if(homeScore < 0.30 && awayScore < 0.30)
+        else if(homeScore - awayScore <= 0.10 && homeScore - awayScore > 0.01 ||
+                awayScore - homeScore <= 0.10 && awayScore - homeScore > 0.01 && homeForm.DrawRate > 0.4 && awayForm.DrawRate > 0.4)
+            
         {
-            Console.WriteLine($"{homeTeam}:{awayTeam}The match is expected to end in a draw.");
+            Console.WriteLine($"{game.DateTime} {game.Home}:{game.Away} The match is expected to end in a draw.");
         }
     }
     

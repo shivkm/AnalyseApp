@@ -1,5 +1,4 @@
-﻿using Accord.Math;
-using Accord.Neuro;
+﻿using Accord.Neuro;
 using Accord.Neuro.Learning;
 using PredictionTool.Models;
 
