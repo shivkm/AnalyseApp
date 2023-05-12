@@ -1,4 +1,5 @@
-﻿using AnalyseApp.Interfaces;
+﻿using AnalyseApp.Extensions;
+using AnalyseApp.Interfaces;
 using AnalyseApp.models;
 
 namespace AnalyseApp.Services;
@@ -12,23 +13,15 @@ public class AnalyseService : IAnalyseService
         _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
     }
 
-    public List<Matches> PrepareTeamStateBy(string homeTeam, string awayTeam)
+    public TeamStatistic PrepareTeamStateBy(string team)
     {
-        var homeTeamMatches = GetTenMatchesBy(homeTeam);
-        var awayTeamMatches = GetTenMatchesBy(awayTeam);
+        var teamMatches = _historicalMatches.GetLastTenGamesBy(team);
+        var teamStatistic = teamMatches.GetTeamStatistics(team);
         
-        
-        return homeTeamMatches.ToList();
+        return teamStatistic;
     }
 
-    private IEnumerable<Matches> GetTenMatchesBy(string team)
-    {
-        return _historicalMatches
-            .Where(item => item.HomeTeam == team || item.AwayTeam == team)
-            .OrderByDescending(i => Convert.ToDateTime(i.Date))
-            .Take(10)
-            .ToList();
-    }
+    
 }
 
 
