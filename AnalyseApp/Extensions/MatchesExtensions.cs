@@ -8,15 +8,17 @@ internal static class MatchesExtensions
     /// Filter the matches for current season
     /// </summary>
     /// <param name="matches">Historical matches</param>
+    /// <param name="team">team name</param>
     /// <returns>Matches from current season</returns>
-    internal static IList<Matches> GetCurrentSeasonBy(this IEnumerable<Matches> matches)
+    internal static List<Matches> GetLastTenGamesBy(this List<Matches> matches, string team)
     {
-        var filterMatches = matches
-            .Where(g => DateTime.Parse(g.Date).Year == DateTime.Now.AddYears(-1).Year || 
-                                DateTime.Parse(g.Date).Year == DateTime.Now.Year)
+        matches = matches
+            .Where(i => i.HomeTeam == team || i.AwayTeam == team)
+            .OrderByDescending(i => i.Date)
+            .Take(10)
             .ToList();
 
-        return filterMatches;
+        return matches;
     }
 
     internal static void GenerateOutput(this NextMatch nextMatch)

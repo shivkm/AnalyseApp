@@ -1,15 +1,38 @@
-﻿using AnalyseApp;
-using Microsoft.ML.Data;
+﻿using System.Diagnostics.CodeAnalysis;
+using AnalyseApp;
+using AnalyseApp.Interfaces;
+using AnalyseApp.Options;
+using AnalyseApp.Services;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
-var analysis = new Analyse();
+IConfigurationRoot? configurationRoot = null;
 
-analysis.ReadFilesHistoricalGames().ReadUpcomingGames().StartAnalysis();
+// allows serilog to find the config
+Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
-//await analysis.CreateCsvFile();
-//analysis.Test();
+var host = Host.CreateDefaultBuilder(args)
+    .ConfigureAppConfiguration((_, builder) =>
+    {
+        builder.AddJsonFile("appsettings.json");
+        configurationRoot = builder.Build();
+    })
+    .ConfigureServices((hostContext, services) =>
+    {
+        services.AddOptions<FileProcessorOptions>()
+            .Configure(o => configurationRoot?.GetSection("FileProcessor").Bind(o));
+        
+        var baseUrl = configurationRoot?["FootballApi:BaseUrl"];
+        var token = configurationRoot?["FootballApi:Token"];
+        
+        services.AddScoped<IFileProcessor, FileProcessor>();
+        services.AddScoped<IAnalyseService, AnalyseService>();
+        services.AddHostedService<Worker>();
+    })
+    .Build();
 
-public class Prediction
-{
-    [ColumnName("Score")]
-    public float Score { get; set; }
-}
+await host.RunAsync();
+
+[ExcludeFromCodeCoverage]
+public partial class Program { }

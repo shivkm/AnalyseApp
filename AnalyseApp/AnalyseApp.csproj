@@ -8,6 +8,9 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="30.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="7.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="7.0.0" />
     <PackageReference Include="Microsoft.ML" Version="2.0.0" />
     <PackageReference Include="Microsoft.ML.FastTree" Version="2.0.0" />
     <PackageReference Include="Microsoft.ML.LightGbm" Version="2.0.0" />
