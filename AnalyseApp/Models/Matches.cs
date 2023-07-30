@@ -11,3 +11,10 @@ public class Matches
     public int? HTHG { get; set; }
     public int? HTAG { get; set; }
 }
+
+public class TeamAnalysis
+{
+    public string TeamName { get; set; }
+    public double AvgGoalsScored { get; set; }
+    public double AvgGoalsConceded { get; set; }
+}
