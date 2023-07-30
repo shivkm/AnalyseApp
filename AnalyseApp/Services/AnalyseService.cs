@@ -1,29 +1,228 @@
-﻿using AnalyseApp.Extensions;
+﻿using System.ComponentModel;
+using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
-
 namespace AnalyseApp.Services;
 
 public class AnalyseService : IAnalyseService
 {
     private readonly List<Matches> _historicalMatches;
 
+    private readonly IFileProcessor _fileProcessor;
     public AnalyseService(IFileProcessor fileProcessor)
     {
+        _fileProcessor = fileProcessor;
         _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
     }
 
-    public TeamStatistic PrepareTeamStateBy(string team)
+    public void CalculationAnalysis()
     {
-        var teamMatches = _historicalMatches.GetLastTenGamesBy(team);
-        var teamStatistic = teamMatches.GetTeamStatistics(team);
+        var matchFactors = _fileProcessor.GetMatchFactors();
+        var rightGame = new List<string>();
+        var wrongGames = new List<string>();
+
+        foreach (var matchFactor in matchFactors)
+        {
+            if (matchFactor.League != "Premier League") continue;
+            
+            var sessionAnalysis = ModifiedPoissonAnalysisBy(
+                matchFactor.HomeGoalScored.ToDouble(), matchFactor.HomeGoalConceded.ToDouble(),
+                matchFactor.AwayGoalScored.ToDouble(), matchFactor.AwayGoalConceded.ToDouble()
+            );
         
-        return teamStatistic;
+            var lastSixHomeAnalysis = ModifiedPoissonAnalysisBy(
+                matchFactor.HomeHomeGoalScored.ToDouble(), matchFactor.HomeHomeGoalConceded.ToDouble(),
+                matchFactor.HomeAwayGoalScored.ToDouble(), matchFactor.HomeAwayGoalConceded.ToDouble()
+            );
+        
+            var lastSixAwayAnalysis = ModifiedPoissonAnalysisBy(
+                matchFactor.AwayHomeGoalScored.ToDouble(), matchFactor.AwayHomeGoalConceded.ToDouble(),
+                matchFactor.AwayAwayGoalScored.ToDouble(), matchFactor.AwayAwayGoalConceded.ToDouble()
+            );
+        
+            var headToHeadAnalysis = ModifiedPoissonAnalysisBy(
+                (matchFactor.HeadToHeadAwayGoalScored ?? 0).ToDouble(), (matchFactor.HeadToHeadHomeGoalConceded ?? 0).ToDouble(),
+                (matchFactor.HeadToHeadAwayGoalScored ?? 0).ToDouble(), (matchFactor.HeadToHeadAwayGoalConceded ?? 0).ToDouble()
+            );
+
+            var scoreProbability = sessionAnalysis.scoreProbability * 0.20 + lastSixHomeAnalysis.scoreProbability * 0.30 +
+                                    lastSixAwayAnalysis.scoreProbability * 0.30 + headToHeadAnalysis.scoreProbability * 0.20;
+            
+            var noScoreProbability = sessionAnalysis.noScoreProbability * 0.20 + lastSixHomeAnalysis.noScoreProbability * 0.30 +
+                                      lastSixAwayAnalysis.noScoreProbability * 0.30 + headToHeadAnalysis.noScoreProbability * 0.20;
+            
+            if (scoreProbability >= 0.74 && noScoreProbability < 0.26)
+            {
+                if (matchFactor.HomeGoal + matchFactor.AwayGoal > 2)
+                {
+                    rightGame.Add($"{matchFactor.Name}: More than two goals correct");
+                }
+                else
+                {
+                    wrongGames.Add($"{matchFactor.Name}: More than two goals wrong");
+                }
+            }
+
+            if (sessionAnalysis.scoreProbability > 0.60 && headToHeadAnalysis.scoreProbability > 0.60 &&
+                lastSixHomeAnalysis.scoreProbability < 0.50 && lastSixAwayAnalysis.scoreProbability > 0.60 &&
+                noScoreProbability is > 0.25 and < 0.40)
+            {
+                if (matchFactor is { AwayGoal: > 0, HomeGoal: < 0 })
+                {
+                    rightGame.Add($"{matchFactor.Name}: Away team score correct");
+                }
+                else
+                {
+                    wrongGames.Add($"{matchFactor.Name}: Away team score wrong");
+                }
+            }
+        
+        
+            if (sessionAnalysis.scoreProbability > 0.60 && headToHeadAnalysis.scoreProbability > 0.60 &&
+                lastSixHomeAnalysis.scoreProbability > 0.60 && lastSixAwayAnalysis.scoreProbability < 0.50 &&
+                noScoreProbability is > 0.25 and < 0.40)
+            {   
+                if (matchFactor is { AwayGoal: < 0, HomeGoal: > 0 })
+                {
+                    rightGame.Add($"{matchFactor.Name}: home team score correct");
+                }
+                else
+                {
+                    wrongGames.Add($"{matchFactor.Name}: home team score wrong");
+                }
+            }
+        }
+        
+        rightGame.ForEach(i => Console.WriteLine($"{i}\t"));
+        wrongGames.ForEach(i => Console.WriteLine($"{i}\t"));
+    }
+    
+    private static (double scoreProbability, double noScoreProbability) ModifiedPoissonAnalysisBy(
+        double homeGoalScored, double homeGoalConceded,double awayGoalScored, double awayGoalConceded)
+    {
+        var homeLambda = (homeGoalScored + homeGoalConceded) / (homeGoalScored is 0 ? 2 : homeGoalScored);
+        var awayLambda = (awayGoalScored + awayGoalConceded) / (awayGoalScored is 0 ? 2 : awayGoalScored);
+        var scoreProb = PoissonAnalysisBy(homeLambda, awayLambda);
+        var noScoreProb = PoissonAnalysisBy(homeLambda, awayLambda, false);
+
+        var scoreProbability = scoreProb.Sum();
+        var noScoreProbability = noScoreProb.Sum();
+
+        return (scoreProbability, noScoreProbability);
+    }
+
+    private static IEnumerable<double> PoissonAnalysisBy(double homeLambda, double awayLambda, bool score = true)
+    {
+        const int maxGoals = 10;
+        var probability = new List<double>();
+        for (var homeGoals = 0; homeGoals <= maxGoals; homeGoals++)
+        {
+            for (var awayGoals = 0; awayGoals <= maxGoals; awayGoals++)
+            {
+                var probHomeGoals = PoissonProbability(homeLambda, homeGoals);
+                var probAwayGoals = PoissonProbability(awayLambda, awayGoals);
+
+                switch (score)
+                {
+                    case true when awayGoals > 0 && homeGoals > 0:
+                    case false when awayGoals is 0 && homeGoals is 0 || awayGoals is 0 || homeGoals is 0:
+                        probability.Add(probHomeGoals * probAwayGoals);
+                        break;
+                }
+            }
+        }
+
+        return probability;
     }
 
     
-}
+    
+    public (double scoreProbability, double noScoreProbability) Test2(
+        double homeGoalScored, double homeGoalConceded,double awayGoalScored, double awayGoalConceded)
+    {
+        var test = 
+            ModifiedPoissonAnalysisBy(homeGoalScored,homeGoalConceded, awayGoalScored, awayGoalConceded);
 
+        return test;
+    }
+
+
+    public MatchStatistic PrepareMatchStatisticsBy(string homeTeam, string awayTeam)
+    {
+        var latestMatchDate = new DateTime(2023, 05, 18);
+        var homeTeamMatches = _historicalMatches.GetLastTenGamesBy(homeTeam, latestMatchDate);
+        var awayTeamMatches = _historicalMatches.GetLastTenGamesBy(awayTeam, latestMatchDate);
+        var headToHeadMatches = _historicalMatches.GetHeadToHeadGamesBy(homeTeam, awayTeam);
+
+        var homeStatistic = homeTeamMatches.GetTeamStatistics(homeTeam);
+        var awayStatistic = awayTeamMatches.GetTeamStatistics(awayTeam);
+        var headToHeadStatistic = headToHeadMatches.GetHeadToHeadStatistics(homeTeam, awayTeam);
+        return new MatchStatistic(homeStatistic, awayStatistic, headToHeadStatistic, false);
+    }
+    
+
+    public Probability AnalyseOverTwoGoalProbabilityBy(MatchStatistic matchStatistic)
+    {
+        double overProbability = CalculateOverProbability(
+            (double)matchStatistic.HomeMatch.Scored.HomeSideAvg,
+            (double)matchStatistic.AwayMatch.Scored.AwaySideAvg,
+            (double)matchStatistic.HomeMatch.ConcededScored.HomeSideAvg,
+            (double)matchStatistic.AwayMatch.ConcededScored.AwaySideAvg,
+            2.5);
+
+        Console.WriteLine($"Probability of over {2.5} goals: {overProbability:P}");
+        var probability = new Probability(100, false);
+
+        if (matchStatistic.HomeMatch.Scored.HomeSideAvg >= 0.68 &&
+            matchStatistic.AwayMatch.Scored.AwaySideAvg >= 0.68)
+        {
+            probability = probability with { Qualified = true };
+        }
+
+
+        return probability;
+    }
+
+    public static double CalculateOverProbability(double homeScoreAvg, double awayScoreAvg, double homeConcededAvg,
+        double awayConcededAvg, double threshold)
+    {
+        double homeExpectedGoals = homeScoreAvg * awayConcededAvg;
+        double awayExpectedGoals = awayScoreAvg * homeConcededAvg;
+        double totalExpectedGoals = homeExpectedGoals + awayExpectedGoals;
+
+        double underProbability = CalculateUnderProbability(totalExpectedGoals, threshold);
+        double overProbability = 1 - underProbability;
+
+        return overProbability;
+    }
+
+    public static double CalculateUnderProbability(double totalExpectedGoals, double threshold)
+    {
+        // You can choose a statistical distribution and calculate the probability using its CDF.
+        // Here's an example using the Normal distribution.
+        double mean = totalExpectedGoals;
+        double standardDeviation = Math.Sqrt(totalExpectedGoals);
+
+        double underProbability = NormalDistribution.CumulativeDistribution(threshold, mean, standardDeviation);
+
+        return underProbability;
+    }
+    
+    private static double Factorial(int n)
+    {
+        // Calculate the factorial of n
+        if (n <= 1)
+            return 1;
+
+        return n * Factorial(n - 1);
+    }
+    
+    private static double PoissonProbability(double lambda, int k)
+    {
+        // Calculate the Poisson probability for k goals given a lambda value
+        return Math.Pow(lambda, k) * Math.Exp(-lambda) / Factorial(k);
+    }
+}
 
 
 /*
@@ -68,3 +267,34 @@ Injuries: Information on the availability of key players, particularly due to in
 It's important to note that the specific data you collect will depend on the goals of your model and the questions you are trying to answer. You may need to experiment with different types of data and features to find the combination that works best for your model.
 
  */
+
+public static class NormalDistribution
+{
+    public static double CumulativeDistribution(double x, double mean, double standardDeviation)
+    {
+        double z = (x - mean) / standardDeviation;
+        double cumulativeProbability = 0.5 * (1 + MathErf(z / Math.Sqrt(2)));
+
+        return cumulativeProbability;
+    }
+
+    // Error function approximation using Abramowitz and Stegun formula
+    private static double MathErf(double x)
+    {
+        const double a1 = 0.254829592;
+        const double a2 = -0.284496736;
+        const double a3 = 1.421413741;
+        const double a4 = -1.453152027;
+        const double a5 = 1.061405429;
+        const double p = 0.3275911;
+
+        double sign = Math.Sign(x);
+        x = Math.Abs(x);
+
+        double t = 1.0 / (1.0 + p * x);
+        double y = ((((a5 * t + a4) * t + a3) * t + a2) * t + a1) * t;
+
+        return sign * (1 - y * Math.Exp(-x * x));
+    }
+}
+
