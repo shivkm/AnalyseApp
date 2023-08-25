@@ -95,7 +95,7 @@ public class MatchPredictor: IMatchPredictor
     private Prediction PredictUnderScoreGames(Prediction prediction, bool teamsInGoodForm)
     {       
         var underThreeGoal = HasUnderThreeGoalSuggestion();
-        if (underThreeGoal && teamsInGoodForm &&  _headToHeadData is { Count: > 3, OverScoredGames: >= 50 })
+        if (underThreeGoal && teamsInGoodForm && (_headToHeadData.Count < 2 || _headToHeadData is { Count: > 3, OverScoredGames: >= 50 }))
         {
             return new Prediction(" under 3 goals", true);
         }
@@ -107,8 +107,11 @@ public class MatchPredictor: IMatchPredictor
         {
             // Two to three goals are more promising
             var hasTwoToThreeSuggestion = HasTwoToThreeSuggestion();
-            if (hasTwoToThreeSuggestion && _homeTeamData.Suggestion is { Name: "UnderScoredGames", Value: < 0.57 } &&
-                _awayTeamData.Suggestion is { Name: "UnderScoredGames", Value: < 0.57 })
+            if (hasTwoToThreeSuggestion &&
+                _homeTeamData.Suggestion is { Name: "TwoToThreeGoalsGames", Value: > 0.70 } ||
+                 _homeTeamData.Suggestion is { Name: "UnderScoredGames", Value: < 0.57 } ||
+                _awayTeamData.Suggestion is { Name: "TwoToThreeGoalsGames", Value: > 0.70 } ||
+                 _awayTeamData.Suggestion is { Name: "UnderScoredGames", Value: < 0.57 })
             {
                 return new Prediction(" Two to three goals", true);
             }
