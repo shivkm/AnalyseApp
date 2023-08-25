@@ -71,7 +71,7 @@ public class MatchPredictor: IMatchPredictor
     private Prediction PredictOverTwoGoalsBy(Prediction prediction, bool teamsInGoodForm)
     {
         var overTwoGoals = HasOverTwoGoalSuggestion();
-        if (overTwoGoals && teamsInGoodForm && _headToHeadData is { Count: > 3, UnderScoredGames: >= 50 })
+        if (overTwoGoals && teamsInGoodForm && _headToHeadData is { Count: > 3, OverScoredGames: >= 50 })
         {
             return new Prediction(" Over 2 goals", true);
         }
@@ -95,7 +95,7 @@ public class MatchPredictor: IMatchPredictor
     private Prediction PredictUnderScoreGames(Prediction prediction, bool teamsInGoodForm)
     {       
         var underThreeGoal = HasUnderThreeGoalSuggestion();
-        if (underThreeGoal && teamsInGoodForm && (_headToHeadData.Count < 2 || _headToHeadData is { Count: > 3, OverScoredGames: >= 50 }))
+        if (underThreeGoal && teamsInGoodForm && (_headToHeadData.Count < 2 || _headToHeadData is { Count: > 3, UnderScoredGames: >= 50 }))
         {
             return new Prediction(" under 3 goals", true);
         }
@@ -105,6 +105,10 @@ public class MatchPredictor: IMatchPredictor
         if ((teamsInGoodForm && (_homeTeamData.UnderScoredGames >= 0.57 || _awayTeamData.UnderScoredGames >= 0.57)) ||
             _homeTeamData.UnderScoredGames >= 0.57 && _awayTeamData.UnderScoredGames >= 0.57)
         {
+            if (_homeTeamData.UnderScoredGames >= 0.70 && _awayTeamData.UnderScoredGames >= 0.70 && _headToHeadData.UnderScoredGames >= 0.70)
+            {
+                return new Prediction(" Under 3 goals", true);
+            }
             // Two to three goals are more promising
             var hasTwoToThreeSuggestion = HasTwoToThreeSuggestion();
             if (hasTwoToThreeSuggestion &&
@@ -277,7 +281,8 @@ public class MatchPredictor: IMatchPredictor
                                            Math.Abs(_headToHeadData.BothTeamScoredGames - _headToHeadData.TwoToThreeGoalsGames) <= 0.0 ||
                                            Math.Abs(_headToHeadData.BothTeamScoredGames - _headToHeadData.UnderScoredGames) <= 0.0;
 
-        if (!teamsInGoodForm && (_headToHeadData.Count <= 2 || headToHeadBothTeamScores) && homeBothTeamScores && awayBothTeamScores)
+        if (!teamsInGoodForm && (_headToHeadData.Count <= 2 || headToHeadBothTeamScores) &&
+            (homeBothTeamScores || awayBothTeamScores))
         {
             return new Prediction($"{prediction.Msg} Both team score goal", true);
         }
