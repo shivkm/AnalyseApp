@@ -27,9 +27,9 @@ var host = Host.CreateDefaultBuilder(args)
         var token = configurationRoot?["FootballApi:Token"];
         
         services.AddScoped<IFileProcessor, FileProcessor>();
-        services.AddScoped<IAnalyseService, AnalyseService>();
-        services.AddScoped<IPredictService, PredictService>();
-        services.AddScoped<IOverUnderPredictor, OverUnderPredictor>();
+        services.AddScoped<IMatchPredictor, MatchPredictor>();
+        services.AddScoped<IPoissonService, PoissonService>();
+        services.AddScoped<IDataService, DataService>();
         services.AddHostedService<Worker>();
     })
     .Build();

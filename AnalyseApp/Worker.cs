@@ -20,16 +20,7 @@ public class Worker: BackgroundService
             try
             {
                 using var scope = _scopeFactory.CreateScope();
-                var analyseService = scope.ServiceProvider.GetRequiredService<IAnalyseService>();
-                var predictService = scope.ServiceProvider.GetRequiredService<IPredictService>();
-                var overUnderPredictor = scope.ServiceProvider.GetRequiredService<IOverUnderPredictor>();
-
-                //overUnderPredictor.CreateFiles();
-                // analyseService.CalculationAnalysis();
-                 predictService.OverUnderPredictor("", "");
-                 predictService.TeamAnalysisBy();
-                // will be called only if the season finish or start
-                //await fileProcessor.CreateHistoricalGamesFile(stoppingToken);
+                var predictService = scope.ServiceProvider.GetRequiredService<IMatchPredictor>();
 
                 // Change the match day in each league and than create upcoming matches fixtures
                 //await fileProcessor.CreateUpcomingFixtureBy(stoppingToken);

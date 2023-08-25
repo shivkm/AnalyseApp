@@ -30,7 +30,7 @@ public class FileProcessor: IFileProcessor
         return games;
     }
     
-    public List<Game> MapMatchesToGames(List<Matches> matches)
+    public List<Game> MapMatchesToGames(IEnumerable<Matches> matches)
     {
         return matches
             .Select(match => new Game
@@ -40,31 +40,18 @@ public class FileProcessor: IFileProcessor
                 HomeTeam = match.HomeTeam,
                 AwayTeam = match.AwayTeam,
                 FullTimeGoal = match.FTHG + match.FTAG, 
-                HalfTimeGoal = match.HTHG + match.HTAG
+                HalfTimeGoal = match.HTHG + match.HTAG,
             })
             .ToList();
     }
 
-    public void CreateCsvFile(List<Game> games)
+    public void CreateCsvFile(IEnumerable<Game> games)
     {
         using var writer = new StreamWriter(_options.MachineLearning);
         using var csv = new CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture));
         csv.WriteRecords(games);
     }
-    
-    public List<GameAverage> GetMatchFactors()
-    {
-        var files = Directory.GetFiles(_options.AnalyseResult);
-        var games = new List<GameAverage>();
-        foreach (var file in files)
-        {
-            var currentFile= ReadCsvFileBy<GameAverage>(file);
-            games.AddRange(currentFile);
-        }
 
-        return games;
-    }
-    
     public List<Game> GetHistoricalGames()
     {
         var files = Directory.GetFiles(_options.MachineLearning);
