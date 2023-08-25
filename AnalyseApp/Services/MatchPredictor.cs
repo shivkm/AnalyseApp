@@ -38,7 +38,7 @@ public class MatchPredictor: IMatchPredictor
         var awayCurrentForm = _current.Away - _season.Away;
 
         if (homeCurrentForm is double.NaN || awayCurrentForm is double.NaN)
-            return new Prediction("No enough data for analysis", false);
+            return new Prediction(" No enough data for analysis", false);
 
         // teams should be in more then neutral level in current state
         if (_season is { Home: > 0.68, Away: > 0.68 } ||
