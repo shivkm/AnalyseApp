@@ -90,8 +90,7 @@ public class AnalyseServiceUnitTests
             new() { HomeTeam = "Osnabruck", AwayTeam = "Nurnberg", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Holstein Kiel", AwayTeam = "Magdeburg", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Braunschweig", AwayTeam = "Schalke", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            
-            
+
             new() { HomeTeam = "Fulham", AwayTeam = "Brentford", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Liverpool", AwayTeam = "Bournemouth", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Wolves", AwayTeam = "Brighton", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
@@ -100,8 +99,7 @@ public class AnalyseServiceUnitTests
             new() { HomeTeam = "West Ham", AwayTeam = "Chelsea", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Aston Villa", AwayTeam = "Everton", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Crystal Palace", AwayTeam = "Arsenal", Date = "21/08/2023", FTHG = 1, FTAG = 5 },
-            
-            
+
             new() { HomeTeam = "Plymouth", AwayTeam = "Southampton", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Blackburn", AwayTeam = "Hull", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Bristol City", AwayTeam = "Birmingham", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
@@ -218,6 +216,7 @@ public class AnalyseServiceUnitTests
             new() { HomeTeam = "Blackburn", AwayTeam = "Hull", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "QPR", AwayTeam = "Ipswich", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Norwich", AwayTeam = "Millwall", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
+            new() { HomeTeam = "Bari", AwayTeam = "Palermo", Date = "18/08/2023", FTHG = 0, FTAG = 0 }
         };
 
         var count = 0;

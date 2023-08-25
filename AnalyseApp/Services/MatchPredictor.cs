@@ -33,12 +33,15 @@ public class MatchPredictor: IMatchPredictor
         _current = CalculatePoissonProbability(home, away, playedOn, true);
 
         var prediction = new Prediction("", false);
-
         var homeCurrentForm = _current.Home - _season.Home;
         var awayCurrentForm = _current.Away - _season.Away;
 
         if (homeCurrentForm is double.NaN || awayCurrentForm is double.NaN)
             return new Prediction(" No enough data for analysis", false);
+
+        var predictOdd = _headToHeadData.Count > 1 &&
+                         (_homeTeamData.WinAvg >= 0.57 || _headToHeadData.HomeTeamWon >= 0.50 ||
+                          _awayTeamData.WinAvg >= 0.57 || _headToHeadData.AwayTeamWon >= 0.50) ;
 
         // teams should be in more then neutral level in current state
         if (_season is { Home: > 0.68, Away: > 0.68 } ||
@@ -46,23 +49,42 @@ public class MatchPredictor: IMatchPredictor
             homeCurrentForm > 0.05 && awayCurrentForm > 0.05
            )
         {
+            if (predictOdd)
+            {
+                prediction = PredictOddResult(prediction, true);
+                if (prediction.Qualified) return prediction;
+            }
+            
             prediction = PredictOverTwoGoalsBy(prediction, true);
             if (prediction.Qualified) return prediction;
             
             prediction = PredictUnderScoreGames(prediction, true);
             if (prediction.Qualified) return prediction;
             
+            prediction = PredictionBothTeamScoreGoals(prediction, true);
+            if (prediction.Qualified) return prediction;
+            
         }
         else
         {
+            if (predictOdd)
+            {
+                prediction = PredictOddResult(prediction, false);
+                if (prediction.Qualified) return prediction;
+            }
+            
             prediction = PredictOverTwoGoalsBy(prediction, false);
             if (prediction.Qualified) return prediction;
             
             prediction = PredictUnderScoreGames(prediction, false);
             if (prediction.Qualified) return prediction;
             
+            prediction = PredictionBothTeamScoreGoals(prediction, false);
+            if (prediction.Qualified) return prediction;
+            
             prediction = PredictUnPredictedGames(prediction, false);
             if (prediction.Qualified) return prediction;
+            
             
         }
         return prediction;
@@ -70,17 +92,22 @@ public class MatchPredictor: IMatchPredictor
 
     private Prediction PredictOverTwoGoalsBy(Prediction prediction, bool teamsInGoodForm)
     {
-        var overTwoGoals = HasOverTwoGoalSuggestion();
-        if (overTwoGoals && teamsInGoodForm && _headToHeadData is { Count: > 3, OverScoredGames: >= 50 })
+        var overTwoGoals = HasOverTwoGoalSuggestion(out var purePrediction);
+        if (overTwoGoals && teamsInGoodForm && (purePrediction || _headToHeadData is { Count: > 3, OverScoredGames: >= 50 }))
         {
             return new Prediction(" Over 2 goals", true);
         }
         // If teams are in good form and one of those team has 4 out of 7 over 2 goal games or
         // both teams should have over 2 goals games
+        
+        // Could be 0:0 games
+        if (_homeTeamData.ZeroZeroGames >= 0.20 || _awayTeamData.ZeroZeroGames >= 0.20)
+            return prediction;
+        
         if ((teamsInGoodForm && 
-             (_homeTeamData.OverScoredGames >= 0.57 && _awayTeamData.OverScoredGames >= 0.20 ||
-              _awayTeamData.OverScoredGames >= 0.57 && _homeTeamData.OverScoredGames >= 0.20)) ||
-            _homeTeamData.OverScoredGames >= 0.57 && _awayTeamData.OverScoredGames >= 0.57)
+             ((_homeTeamData is { OverScoredGames: >= 0.57, UnderScoredGames: < 0.57 } && _awayTeamData is { OverScoredGames: >= 0.28, UnderScoredGames: < 0.57 }) ||
+              _awayTeamData  is { OverScoredGames: >= 0.57, UnderScoredGames: < 0.57 } && _homeTeamData is { OverScoredGames: >= 0.28, UnderScoredGames: < 0.57 })) ||
+              _homeTeamData.OverScoredGames >= 0.57 && _awayTeamData.OverScoredGames >= 0.57)
         {
             // Suggestion is also indicating that it will be over 2 goals
             if (_homeTeamData.Suggestion is { Name: "OverScoredGames", Value: >= 0.57 } ||
@@ -102,7 +129,8 @@ public class MatchPredictor: IMatchPredictor
         
         // If teams are in good form and one of those team has 4 out of 7 under 3 goal games or
         // both teams should have under 3 goals games
-        if ((teamsInGoodForm && (_homeTeamData.UnderScoredGames >= 0.57 || _awayTeamData.UnderScoredGames >= 0.57)) ||
+        if ((teamsInGoodForm &&
+             (_homeTeamData.UnderScoredGames >= 0.57 || _awayTeamData.UnderScoredGames >= 0.57)) ||
             _homeTeamData.UnderScoredGames >= 0.57 && _awayTeamData.UnderScoredGames >= 0.57)
         {
             if (_homeTeamData.UnderScoredGames >= 0.70 && _awayTeamData.UnderScoredGames >= 0.70 && _headToHeadData.UnderScoredGames >= 0.70)
@@ -123,6 +151,16 @@ public class MatchPredictor: IMatchPredictor
             // Suggestion is also indicating that it will be under 3 goals
             if (_homeTeamData.Suggestion is { Name: "UnderScoredGames", Value: > 0.50 } ||
                 _awayTeamData.Suggestion is { Name: "UnderScoredGames", Value: > 0.50 })
+            {
+                return new Prediction(" Under 3 goals", true);
+            }
+        }
+
+        // One team has worst performance
+        if (_homeTeamData.UnderScoredGames >= 0.80 || _awayTeamData.UnderScoredGames >= 0.80)
+        {
+            if (_headToHeadData.Count < 2 && (_homeTeamData is { OverScoredGames: >= 0.57, HomeTeamWon: < 0.1 } ||
+                                              _awayTeamData is { OverScoredGames: >= 0.57, AwayTeamWon: < 0.1 }))
             {
                 return new Prediction(" Under 3 goals", true);
             }
@@ -206,22 +244,31 @@ public class MatchPredictor: IMatchPredictor
                 homeTwoToThreeScores && awayTwoToThreeScores && !headToHeadTwoToThreeScores;
     }
     
-    private bool HasOverTwoGoalSuggestion()
+    private bool HasOverTwoGoalSuggestion(out bool purePrediction)
     {
-        var homeOverTwoScores = _homeTeamData.OverScoredGames >= _homeTeamData.TwoToThreeGoalsGames ||
-                                 _homeTeamData.OverScoredGames >= _homeTeamData.BothTeamScoredGames ||
-                                 _homeTeamData.OverScoredGames >= _homeTeamData.UnderScoredGames;
+        var homeOverTwoScores = _homeTeamData.OverScoredGames >= 0.50 &&
+                                    _homeTeamData.OverScoredGames >= _homeTeamData.TwoToThreeGoalsGames ||
+                                    _homeTeamData.OverScoredGames >= _homeTeamData.BothTeamScoredGames ||
+                                    _homeTeamData.OverScoredGames >= _homeTeamData.UnderScoredGames;
         
-        var awayOverTwoScores = _awayTeamData.OverScoredGames >= _awayTeamData.TwoToThreeGoalsGames ||
-                                 _awayTeamData.OverScoredGames >= _awayTeamData.BothTeamScoredGames ||
-                                 _awayTeamData.OverScoredGames >= _awayTeamData.UnderScoredGames;
+        var awayOverTwoScores = _awayTeamData.OverScoredGames >= 0.50 &&
+                                    _awayTeamData.OverScoredGames >= _awayTeamData.TwoToThreeGoalsGames ||
+                                    _awayTeamData.OverScoredGames >= _awayTeamData.BothTeamScoredGames ||
+                                    _awayTeamData.OverScoredGames >= _awayTeamData.UnderScoredGames;
         
-        var headToHeadOverTwoScores = _headToHeadData.OverScoredGames >= _headToHeadData.TwoToThreeGoalsGames ||
-                                       _headToHeadData.OverScoredGames >= _headToHeadData.BothTeamScoredGames ||
-                                       _headToHeadData.OverScoredGames >= _headToHeadData.UnderScoredGames;
+        var headToHeadOverTwoScores = _headToHeadData.OverScoredGames >= 0.50 &&
+                                          _headToHeadData.OverScoredGames >= _headToHeadData.TwoToThreeGoalsGames ||
+                                          _headToHeadData.OverScoredGames >= _headToHeadData.BothTeamScoredGames ||
+                                          _headToHeadData.OverScoredGames >= _headToHeadData.UnderScoredGames;
 
-        return  homeOverTwoScores && awayOverTwoScores && headToHeadOverTwoScores ||
-                homeOverTwoScores && !awayOverTwoScores && headToHeadOverTwoScores ||
+        if (homeOverTwoScores && awayOverTwoScores && headToHeadOverTwoScores)
+        {
+            purePrediction = true;
+            return true;
+        }
+
+        purePrediction = false;
+        return  homeOverTwoScores && !awayOverTwoScores && headToHeadOverTwoScores ||
                 awayOverTwoScores && !homeOverTwoScores && headToHeadOverTwoScores ||
                 homeOverTwoScores && awayOverTwoScores && !headToHeadOverTwoScores;
     }
@@ -240,46 +287,72 @@ public class MatchPredictor: IMatchPredictor
                                               _headToHeadData.UnderScoredGames >= _headToHeadData.BothTeamScoredGames ||
                                               _headToHeadData.UnderScoredGames >= _headToHeadData.OverScoredGames;
 
-        return  homeUnderThreeScores && awayUnderThreeScores && headToHeadUnderThreeScores ||
-                homeUnderThreeScores && !awayUnderThreeScores && headToHeadUnderThreeScores ||
+        if (homeUnderThreeScores && awayUnderThreeScores && headToHeadUnderThreeScores)
+        {
+            return true;
+        }
+        
+        return  homeUnderThreeScores && !awayUnderThreeScores && headToHeadUnderThreeScores ||
                 awayUnderThreeScores && !homeUnderThreeScores && headToHeadUnderThreeScores ||
                 homeUnderThreeScores && awayUnderThreeScores && !headToHeadUnderThreeScores;
     }
     
-    private bool BothScoreSuggestion()
+    private bool BothScoreSuggestion(out bool purePrediction)
     {
-        var homeBothTeamScores = _homeTeamData.BothTeamScoredGames >= _homeTeamData.OverScoredGames ||
-                                 _homeTeamData.BothTeamScoredGames >= _homeTeamData.TwoToThreeGoalsGames ||
-                                 _homeTeamData.BothTeamScoredGames >= _homeTeamData.UnderScoredGames;
+        var homeBothTeamScores = _homeTeamData.BothTeamScoredGames >= 0.50 &&
+                                     _homeTeamData.BothTeamScoredGames >= _homeTeamData.OverScoredGames ||
+                                     _homeTeamData.BothTeamScoredGames >= _homeTeamData.TwoToThreeGoalsGames ||
+                                     _homeTeamData.BothTeamScoredGames >= _homeTeamData.UnderScoredGames;
         
-        var awayBothTeamScores = _awayTeamData.BothTeamScoredGames >= _awayTeamData.OverScoredGames ||
-                                 _awayTeamData.BothTeamScoredGames >= _awayTeamData.TwoToThreeGoalsGames ||
-                                 _awayTeamData.BothTeamScoredGames >= _awayTeamData.UnderScoredGames;
+        var awayBothTeamScores = _awayTeamData.BothTeamScoredGames >=  0.50 &&
+                                     _awayTeamData.BothTeamScoredGames >= _awayTeamData.OverScoredGames ||
+                                     _awayTeamData.BothTeamScoredGames >= _awayTeamData.TwoToThreeGoalsGames ||
+                                     _awayTeamData.BothTeamScoredGames >= _awayTeamData.UnderScoredGames;
         
-        var headToHeadBothTeamScores = _headToHeadData.BothTeamScoredGames >= _headToHeadData.OverScoredGames ||
+        var headToHeadBothTeamScores = _headToHeadData.BothTeamScoredGames >= 0.50 &&
+                                           _headToHeadData.BothTeamScoredGames >= _headToHeadData.OverScoredGames ||
                                            _headToHeadData.BothTeamScoredGames >= _headToHeadData.TwoToThreeGoalsGames ||
                                            _headToHeadData.BothTeamScoredGames >= _headToHeadData.UnderScoredGames;
+        
+        if (homeBothTeamScores && awayBothTeamScores && headToHeadBothTeamScores)
+        {
+            purePrediction = true;
+            return true;
+        }
 
-        return  homeBothTeamScores && awayBothTeamScores && headToHeadBothTeamScores ||
-                homeBothTeamScores && !awayBothTeamScores && headToHeadBothTeamScores ||
-                awayBothTeamScores && !homeBothTeamScores && headToHeadBothTeamScores ||
-                homeBothTeamScores && awayBothTeamScores && !headToHeadBothTeamScores;
+        purePrediction = false;
+        
+        return homeBothTeamScores && !awayBothTeamScores && headToHeadBothTeamScores ||
+               awayBothTeamScores && !homeBothTeamScores && headToHeadBothTeamScores ||
+               homeBothTeamScores && awayBothTeamScores && !headToHeadBothTeamScores;
+
     }
+    
+    private Prediction PredictionBothTeamScoreGoals(Prediction prediction, bool teamsInGoodForm)
+    {
+        var bothTeamScoreGoals = BothScoreSuggestion(out var purePrediction);
+        if (bothTeamScoreGoals && (purePrediction || _awayTeamData.BothTeamScoredGames > 0.70 || _homeTeamData.BothTeamScoredGames > 0.70) && 
+            _headToHeadData is { TwoToThreeGoalsGames: <= 0.50, UnderScoredGames: <= 0.50 })
+        {
+            return new Prediction($"{prediction.Msg} Both team score goal", true);
+        }
 
+        return prediction;
+    }
     
     private Prediction PredictUnPredictedGames(Prediction prediction, bool teamsInGoodForm)
     {
         var homeBothTeamScores = Math.Abs(_homeTeamData.BothTeamScoredGames - _homeTeamData.OverScoredGames) <= 0.0 ||
-                                     Math.Abs(_homeTeamData.BothTeamScoredGames - _homeTeamData.TwoToThreeGoalsGames) <= 0.0 ||
-                                     Math.Abs(_homeTeamData.BothTeamScoredGames - _homeTeamData.UnderScoredGames) <= 0.0;
+                                 Math.Abs(_homeTeamData.BothTeamScoredGames - _homeTeamData.TwoToThreeGoalsGames) <= 0.0 ||
+                                 Math.Abs(_homeTeamData.BothTeamScoredGames - _homeTeamData.UnderScoredGames) <= 0.0;
         
         var awayBothTeamScores = Math.Abs(_awayTeamData.BothTeamScoredGames - _awayTeamData.OverScoredGames) <= 0.0 ||
-                                     Math.Abs(_awayTeamData.BothTeamScoredGames - _awayTeamData.TwoToThreeGoalsGames) <= 0.0 ||
-                                     Math.Abs(_awayTeamData.BothTeamScoredGames - _awayTeamData.UnderScoredGames) <= 0.0;
+                                 Math.Abs(_awayTeamData.BothTeamScoredGames - _awayTeamData.TwoToThreeGoalsGames) <= 0.0 ||
+                                 Math.Abs(_awayTeamData.BothTeamScoredGames - _awayTeamData.UnderScoredGames) <= 0.0;
         
         var headToHeadBothTeamScores = Math.Abs(_headToHeadData.BothTeamScoredGames - _headToHeadData.OverScoredGames) <= 0.0 ||
-                                           Math.Abs(_headToHeadData.BothTeamScoredGames - _headToHeadData.TwoToThreeGoalsGames) <= 0.0 ||
-                                           Math.Abs(_headToHeadData.BothTeamScoredGames - _headToHeadData.UnderScoredGames) <= 0.0;
+                                       Math.Abs(_headToHeadData.BothTeamScoredGames - _headToHeadData.TwoToThreeGoalsGames) <= 0.0 ||
+                                       Math.Abs(_headToHeadData.BothTeamScoredGames - _headToHeadData.UnderScoredGames) <= 0.0;
 
         if (!teamsInGoodForm && (_headToHeadData.Count <= 2 || headToHeadBothTeamScores) &&
             (homeBothTeamScores || awayBothTeamScores))
@@ -310,23 +383,28 @@ public class MatchPredictor: IMatchPredictor
         return poisson;
     }
 
+    
 
-    private Prediction PredictOverTwoWithHeadToHeadGoalsBy(Prediction prediction)
+    private Prediction PredictOddResult(Prediction prediction, bool teamsInGoodForm)
     {
-        if (_headToHeadData is
-            {
-                Suggestion:
-                {
-                    Name: "OverScoredGames", Value: > 0.60
-                }
-            } && _current is
-            {
-                Home: > 0.60, Away: > 0.60
-            })
+        var predictOdd = _homeTeamData.WinAvg >= 0.57 && _headToHeadData.HomeTeamWon >= 0.50 &&
+                         (_awayTeamData.WinAvg < 0.57 || _awayTeamData is { AwayTeamWon: <= 0.28, WinAvg: >= 0.57 }) && 
+                         _headToHeadData.AwayTeamWon < 0.50 ||
+                         _awayTeamData.WinAvg >= 0.57 && _headToHeadData.AwayTeamWon >= 0.50 &&
+                         (_homeTeamData.WinAvg < 0.57 || _homeTeamData is { HomeTeamWon: <= 0.28, WinAvg: >= 0.57 }) &&
+                         _headToHeadData.HomeTeamWon < 0.50;
+        
+        
+        if ((teamsInGoodForm || _current.Away >= 0.68 && _current.Away > _current.Home && !teamsInGoodForm && _current.Home < 0.68) &&
+            _awayTeamData.WinAvg > 0.30 && (_awayTeamData.WinAvg > _homeTeamData.WinAvg || _awayTeamData.WinAvg >= _homeTeamData.WinAvg) && _headToHeadData.AwayTeamWon > _headToHeadData.HomeTeamWon)
         {
-            return PredictOverTwoGoalsBy(prediction, false);
+            return new Prediction(" Away will win", true);
         }
-
+        if ((teamsInGoodForm || _current.Home >= 0.68 && _current.Home > _current.Away && !teamsInGoodForm && _current.Away < 0.68) &&
+            _homeTeamData.WinAvg > 0.30 && (_homeTeamData.WinAvg > _awayTeamData.WinAvg || _homeTeamData.WinAvg >= _awayTeamData.WinAvg) && _headToHeadData.HomeTeamWon > _headToHeadData.AwayTeamWon)
+        {
+            return new Prediction(" Home will win", true);
+        }
         return prediction;
     }
  
