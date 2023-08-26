@@ -25,9 +25,8 @@ public class AnalyseServiceUnitTests
 
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         var fileProcessor = new FileProcessor(optionsWrapper);
-        var historicalData = fileProcessor.GetHistoricalMatchesBy();
         
-        _matchPredictor = new MatchPredictor(historicalData, new PoissonService(), new DataService(historicalData));
+        _matchPredictor = new MatchPredictor(fileProcessor, new PoissonService(), new DataService(fileProcessor));
         _testOutputHelper = testOutputHelper;
     }
     
@@ -38,9 +37,9 @@ public class AnalyseServiceUnitTests
         // ARRANGE
         var upcomingMatches = new List<Matches>
         {
-            new() { HomeTeam = "Werder Bremen", AwayTeam = "Bayern Munich", Date = "18/08/2023", FTHG = 0, FTAG = 4 },
-            new() { HomeTeam = "Kaiserlautern", AwayTeam = "Elversberg", Date = "18/08/2023", FTHG = 3, FTAG = 2 },
-            new() { HomeTeam = "Wehen", AwayTeam = "Karlsruhe", Date = "18/08/2023", FTHG = 1, FTAG = 0 },
+            new() { HomeTeam = "Schalke 04", AwayTeam = "Holstein Kiel", Date = "18/08/2023", FTHG = 0, FTAG = 4 },
+            new() { HomeTeam = "Sampdoria", AwayTeam = "Pisa", Date = "18/08/2023", FTHG = 3, FTAG = 2 },
+            new() { HomeTeam = "Celta", AwayTeam = "Real", Date = "18/08/2023", FTHG = 1, FTAG = 0 },
             new() { HomeTeam = PremierLeague.NottmForest.GetDescription(), AwayTeam = "Sheffield United", Date = "18/08/2023", FTHG = 2, FTAG = 1 },
             new() { HomeTeam = "Leeds", AwayTeam = "West Brom", Date = "18/08/2023", FTHG = 1, FTAG = 1 },
             new() { HomeTeam = "Mallorca", AwayTeam = "Villarreal", Date = "18/08/2023", FTHG = 0, FTAG = 1 },
@@ -207,11 +206,11 @@ public class AnalyseServiceUnitTests
         // ARRANGE
         var upcomingMatches = new List<Matches>
         {
-            new() { HomeTeam = "Greuther Furth", AwayTeam = "St Pauli", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Osnabruck", AwayTeam = "Nurnberg", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Man City", AwayTeam = "Newcastle", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Tottenham", AwayTeam = "Man United", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Crystal Palace", AwayTeam = "Arsenal", Date = "21/08/2023", FTHG = 1, FTAG = 5 },
+            new() { HomeTeam = "Cardiff", AwayTeam = "Sheffield Weds", Date = "24/08/2023", FTHG = 1, FTAG = 5 },
+            new() { HomeTeam = "Ipswich", AwayTeam = "Leeds", Date = "24/08/2023", FTHG = 1, FTAG = 5 },
+            new() { HomeTeam = "Preston", AwayTeam = "Swansea", Date = "24/08/2023", FTHG = 1, FTAG = 5 },
+            new() { HomeTeam = "Cheltenham", AwayTeam = "Northampton", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
+            new() { HomeTeam = "Auxerre", AwayTeam = "v", Date = "21/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Plymouth", AwayTeam = "Southampton", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "Blackburn", AwayTeam = "Hull", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
             new() { HomeTeam = "QPR", AwayTeam = "Ipswich", Date = "19/08/2023", FTHG = 1, FTAG = 5 },

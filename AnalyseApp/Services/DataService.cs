@@ -8,9 +8,9 @@ public class DataService: IDataService
 {
     private readonly List<Matches> _historicalMatches;
 
-    public DataService(List<Matches> historicalMatches)
+    public DataService(IFileProcessor fileProcessor)
     {
-        _historicalMatches = historicalMatches;
+        _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
     }
     
     public HeadToHeadData GetHeadToHeadDataBy(string homeTeam, string awayTeam, string playedOn)

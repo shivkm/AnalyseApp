@@ -9,6 +9,7 @@ public class MatchPredictor: IMatchPredictor
     private readonly List<Matches> _historicalMatches;
     private readonly IPoissonService _poissonService;
     private readonly IDataService _dataService;
+    private readonly IFileProcessor _fileProcessor;
 
     private PoissonProbability _season = default!;
     private PoissonProbability _current = default!;
@@ -17,11 +18,31 @@ public class MatchPredictor: IMatchPredictor
     private TeamData _awayTeamData = default!;
     private bool _qualified = default!;
     
-    public MatchPredictor(List<Matches> historicalMatches, IPoissonService poissonService, IDataService dataService)
+    public MatchPredictor(IFileProcessor fileProcessor, IPoissonService poissonService, IDataService dataService)
     {
-        _historicalMatches = historicalMatches;
+        _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
         _poissonService = poissonService;
         _dataService = dataService;
+        _fileProcessor = fileProcessor;
+    }
+
+    public void Execute()
+    {
+        var upcoming = _fileProcessor.GetUpcomingGames();
+
+        var count = 0;
+
+        foreach (var game in upcoming)
+        {
+            var prediction = Execute(game.HomeTeam, game.AwayTeam, game.Date);
+
+            if (prediction.Qualified)
+            {
+                count++;
+                Console.WriteLine($"{game.Date} - {game.HomeTeam}:{game.AwayTeam} {prediction.Msg}");
+            }
+        }
+        Console.WriteLine($"Count: {count}");
     }
 
     public Prediction Execute(string home, string away, string playedOn)
@@ -357,7 +378,8 @@ public class MatchPredictor: IMatchPredictor
         if (!teamsInGoodForm && (_headToHeadData.Count <= 2 || headToHeadBothTeamScores) &&
             (homeBothTeamScores || awayBothTeamScores))
         {
-            return new Prediction($"{prediction.Msg} Both team score goal", true);
+            var headToHeadMissed = _headToHeadData.Count < 1 ? "Risky no head to head data" : "";
+            return new Prediction($" {headToHeadMissed} Both team score goal", true);
         }
 
 

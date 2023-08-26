@@ -1,4 +1,6 @@
-﻿namespace AnalyseApp.models;
+﻿using CsvHelper.Configuration.Attributes;
+
+namespace AnalyseApp.models;
 
 public class Game
 {
@@ -6,6 +8,8 @@ public class Game
     public string Date { get; set; }
     public string HomeTeam { get; set; }
     public string AwayTeam { get; set; }
+    [Optional]
     public int? FullTimeGoal { get; set; }
+    [Optional]
     public int? HalfTimeGoal { get; set; }
 }

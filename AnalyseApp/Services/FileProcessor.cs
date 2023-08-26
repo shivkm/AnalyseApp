@@ -52,6 +52,20 @@ public class FileProcessor: IFileProcessor
         csv.WriteRecords(games);
     }
 
+    public List<Matches> GetUpcomingGames()
+    {
+        var files = Directory.GetFiles(_options.Upcoming);
+        var games = new List<Matches>();
+        foreach (var file in files)
+        {
+            var currentFile= ReadCsvFileBy<Matches>(file);
+            games.AddRange(currentFile);
+        }
+
+        return games;
+    }
+
+    
     public List<Game> GetHistoricalGames()
     {
         var files = Directory.GetFiles(_options.MachineLearning);
