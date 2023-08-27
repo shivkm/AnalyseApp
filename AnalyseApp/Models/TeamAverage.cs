@@ -14,7 +14,8 @@ public record HeadToHeadData(
     double UnderScoredGames,
     double TwoToThreeGoalsGames,
     double BothTeamScoredGames,
-    double ZeroScoredGames,
+    double ZeroScoredGoalGames,
+    double MoreThanThreeGoalGames,
     double HomeTeamWon,
     double AwayTeamWon
 )
@@ -31,10 +32,13 @@ public record TeamData(
     double UnderScoredGames,
     double TwoToThreeGoalsGames,
     double BothTeamScoredGames,
-    double ZeroZeroGames,
+    double ZeroZeroGoalGamesAvg,
+    double MoreThanThreeGoalGamesAvg,
     double HomeTeamWon,
     double AwayTeamWon,
-    double WinAvg
+    double WinAvg,
+    double TeamScoredGames,
+    double TeamAllowedGoalGames
 )
 {
     public Suggestion Suggestion { get; set; } = default!;

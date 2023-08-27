@@ -25,6 +25,7 @@ public class DataService: IDataService
         var twoToThreeAvg = GetTwoToThreeGameAvg(matches);
         var bothTeamsScoredAvg = GetBothScoredGameAvg(matches);
         var zeroZeroGamesAvg = GetZeroScoredGameAvg(matches);
+        var moreThanThreeGoalGameAvg = GetMoreThanThreeGoalGameAvg(matches);
         var homeWinAvg = matches.GetGameAvgBy(
             matches.Count,
             match => match.HomeTeam == homeTeam && match.FTHG > match.FTAG ||
@@ -45,6 +46,7 @@ public class DataService: IDataService
             twoToThreeAvg,
             bothTeamsScoredAvg,
             zeroZeroGamesAvg,
+            moreThanThreeGoalGameAvg,
             homeWinAvg,
             awayWinAvg
         );
@@ -69,6 +71,10 @@ public class DataService: IDataService
         var homeWinAvg = GetHomeWinGameAvg(matches, teamName);
         var awayWinAvg = GetAwayWinGameAvg(matches, teamName);
         var winGameAvg = GetWinGameAvg(matches, teamName);
+        var teamScoredGames = GetTeamScoredGamesAvg(matches, teamName);
+        var teamAllowedGames = GetTeamAllowedGamesAvg(matches, teamName);
+        var moreThanThreeGoalGameAvg = GetMoreThanThreeGoalGameAvg(matches);
+        
         var scoreProbability = scored.GetValueOrDefault().GetScoredGoalProbabilityBy();
         
         var teamData = new TeamData(
@@ -79,16 +85,19 @@ public class DataService: IDataService
             twoToThreeAvg,
             bothTeamsScoredAvg,
             zeroZeroGamesAvg,
+            moreThanThreeGoalGameAvg,
             homeWinAvg,
             awayWinAvg,
-            winGameAvg
+            winGameAvg,
+            teamScoredGames,
+            teamAllowedGames
         );
 
         teamData = teamData with { Suggestion = GetHighValue(teamData: teamData) };
         
         return teamData;
     }
-    
+
     private static Suggestion GetHighValue(HeadToHeadData? headToHeadData = null, TeamData? teamData = null)
     {
         Dictionary<string, double> probabilityMap;
@@ -101,7 +110,7 @@ public class DataService: IDataService
                 { "BothTeamScoredGames", teamData.BothTeamScoredGames },
                 { "TwoToThreeGoalsGames", teamData.TwoToThreeGoalsGames },
                 { "UnderScoredGames", teamData.UnderScoredGames },
-                { "ZeroZeroGames", teamData.ZeroZeroGames }
+                { "ZeroZeroGames", teamData.ZeroZeroGoalGamesAvg }
             };
         }
         else if (headToHeadData is not null)
@@ -124,12 +133,25 @@ public class DataService: IDataService
         return new Suggestion(result.Key, result.Value);
     }
 
+    
+
+    private static double GetTeamScoredGamesAvg(IReadOnlyCollection<Matches> matches, string teamName) =>
+        matches.GetGameAvgBy(matches.Count, match => match.FTHG > 0 && match.HomeTeam == teamName ||
+                                                     match.FTAG > 0 && match.AwayTeam == teamName);
+    
+    private static double GetTeamAllowedGamesAvg(IReadOnlyCollection<Matches> matches, string teamName) =>
+        matches.GetGameAvgBy(matches.Count, match => match.FTAG > 0 && match.HomeTeam == teamName ||
+                                                     match.FTHG > 0 && match.AwayTeam == teamName);
+
     private static double GetTwoToThreeGameAvg(IReadOnlyCollection<Matches> matches) => 
         matches.GetGameAvgBy(
             matches.Count, 
             match => match.FTHG + match.FTAG == 3 || match.FTHG + match.FTAG == 2
         );
 
+    private static double GetMoreThanThreeGoalGameAvg(IReadOnlyCollection<Matches> matches) => 
+        matches.GetGameAvgBy(matches.Count, match => match.FTHG + match.FTAG > 3);
+    
     private static double GetUnderGameAvg(IReadOnlyCollection<Matches> matches) => 
         matches.GetGameAvgBy(matches.Count, match => match.FTHG + match.FTAG < 3);
 
