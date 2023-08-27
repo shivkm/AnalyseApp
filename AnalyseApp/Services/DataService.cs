@@ -57,7 +57,7 @@ public class DataService: IDataService
     {
         var matches = data
                 .Where(i => i.HomeTeam == teamName || i.AwayTeam == teamName)
-                .Take(7)
+                .Take(6)
                 .ToList();
         
         var scored = matches.Average(i => i.FTHG + i.FTAG);
