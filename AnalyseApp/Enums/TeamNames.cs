@@ -2,7 +2,7 @@
 
 namespace AnalyseApp.Enums;
 
-public enum PremierLeague
+public enum TeamNames
 {
     [Description("Liverpool")]
     Liverpool,
@@ -41,5 +41,27 @@ public enum PremierLeague
     [Description("Man United")]
     ManUnited,
     [Description("Southampton")]
+    Wolves,
+    [Description("Wolves")]
+    Luton,
+    [Description("Luton")]
+    Burnley,
+    [Description("Burnley")]
+    Sheffield,
+    [Description("Sheffield United")]
+    Hull,
+    [Description("Hull")]
+    Bristol,
+    [Description("Bristol")]
+    Birmingham,
+    [Description("Birmingham")]
+    Cardiff,
+    [Description("Cardiff")]
+    Middlesbrough,
+    [Description("Middlesbrough")]
+    SheffieldWeds,
+    [Description("Sheffield Weds")]
+    Preston,
+    [Description("Preston")]
     Southampton,
 }
