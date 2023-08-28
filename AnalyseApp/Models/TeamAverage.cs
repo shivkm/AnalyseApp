@@ -1,4 +1,6 @@
-﻿namespace AnalyseApp.models;
+﻿using AnalyseApp.Enums;
+
+namespace AnalyseApp.models;
 
 public record TeamAverage(
     double ScoreAvg,
@@ -27,7 +29,7 @@ public record HeadToHeadData(
 
 public record TeamData(
     int GamesCount,
-    double ScoreProbability,
+    double TeamScoreProbability,
     double OverScoredGames,
     double UnderScoredGames,
     double TwoToThreeGoalsGames,
@@ -38,7 +40,8 @@ public record TeamData(
     double AwayTeamWon,
     double WinAvg,
     double TeamScoredGames,
-    double TeamAllowedGoalGames
+    double TeamAllowedGoalGames,
+    BetType LastThreeMatchResult
 )
 {
     public Suggestion Suggestion { get; set; } = default!;

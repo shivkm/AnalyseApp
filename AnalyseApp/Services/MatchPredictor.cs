@@ -50,48 +50,6 @@ public class MatchPredictor: IMatchPredictor
         }
         Console.WriteLine($"Count: {count}");
     }
-    
-    public void SelfCheck()
-    {
-        var totalCount = 0;
-        var correctCount = 0;
-        var wrongCount = 0;
-        var teams = Enum.GetValues<TeamNames>().ToList();
-        var premierLeague = _historicalMatches.Where(i => i.Div == "E0").ToList();
-        
-        Console.WriteLine("--------------------- Premier League ----------------------------");
-        foreach (var team in teams)
-        {
-            var teamPastGames = premierLeague.Where(item =>
-                item.HomeTeam == team.GetDescription() || item.AwayTeam == team.GetDescription())
-                .OrderByDescending(o => DateTime.Parse(o.Date))
-                .Take(2);
-
-            foreach (var teamPastGame in teamPastGames)
-            {
-                var prediction = Execute(teamPastGame.HomeTeam, teamPastGame.AwayTeam, teamPastGame.Date);
-                //var isCorrect = CorrectCount(prediction, teamPastGame);
-
-                if (prediction.Msg == "noHeadToHead")
-                    continue;
-                
-                var isCorrect = teamPastGame.FTAG + teamPastGame.FTHG > 2 && prediction.Qualified ||
-                                teamPastGame is { FTAG: > 0, FTHG: > 0 } && prediction.Msg == BothTeamScore;
-                if (isCorrect)
-                {
-                    correctCount++;
-                }
-                else
-                {
-                    wrongCount++;
-                }
-
-                Console.WriteLine($"{teamPastGame.Date} - {teamPastGame.HomeTeam}:{teamPastGame.AwayTeam} {teamPastGame.FTAG + teamPastGame.FTHG} {prediction.Msg}");
-                totalCount++;
-            }
-        }
-        Console.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount}");
-    }
 
     public Prediction Execute(string home, string away, string playedOn)
     {
@@ -102,14 +60,15 @@ public class MatchPredictor: IMatchPredictor
         var underThreeGoals = CurrentUnderThreeGoalChances();
         var winPredictions = CurrentWinChances();
         
-        if (home == "Everton" || home == "Newcastle")
+        if (home == "Man United" || home == "Newcastle")
         {
             
         }
         
-        if (overTwoGoals is { Qualified: true, Percentage: >= 0.62 }  &&
-            (!bothTeamScoreGoal.Qualified || bothTeamScoreGoal.Qualified && overTwoGoals.Percentage >= bothTeamScoreGoal.Percentage) &&
-            (!twoToThreeGoals.Qualified || twoToThreeGoals.Qualified && overTwoGoals.Percentage >= twoToThreeGoals.Percentage) &&
+        if (overTwoGoals is { Qualified: true, Percentage: >= 0.50 }  &&
+            BothTeamScoreGoalQualified(bothTeamScoreGoal, overTwoGoals) &&
+            (!twoToThreeGoals.Qualified || twoToThreeGoals.Qualified && overTwoGoals.Percentage >= twoToThreeGoals.Percentage &&
+            _homeTeamData.LastThreeMatchResult != BetType.TwoToThreeGoals && _awayTeamData.LastThreeMatchResult != BetType.TwoToThreeGoals) &&
             (!underThreeGoals.Qualified || underThreeGoals.Qualified && overTwoGoals.Percentage >= underThreeGoals.Percentage)
             )
         {
@@ -119,16 +78,20 @@ public class MatchPredictor: IMatchPredictor
         }
         
         if (bothTeamScoreGoal is { Qualified: true, Percentage: >= 0.50 } &&
-            (!overTwoGoals.Qualified || overTwoGoals.Qualified && bothTeamScoreGoal.Percentage >= overTwoGoals.Percentage) &&
-            (!twoToThreeGoals.Qualified || twoToThreeGoals.Qualified && bothTeamScoreGoal.Percentage >= twoToThreeGoals.Percentage)
+            (!twoToThreeGoals.Qualified ||
+              twoToThreeGoals.Qualified && bothTeamScoreGoal.Percentage >= twoToThreeGoals.Percentage &&
+             (_homeTeamData.LastThreeMatchResult == BetType.TwoToThreeGoals ||
+              _awayTeamData.LastThreeMatchResult == BetType.TwoToThreeGoals))
             )
         {
             return new Prediction(BothTeamScore + $" {bothTeamScoreGoal.Percentage:F}%", 
                 true, bothTeamScoreGoal.Percentage, BetType.BothTeamScoreGoals);
         }
         
-        if (twoToThreeGoals is { Qualified: true, Percentage: >= 0.50 } ||
-            (twoToThreeGoals.Percentage >= 0.55 && !underThreeGoals.Qualified && winPredictions.Percentage < 0.55))
+        if (_homeTeamData.LastThreeMatchResult != BetType.TwoToThreeGoals &&
+            _awayTeamData.LastThreeMatchResult != BetType.TwoToThreeGoals &&
+            (twoToThreeGoals is { Qualified: true, Percentage: >= 0.50 } ||
+             (twoToThreeGoals.Percentage >= 0.55 && !underThreeGoals.Qualified && winPredictions.Percentage < 0.55)))
         {
             return new Prediction(TwoToThreeGoals + $" {twoToThreeGoals.Percentage:F}%", 
                 true, twoToThreeGoals.Percentage, BetType.TwoToThreeGoals);
@@ -148,7 +111,7 @@ public class MatchPredictor: IMatchPredictor
         {
             return new Prediction(HomeWin, true, winPredictions.Percentage, BetType.HomeWin);
         }
-
+        
         if (winPredictions is { Qualified: true, isHome: false, Percentage: >= 0.50 })
         {
             return new Prediction(AwayWin, true, winPredictions.Percentage, BetType.AwayWin);
@@ -157,7 +120,8 @@ public class MatchPredictor: IMatchPredictor
         // if the code reach this area that means all previous prediction failed to approve
         if (overTwoGoals.Percentage > bothTeamScoreGoal.Percentage &&
             overTwoGoals.Percentage > underThreeGoals.Percentage &&
-            overTwoGoals.Percentage > twoToThreeGoals.Percentage)
+            (overTwoGoals.Percentage > twoToThreeGoals.Percentage ||
+             _homeTeamData.LastThreeMatchResult != BetType.TwoToThreeGoals || _awayTeamData.LastThreeMatchResult != BetType.TwoToThreeGoals))
         {
             return new Prediction(
                 OverTwoGoals + $" risky: {overTwoGoals.Percentage:F}%",
@@ -179,8 +143,15 @@ public class MatchPredictor: IMatchPredictor
         
         return new Prediction(UnderThreeGoals + $" risky {underThreeGoals.Percentage:F}%", 
             true, underThreeGoals.Percentage, BetType.UnderThreeGoals);
-        
-        return new Prediction("", false, underThreeGoals.Percentage, BetType.Unknown);
+    }
+
+    private bool BothTeamScoreGoalQualified((bool Qualified, double Percentage) bothTeamScoreGoal, (bool Qualified, double Percentage) overTwoGoals)
+    {
+        return !bothTeamScoreGoal.Qualified ||
+                bothTeamScoreGoal.Qualified &&
+                overTwoGoals.Percentage >= bothTeamScoreGoal.Percentage && 
+                _homeTeamData.LastThreeMatchResult != BetType.BothTeamScoreGoals && 
+                _awayTeamData.LastThreeMatchResult != BetType.BothTeamScoreGoals;
     }
 
     private void InitializeData(string home, string away, string playedOn)
@@ -197,9 +168,7 @@ public class MatchPredictor: IMatchPredictor
         const double threshold = 0.59;
         const double goalThreshold = 0.80;
         const double underThreeGoalsTolerance = 0.70;
-        var probability = _headToHeadData.Count < 2 
-            ? _homeTeamData.BothTeamScoredGames * 0.50 + _awayTeamData.BothTeamScoredGames * 0.50
-            : _homeTeamData.BothTeamScoredGames * 0.35 + _awayTeamData.BothTeamScoredGames * 0.35 + _headToHeadData.BothTeamScoredGames * 0.30;
+        var probability = GetWeightedProbabilityBy(BetType.BothTeamScoreGoals);
         
         // if anything indicate under 3 goals then ignore the game
         if (_homeTeamData.UnderScoredGames > underThreeGoalsTolerance && _awayTeamData.UnderScoredGames > underThreeGoalsTolerance)
@@ -249,12 +218,10 @@ public class MatchPredictor: IMatchPredictor
     {
         const double threshold = 0.59;
         const double underThreeGoalsTolerance = 0.70;
-        var probability = _headToHeadData.Count < 2 
-            ? _homeTeamData.OverScoredGames * 0.50 + _awayTeamData.OverScoredGames * 0.50
-            : _homeTeamData.OverScoredGames* 0.35 + _awayTeamData.OverScoredGames * 0.35 + _headToHeadData.OverScoredGames * 0.30;
+        var probability = GetWeightedProbabilityBy(BetType.OverTwoGoals);
         
         // if anything indicate under 3 goals then ignore the game
-        if (_homeTeamData.UnderScoredGames > underThreeGoalsTolerance && _awayTeamData.UnderScoredGames > underThreeGoalsTolerance)
+        if (_homeTeamData.TeamScoreProbability < 0.40 || _awayTeamData.TeamScoreProbability < 0.40 && _homeTeamData.UnderScoredGames > underThreeGoalsTolerance && _awayTeamData.UnderScoredGames > underThreeGoalsTolerance)
             return (false, probability);
         
         switch (_homeTeamData.TeamScoredGames)
@@ -287,15 +254,75 @@ public class MatchPredictor: IMatchPredictor
         
         return (false, probability);
     }
-    
+
+    private double GetWeightedProbabilityBy(BetType betType)
+    {
+        var probability = betType switch
+        {
+            BetType.BothTeamScoreGoals => _headToHeadData.Count < 2
+                ? _homeTeamData.BothTeamScoredGames * 0.25 + _homeTeamData.TeamScoreProbability * 0.25 +
+                  _awayTeamData.BothTeamScoredGames * 0.25 + _awayTeamData.TeamScoreProbability * 0.25
+                : _homeTeamData.BothTeamScoredGames * 0.20 + _homeTeamData.TeamScoreProbability * 0.20 +
+                  _awayTeamData.BothTeamScoredGames * 0.20 + _awayTeamData.TeamScoreProbability * 0.20 +
+                  _headToHeadData.BothTeamScoredGames * 0.20,
+            BetType.TwoToThreeGoals => _headToHeadData.Count < 2
+                ? _homeTeamData.TwoToThreeGoalsGames * 0.25 + _homeTeamData.TeamScoreProbability * 0.25 +
+                  _awayTeamData.TwoToThreeGoalsGames * 0.25 + _awayTeamData.TeamScoreProbability * 0.25
+                : _homeTeamData.TwoToThreeGoalsGames * 0.20 + _homeTeamData.TeamScoreProbability * 0.20 +
+                  _awayTeamData.TwoToThreeGoalsGames * 0.20 + _awayTeamData.TeamScoreProbability * 0.20 +
+                  _headToHeadData.TwoToThreeGoalsGames * 0.20,
+            BetType.UnderThreeGoals => _headToHeadData.Count < 2
+                ? _homeTeamData.UnderScoredGames * 0.25 + _homeTeamData.TeamScoreProbability * 0.25 +
+                  _awayTeamData.UnderScoredGames * 0.25 + _awayTeamData.TeamScoreProbability * 0.25
+                : _homeTeamData.UnderScoredGames * 0.20 + _homeTeamData.TeamScoreProbability * 0.20 +
+                  _awayTeamData.UnderScoredGames * 0.20 + _awayTeamData.TeamScoreProbability * 0.20 +
+                  _headToHeadData.UnderScoredGames * 0.20,
+            _ => _headToHeadData.Count < 2
+                ? _homeTeamData.OverScoredGames * 0.25 + _homeTeamData.TeamScoreProbability * 0.25 +
+                  _awayTeamData.OverScoredGames * 0.25 + _awayTeamData.TeamScoreProbability * 0.25
+                : _homeTeamData.OverScoredGames * 0.20 + _homeTeamData.TeamScoreProbability * 0.20 +
+                  _awayTeamData.OverScoredGames * 0.20 + _awayTeamData.TeamScoreProbability * 0.20 +
+                  _headToHeadData.OverScoredGames * 0.20
+        };
+        
+        double weightFactor = _headToHeadData.Count < 2 ? 0.25 : 0.20;
+        double probability2;
+
+        switch (betType)
+        {
+            case BetType.BothTeamScoreGoals:
+                probability2 = (_homeTeamData.BothTeamScoredGames + _awayTeamData.BothTeamScoredGames) * weightFactor +
+                              (_homeTeamData.TeamScoreProbability + _awayTeamData.TeamScoreProbability) * weightFactor +
+                              (_headToHeadData.Count < 2 ? 0 : _headToHeadData.BothTeamScoredGames * weightFactor);
+                break;
+            case BetType.TwoToThreeGoals:
+                probability2 = (_homeTeamData.TwoToThreeGoalsGames + _awayTeamData.TwoToThreeGoalsGames) * weightFactor +
+                              (_homeTeamData.TeamScoreProbability + _awayTeamData.TeamScoreProbability) * weightFactor +
+                              (_headToHeadData.Count < 2 ? 0 : _headToHeadData.TwoToThreeGoalsGames * weightFactor);
+                break;
+            case BetType.UnderThreeGoals:
+                probability2 = (_homeTeamData.UnderScoredGames + _awayTeamData.UnderScoredGames) * weightFactor +
+                              (_homeTeamData.TeamScoreProbability + _awayTeamData.TeamScoreProbability) * weightFactor +
+                              (_headToHeadData.Count < 2 ? 0 : _headToHeadData.UnderScoredGames * weightFactor);
+                break;
+            default:
+                probability2 = (_homeTeamData.OverScoredGames + _awayTeamData.OverScoredGames) * weightFactor +
+                              (_homeTeamData.TeamScoreProbability + _awayTeamData.TeamScoreProbability) * weightFactor +
+                              (_headToHeadData.Count < 2 ? 0 : _headToHeadData.OverScoredGames * weightFactor);
+                break;
+        }
+
+        
+        
+        return probability;
+    }
+
     private (bool Qualified, double Percentage) CurrentTwoToThreeGoalChances()
     {
         const double threshold = 0.59;
         const double goalThreshold = 0.80;
         const double moreThanThreeGoalsTolerance = 0.50;
-        var probability = _headToHeadData.Count < 2 
-            ? _homeTeamData.TwoToThreeGoalsGames * 0.50 + _awayTeamData.TwoToThreeGoalsGames * 0.50
-            : _homeTeamData.TwoToThreeGoalsGames * 0.35 + _awayTeamData.TwoToThreeGoalsGames * 0.35 + _headToHeadData.TwoToThreeGoalsGames * 0.30;
+        var probability = GetWeightedProbabilityBy(BetType.TwoToThreeGoals);
         
         if (_homeTeamData.MoreThanThreeGoalGamesAvg >= moreThanThreeGoalsTolerance &&
             _awayTeamData.MoreThanThreeGoalGamesAvg >= moreThanThreeGoalsTolerance)

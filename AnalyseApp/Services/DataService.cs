@@ -1,4 +1,5 @@
-﻿using AnalyseApp.Extensions;
+﻿using AnalyseApp.Enums;
+using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
 
@@ -62,7 +63,10 @@ public class DataService: IDataService
                 .Take(6)
                 .ToList();
         
-        var scored = matches.Average(i => i.FTHG + i.FTAG);
+        var scored = matches.Count(item => 
+            item.FTHG > 0 && item.HomeTeam == teamName ||
+            item.FTAG > 0 && item.AwayTeam == teamName) / (double)matches.Count;
+        
         var overScoredAvg = GetOverGameAvg(matches);
         var underScoredAvg = GetUnderGameAvg(matches);
         var twoToThreeAvg = GetTwoToThreeGameAvg(matches);
@@ -74,8 +78,9 @@ public class DataService: IDataService
         var teamScoredGames = GetTeamScoredGamesAvg(matches, teamName);
         var teamAllowedGames = GetTeamAllowedGamesAvg(matches, teamName);
         var moreThanThreeGoalGameAvg = GetMoreThanThreeGoalGameAvg(matches);
+        var lastThreeMatchResult = GetLastThreeMatchesBetType(matches);
         
-        var scoreProbability = scored.GetValueOrDefault().GetScoredGoalProbabilityBy();
+        var scoreProbability = scored.GetScoredGoalProbabilityBy();
         
         var teamData = new TeamData(
             matches.Count, 
@@ -90,12 +95,33 @@ public class DataService: IDataService
             awayWinAvg,
             winGameAvg,
             teamScoredGames,
-            teamAllowedGames
+            teamAllowedGames,
+            lastThreeMatchResult
         );
 
         teamData = teamData with { Suggestion = GetHighValue(teamData: teamData) };
         
         return teamData;
+    }
+
+    private static BetType GetLastThreeMatchesBetType(IEnumerable<Matches> matches)
+    {
+        var lastThreeMatches = matches.Take(3).ToList();
+        if (lastThreeMatches.All(item => item.FTHG + item.FTAG > 2))
+        {
+            return BetType.OverTwoGoals;
+        }
+        if (lastThreeMatches.All(item => item is { FTHG: > 0, FTAG: > 0 }))
+        {
+            return BetType.BothTeamScoreGoals;
+        }
+        if (lastThreeMatches.All(item => item.FTHG + item.FTAG is 2 or 3))
+        {
+            return BetType.TwoToThreeGoals;
+        }
+        return lastThreeMatches.All(item => item.FTHG + item.FTAG < 3) 
+            ? BetType.UnderThreeGoals 
+            : BetType.Unknown;
     }
 
     private static Suggestion GetHighValue(HeadToHeadData? headToHeadData = null, TeamData? teamData = null)
