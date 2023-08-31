@@ -7,6 +7,7 @@ using AnalyseApp.Interfaces;
 using AnalyseApp.models;
 using AnalyseApp.Options;
 using AnalyseApp.Services;
+using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
 
@@ -211,121 +212,29 @@ public class AnalyseServiceUnitTests
         _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
     }
     
-     [Fact,
-     Description("Premier league games qualified the first level analysis")]
-    public void Premier_League_Game_State_Preparation2()
+    
+    [Fact, Description("Premier league third game day")]
+    public void France_league_First_Game_Day()
     {
         // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
         var upcomingMatches = new List<Matches>
         {
-            new() { HomeTeam = Bundesliga.Leverkusen, AwayTeam = Bundesliga.Leipzig, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Bundesliga.Augsburg, AwayTeam = Bundesliga.Gladbach, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Bundesliga.Hoffenheim, AwayTeam = Bundesliga.Freiburg, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Bundesliga.Stuttgart, AwayTeam = Bundesliga.Bochum, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Bundesliga.Wolfsburg, AwayTeam = Bundesliga.Heidenheim, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Bundesliga.Dortmund, AwayTeam = Bundesliga.Koln, Date = "18/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Bundesliga.Union, AwayTeam = Bundesliga.Mainz, Date = "18/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Bundesliga.Frankfurt, AwayTeam = Bundesliga.Darmstadt, Date = "18/08/2023", FTHG = 1, FTAG = 5 },
-            
-            new() { HomeTeam = "Hansa Rostock", AwayTeam = "Hannover", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Greuther Furth", AwayTeam = "St Pauli", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Fortuna Dusseldorf", AwayTeam = "Paderborn", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Hamburg", AwayTeam = "Hertha", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Osnabruck", AwayTeam = "Nurnberg", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Holstein Kiel", AwayTeam = "Magdeburg", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Braunschweig", AwayTeam = "Schalke", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-
-            new() { HomeTeam = PremierLeague.Fulham, AwayTeam = PremierLeague.Brentford, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = PremierLeague.Liverpool, AwayTeam = PremierLeague.Bournemouth, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = PremierLeague.Wolves, AwayTeam = PremierLeague.Brighton, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = PremierLeague.ManCity, AwayTeam = PremierLeague.Newcastle, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = PremierLeague.Tottenham, AwayTeam = PremierLeague.ManUnited, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = PremierLeague.WestHam, AwayTeam = PremierLeague.Chelsea, Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = PremierLeague.AstonVilla, AwayTeam = PremierLeague.Chelsea, Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = PremierLeague.CrystalPalace, AwayTeam = PremierLeague.Arsenal, Date = "21/08/2023", FTHG = 1, FTAG = 5 },
-
-            new() { HomeTeam = Championship.Plymouth, AwayTeam = Championship.Southampton, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.Blackburn, AwayTeam = Championship.Hull, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.Bristol, AwayTeam = Championship.Birmingham, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.Leicester, AwayTeam = Championship.Cardiff, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.Middlesbrough, AwayTeam = Championship.Huddersfield, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.QPR, AwayTeam = Championship.Ipswich, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.SheffieldWeds, AwayTeam = Championship.Preston, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.Stoke, AwayTeam = Championship.Watford, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.Sunderland, AwayTeam = Championship.Rotherham, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.Swansea, AwayTeam = Championship.Coventry, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = Championship.Norwich, AwayTeam = Championship.Millwall, Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            
-            new() { HomeTeam = "Bolton", AwayTeam = "Wigan", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Barnsley", AwayTeam = "Oxford", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Blackpool", AwayTeam = "Leyton Orient", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Cambridge", AwayTeam = "Bristol Rvs", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Carlisle", AwayTeam = "Exeter", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Charlton", AwayTeam = "Port Vale", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Derby", AwayTeam = "Fleetwood Town", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Northampton", AwayTeam = "Peterboro", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Portsmouth", AwayTeam = "Cheltenham", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Shrewsbury", AwayTeam = "Lincoln", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Wycombe", AwayTeam = "Burton", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            
-            new() { HomeTeam = SpanishLeague.Sociedad, AwayTeam = SpanishLeague.Celta, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = SpanishLeague.Almeria, AwayTeam = SpanishLeague.RealMadrid, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = SpanishLeague.Osasuna, AwayTeam = SpanishLeague.AthBilbao, Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = SpanishLeague.Girona, AwayTeam = SpanishLeague.Getafe, Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = SpanishLeague.Barcelona, AwayTeam = SpanishLeague.Cadiz, Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = SpanishLeague.Betis, AwayTeam = SpanishLeague.AthMadrid, Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = SpanishLeague.Granada, AwayTeam = SpanishLeague.Vallecano, Date = "21/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = SpanishLeague.Alaves, AwayTeam = SpanishLeague.Sevilla, Date = "21/08/2023", FTHG = 1, FTAG = 5 },
-            
-            new() { HomeTeam = "Eibar", AwayTeam = "Elche", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Espanol", AwayTeam = "Santander", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Levante", AwayTeam = "Burgos", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Alcorcon", AwayTeam = "Leganes", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Oviedo", AwayTeam = "Ferrol", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Sp Gijon", AwayTeam = "Mirandes", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Albacete", AwayTeam = "Amorebieta", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Villarreal B", AwayTeam = "Eldense", Date = "21/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Huesca", AwayTeam = "Tenerife", Date = "21/08/2023", FTHG = 1, FTAG = 5 },
-            
-            new() { HomeTeam = "Cosenza", AwayTeam = "Ascoli", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Cremonese", AwayTeam = "Catanzaro", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Ternana", AwayTeam = "Sampdoria", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Sudtirol", AwayTeam = "Spezia", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Cittadella", AwayTeam = "Reggiana", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Parma", AwayTeam = "FeralpiSalo", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Venezia", AwayTeam = "Como", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            
-            new() { HomeTeam = "Empoli", AwayTeam = "Verona", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Frosinone", AwayTeam = "Napoli", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Genoa", AwayTeam = "Fiorentina", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Inter", AwayTeam = "Monza", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Roma", AwayTeam = "Salernitana", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Sassuolo", AwayTeam = "Atalanta", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Lecce", AwayTeam = "Lazio", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Udinese", AwayTeam = "Juventus", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            
-            new() { HomeTeam = "Lyon", AwayTeam = "Montpellier", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Toulouse", AwayTeam = "Paris SG", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Lille", AwayTeam = "Nantes", Date = "30/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Le Havre", AwayTeam = "Brest", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Lorient", AwayTeam = "Nice", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Reims", AwayTeam = "Clermont", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Monaco", AwayTeam = "Strasbourg", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Lens", AwayTeam = "Rennes", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            
-            new() { HomeTeam = "Angers", AwayTeam = "Auxerre", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Amiens", AwayTeam = "Bastia", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Annecy", AwayTeam = "Dunkerque", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Concarneau", AwayTeam = "Caen", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Grenoble", AwayTeam = "Troyes", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Laval", AwayTeam = "Rodez", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Pau FC", AwayTeam = "Paris FC", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "St Etienne", AwayTeam = "Quevilly Rouen", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Valenciennes", AwayTeam = "Guingamp", Date = "19/08/2023", FTHG = 1, FTAG = 5 }
+            new() { HomeTeam = FranceLeague.Nice, AwayTeam = FranceLeague.Lille, Date = "11/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Marseille, AwayTeam = FranceLeague.Reims, Date = "12/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.ParisSg, AwayTeam = FranceLeague.Lorient, Date = "12/08/2023", FTHG = 0, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Brest, AwayTeam = FranceLeague.Lens, Date = "13/08/2023", FTHG = 3, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Clermont, AwayTeam = FranceLeague.Monaco, Date = "13/08/2023", FTHG = 2, FTAG = 4 },
+            new() { HomeTeam = FranceLeague.Nantes, AwayTeam = FranceLeague.Toulouse, Date = "13/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Montpellier, AwayTeam = FranceLeague.LeHavre, Date = "13/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Rennes, AwayTeam = FranceLeague.Metz, Date = "13/08/2023", FTHG = 5, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Strasbourg, AwayTeam = FranceLeague.Lyon, Date = "13/08/2023", FTHG = 2, FTAG = 1 },
         };
 
-        var count = 0;
         // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ France league first day ------------------- ");
         foreach (var lastSixGame in upcomingMatches)
         {
             var actual = _matchPredictor.Execute(
@@ -333,16 +242,388 @@ public class AnalyseServiceUnitTests
                 lastSixGame.AwayTeam,
                 lastSixGame.Date
             );
-            if (actual.Msg is not "")
+            var isCorrect = (lastSixGame.FTAG + lastSixGame.FTHG > 2 && actual.Type == BetType.OverTwoGoals) ||
+                            (lastSixGame is { FTHG: > 0, FTAG: > 0 } && actual.Type == BetType.BothTeamScoreGoals) ||
+                            (lastSixGame.FTAG + lastSixGame.FTHG < 3 && actual.Type == BetType.UnderThreeGoals) ||
+                            ((lastSixGame.FTAG + lastSixGame.FTHG == 2 || lastSixGame.FTAG + lastSixGame.FTHG == 3) &&
+                             actual.Type == BetType.TwoToThreeGoals) ||
+                            (lastSixGame.FTAG > lastSixGame.FTHG && actual.Type == BetType.AwayWin) ||
+                            (lastSixGame.FTHG > lastSixGame.FTAG && actual.Type == BetType.HomeWin);
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
             {
-                count++;
-                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam}{actual.Msg}");
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ✅ - ");
             }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+            totalCount++;
         }
-        _testOutputHelper.WriteLine($"Count: {count}");
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
     }
     
     
+    
+    [Fact]
+    public void France_league_Second_Game_Day()
+    {
+        // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
+        var upcomingMatches = new List<Matches>
+        {
+            new() { HomeTeam = FranceLeague.Metz, AwayTeam = FranceLeague.Marseille, Date = "18/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Lyon, AwayTeam = FranceLeague.Montpellier, Date = "19/08/2023", FTHG = 1, FTAG = 4 },
+            new() { HomeTeam = FranceLeague.Toulouse, AwayTeam = FranceLeague.ParisSg, Date = "19/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Lille, AwayTeam = FranceLeague.Nantes, Date = "20/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.LeHavre, AwayTeam = FranceLeague.Brest, Date = "20/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Reims, AwayTeam = FranceLeague.Clermont, Date = "20/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Lorient, AwayTeam = FranceLeague.Nice, Date = "20/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Monaco, AwayTeam = FranceLeague.Strasbourg, Date = "20/08/2023", FTHG = 3, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Lens, AwayTeam = FranceLeague.Rennes, Date = "20/08/2023", FTHG = 1, FTAG = 1 },
+        };
+
+        // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ France league second day ------------------- ");
+        foreach (var lastSixGame in upcomingMatches)
+        {
+            var actual = _matchPredictor.Execute(
+                lastSixGame.HomeTeam, 
+                lastSixGame.AwayTeam,
+                lastSixGame.Date
+            );
+            var isCorrect = (lastSixGame.FTAG + lastSixGame.FTHG > 2 && actual.Type == BetType.OverTwoGoals) ||
+                            (lastSixGame is { FTHG: > 0, FTAG: > 0 } && actual.Type == BetType.BothTeamScoreGoals) ||
+                            (lastSixGame.FTAG + lastSixGame.FTHG < 3 && actual.Type == BetType.UnderThreeGoals) ||
+                            ((lastSixGame.FTAG + lastSixGame.FTHG == 2 || lastSixGame.FTAG + lastSixGame.FTHG == 3) &&
+                             actual.Type == BetType.TwoToThreeGoals) ||
+                            (lastSixGame.FTAG > lastSixGame.FTHG && actual.Type == BetType.AwayWin) ||
+                            (lastSixGame.FTHG > lastSixGame.FTAG && actual.Type == BetType.HomeWin);
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ✅ - ");
+            }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+            totalCount++;
+        }
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
+    }
+    
+        
+    [Fact]
+    public void France_league_Third_Game_Day()
+    {
+        // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
+        var upcomingMatches = new List<Matches>
+        {
+            new() { HomeTeam = FranceLeague.Nantes, AwayTeam = FranceLeague.Monaco, Date = "25/08/2023", FTHG = 3, FTAG = 3 },
+            new() { HomeTeam = FranceLeague.Marseille, AwayTeam = FranceLeague.Brest, Date = "26/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.ParisSg, AwayTeam = FranceLeague.Lens, Date = "26/08/2023", FTHG = 3, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Rennes, AwayTeam = FranceLeague.LeHavre, Date = "27/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Montpellier, AwayTeam = FranceLeague.Reims, Date = "27/08/2023", FTHG = 1, FTAG = 3 },
+            new() { HomeTeam = FranceLeague.Clermont, AwayTeam = FranceLeague.Metz, Date = "27/08/2023", FTHG = 0, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Strasbourg, AwayTeam = FranceLeague.Toulouse, Date = "27/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Lorient, AwayTeam = FranceLeague.Lille, Date = "27/08/2023", FTHG = 4, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Nice, AwayTeam = FranceLeague.Lyon, Date = "27/08/2023", FTHG = 0, FTAG = 0 },
+        };
+
+        // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ France league third day ------------------- ");
+        foreach (var lastSixGame in upcomingMatches)
+        {
+            var actual = _matchPredictor.Execute(
+                lastSixGame.HomeTeam, 
+                lastSixGame.AwayTeam,
+                lastSixGame.Date
+            );
+            var isCorrect = (lastSixGame.FTAG + lastSixGame.FTHG > 2 && actual.Type == BetType.OverTwoGoals) ||
+                            (lastSixGame is { FTHG: > 0, FTAG: > 0 } && actual.Type == BetType.BothTeamScoreGoals) ||
+                            (lastSixGame.FTAG + lastSixGame.FTHG < 3 && actual.Type == BetType.UnderThreeGoals) ||
+                            ((lastSixGame.FTAG + lastSixGame.FTHG == 2 || lastSixGame.FTAG + lastSixGame.FTHG == 3) &&
+                             actual.Type == BetType.TwoToThreeGoals) ||
+                            (lastSixGame.FTAG > lastSixGame.FTHG && actual.Type == BetType.AwayWin) ||
+                            (lastSixGame.FTHG > lastSixGame.FTAG && actual.Type == BetType.HomeWin);
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ✅ - ");
+            }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+            totalCount++;
+        }
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
+    }
+    
+        
+    [Fact]
+    public void Both_Team_Score_Goal_Logic_should_Have_Accuracy_Rate_More_Then_Eighty_Percent()
+    {
+        // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
+        var upcomingMatches = new List<Matches>
+        {
+            new() { HomeTeam = PremierLeague.Newcastle, AwayTeam = PremierLeague.AstonVilla, Date = "12/08/2023", FTHG = 5, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Brentford, AwayTeam = PremierLeague.Tottenham, Date = "13/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Chelsea, AwayTeam = PremierLeague.Liverpool, Date = "13/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Arsenal, AwayTeam = PremierLeague.Forest, Date = "12/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Bournemouth, AwayTeam = PremierLeague.WestHam, Date = "12/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Brighton, AwayTeam = PremierLeague.Luton, Date = "12/08/2023", FTHG = 4, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.WestHam, AwayTeam = PremierLeague.Chelsea, Date = "20/08/2023", FTHG = 3, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Liverpool, AwayTeam = PremierLeague.Bournemouth, Date = "19/08/2023", FTHG = 3, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Wolves, AwayTeam = PremierLeague.Brighton, Date = "19/08/2023", FTHG = 1, FTAG = 4 },
+            new() { HomeTeam = PremierLeague.Forest, AwayTeam = PremierLeague.SheffieldUnited, Date = "18/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.ManUnited, AwayTeam = PremierLeague.Forest, Date = "26/08/2023", FTHG = 3, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Brighton, AwayTeam = PremierLeague.WestHam, Date = "26/08/2023", FTHG = 1, FTAG = 3 },
+            new() { HomeTeam = PremierLeague.Burnley, AwayTeam = PremierLeague.AstonVilla, Date = "27/08/2023", FTHG = 1, FTAG = 3 },
+            new() { HomeTeam = PremierLeague.SheffieldUnited, AwayTeam = PremierLeague.ManCity, Date = "27/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Newcastle, AwayTeam = PremierLeague.Liverpool, Date = "27/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Arsenal, AwayTeam = PremierLeague.Fulham, Date = "26/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Brentford, AwayTeam = PremierLeague.CrystalPalace, Date = "26/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Nantes, AwayTeam = FranceLeague.Monaco, Date = "25/08/2023", FTHG = 3, FTAG = 3 },
+            new() { HomeTeam = FranceLeague.ParisSg, AwayTeam = FranceLeague.Lens, Date = "26/08/2023", FTHG = 3, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Rennes, AwayTeam = FranceLeague.LeHavre, Date = "27/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Montpellier, AwayTeam = FranceLeague.Reims, Date = "27/08/2023", FTHG = 1, FTAG = 3 },
+            new() { HomeTeam = FranceLeague.Lorient, AwayTeam = FranceLeague.Lille, Date = "27/08/2023", FTHG = 4, FTAG = 1 },
+        };
+
+        // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ France league third day ------------------- ");
+        foreach (var lastSixGame in upcomingMatches)
+        {
+            totalCount++;
+            var actual = _matchPredictor.Execute(
+                lastSixGame.HomeTeam, 
+                lastSixGame.AwayTeam,
+                lastSixGame.Date, BetType.BothTeamScoreGoals
+            );
+            var isCorrect = lastSixGame is { FTHG: > 0, FTAG: > 0 } && actual.Type == BetType.BothTeamScoreGoals;
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} - ✅ - ");
+            }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+        }
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
+
+        accuracyRate.Should().BeGreaterThan(80);
+    }
+            
+    [Fact]
+    public void Over_Two_Goal_Logic_should_Have_Accuracy_Rate_More_Then_Eighty_Percent()
+    {
+        // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
+        var upcomingMatches = new List<Matches>
+        {
+            new() { HomeTeam = PremierLeague.Newcastle, AwayTeam = PremierLeague.AstonVilla, Date = "12/08/2023", FTHG = 5, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Brentford, AwayTeam = PremierLeague.Tottenham, Date = "13/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Arsenal, AwayTeam = PremierLeague.Forest, Date = "12/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Brighton, AwayTeam = PremierLeague.Luton, Date = "12/08/2023", FTHG = 4, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.WestHam, AwayTeam = PremierLeague.Chelsea, Date = "20/08/2023", FTHG = 3, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Liverpool, AwayTeam = PremierLeague.Bournemouth, Date = "19/08/2023", FTHG = 3, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Wolves, AwayTeam = PremierLeague.Brighton, Date = "19/08/2023", FTHG = 1, FTAG = 4 },
+            new() { HomeTeam = PremierLeague.Forest, AwayTeam = PremierLeague.SheffieldUnited, Date = "18/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.ManUnited, AwayTeam = PremierLeague.Forest, Date = "26/08/2023", FTHG = 3, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Brighton, AwayTeam = PremierLeague.WestHam, Date = "26/08/2023", FTHG = 1, FTAG = 3 },
+            new() { HomeTeam = PremierLeague.Burnley, AwayTeam = PremierLeague.AstonVilla, Date = "27/08/2023", FTHG = 1, FTAG = 3 },
+            new() { HomeTeam = PremierLeague.SheffieldUnited, AwayTeam = PremierLeague.ManCity, Date = "27/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Newcastle, AwayTeam = PremierLeague.Liverpool, Date = "27/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Arsenal, AwayTeam = PremierLeague.Fulham, Date = "26/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Nantes, AwayTeam = FranceLeague.Monaco, Date = "25/08/2023", FTHG = 3, FTAG = 3 },
+            new() { HomeTeam = FranceLeague.ParisSg, AwayTeam = FranceLeague.Lens, Date = "26/08/2023", FTHG = 3, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Rennes, AwayTeam = FranceLeague.LeHavre, Date = "27/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Montpellier, AwayTeam = FranceLeague.Reims, Date = "27/08/2023", FTHG = 1, FTAG = 3 },
+            new() { HomeTeam = FranceLeague.Lorient, AwayTeam = FranceLeague.Lille, Date = "27/08/2023", FTHG = 4, FTAG = 1 },
+        };
+
+        // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ over two goals logic ------------------- ");
+        foreach (var lastSixGame in upcomingMatches)
+        {
+            totalCount++;
+            var actual = _matchPredictor.Execute(
+                lastSixGame.HomeTeam, 
+                lastSixGame.AwayTeam,
+                lastSixGame.Date, BetType.OverTwoGoals
+            );
+            var isCorrect = lastSixGame.FTAG + lastSixGame.FTHG > 2 && actual.Type == BetType.OverTwoGoals;
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} - ✅ - ");
+            }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+        }
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
+
+        accuracyRate.Should().BeGreaterThan(80);
+    }
+                
+    [Fact]
+    public void Two_To_Three_Logic_should_Have_Accuracy_Rate_More_Then_Eighty_Percent()
+    {
+        // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
+        var upcomingMatches = new List<Matches>
+        {
+            new() { HomeTeam = PremierLeague.Arsenal, AwayTeam = PremierLeague.Forest, Date = "12/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Forest, AwayTeam = PremierLeague.SheffieldUnited, Date = "18/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Newcastle, AwayTeam = PremierLeague.Liverpool, Date = "27/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Bournemouth, AwayTeam = PremierLeague.Tottenham, Date = "26/08/2023", FTHG = 0, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Tottenham, AwayTeam = PremierLeague.ManUnited, Date = "19/08/2023", FTHG = 2, FTAG = 0 }, 
+            new() { HomeTeam = FranceLeague.Toulouse, AwayTeam = FranceLeague.ParisSg, Date = "19/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Lille, AwayTeam = FranceLeague.Nantes, Date = "20/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.LeHavre, AwayTeam = FranceLeague.Brest, Date = "20/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = FranceLeague.Reims, AwayTeam = FranceLeague.Clermont, Date = "20/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Lorient, AwayTeam = FranceLeague.Nice, Date = "20/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Monaco, AwayTeam = FranceLeague.Strasbourg, Date = "20/08/2023", FTHG = 3, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Lens, AwayTeam = FranceLeague.Rennes, Date = "20/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Strasbourg, AwayTeam = FranceLeague.Toulouse, Date = "27/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Montpellier, AwayTeam = FranceLeague.Reims, Date = "27/08/2023", FTHG = 1, FTAG = 3 },
+            new() { HomeTeam = FranceLeague.Marseille, AwayTeam = FranceLeague.Brest, Date = "26/08/2023", FTHG = 2, FTAG = 0 },
+
+        };
+
+        // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ two to three goals logic ------------------- ");
+        foreach (var lastSixGame in upcomingMatches)
+        {
+            totalCount++;
+            var actual = _matchPredictor.Execute(
+                lastSixGame.HomeTeam, 
+                lastSixGame.AwayTeam,
+                lastSixGame.Date, BetType.TwoToThreeGoals
+            );
+            var isCorrect = lastSixGame.FTAG + lastSixGame.FTHG is 2 or 3 && actual.Type == BetType.TwoToThreeGoals;
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} - ✅ - ");
+            }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+        }
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
+
+        accuracyRate.Should().BeGreaterThan(80);
+    }
+    
+    [Fact]
+    public void Home_Win_Logic_should_Have_Accuracy_Rate_More_Then_Eighty_Percent()
+    {
+        // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
+        var upcomingMatches = new List<Matches>
+        {
+            new() { HomeTeam = PremierLeague.Arsenal, AwayTeam = PremierLeague.Forest, Date = "12/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Forest, AwayTeam = PremierLeague.SheffieldUnited, Date = "18/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Bournemouth, AwayTeam = PremierLeague.Tottenham, Date = "26/08/2023", FTHG = 0, FTAG = 2 },
+            new() { HomeTeam = PremierLeague.Tottenham, AwayTeam = PremierLeague.ManUnited, Date = "19/08/2023", FTHG = 2, FTAG = 0 }, 
+            new() { HomeTeam = FranceLeague.Lille, AwayTeam = FranceLeague.Nantes, Date = "20/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Reims, AwayTeam = FranceLeague.Clermont, Date = "20/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Lorient, AwayTeam = FranceLeague.Nice, Date = "20/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Monaco, AwayTeam = FranceLeague.Strasbourg, Date = "20/08/2023", FTHG = 3, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Strasbourg, AwayTeam = FranceLeague.Toulouse, Date = "27/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = FranceLeague.Marseille, AwayTeam = FranceLeague.Brest, Date = "26/08/2023", FTHG = 2, FTAG = 0 },
+
+        };
+
+        // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ home win logic ------------------- ");
+        foreach (var lastSixGame in upcomingMatches)
+        {
+            totalCount++;
+            var actual = _matchPredictor.Execute(
+                lastSixGame.HomeTeam, 
+                lastSixGame.AwayTeam,
+                lastSixGame.Date, BetType.HomeWin
+            );
+            var isCorrect = lastSixGame.FTAG < lastSixGame.FTHG && actual.Type == BetType.HomeWin;
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} - ✅ - ");
+            }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+        }
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
+
+        accuracyRate.Should().BeGreaterThan(80);
+    }
     
     [Fact,
      Description("Premier league games qualified the first level analysis")]
@@ -579,40 +860,183 @@ public class AnalyseServiceUnitTests
     
     
         
-    [Fact,
-     Description("Premier league games qualified the first level analysis")]
-    public void Championship_First_Day()
+    [Fact, Description("Championship first game day")]
+    public void Championship_First_Game_Day()
     {
         // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
         var upcomingMatches = new List<Matches>
         {
-            new() { HomeTeam = "Clermont Foot", AwayTeam = "Metz", Date = "27/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Valencia", AwayTeam = "Osasuna", Date = "27/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Montpellier", AwayTeam = "Reims", Date = "24/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Strasbourg", AwayTeam = "Toulouse", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Auxerre", AwayTeam = "Grenoble", Date = "21/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Plymouth", AwayTeam = "Southampton", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Blackburn", AwayTeam = "Hull", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "QPR", AwayTeam = "Ipswich", Date = "19/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Norwich", AwayTeam = "Millwall", Date = "20/08/2023", FTHG = 1, FTAG = 5 },
-            new() { HomeTeam = "Bari", AwayTeam = "Palermo", Date = "18/08/2023", FTHG = 0, FTAG = 0 }
+            new() { HomeTeam = Championship.SheffieldWeds, AwayTeam = Championship.Southampton, Date = "04/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = Championship.Blackburn, AwayTeam = Championship.WestBrom, Date = "05/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = Championship.Bristol, AwayTeam = Championship.Preston, Date = "05/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = Championship.Middlesbrough, AwayTeam = Championship.Millwall, Date = "05/08/2023", FTHG = 0, FTAG = 1 },
+            new() { HomeTeam = Championship.Norwich, AwayTeam = Championship.Hull, Date = "05/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = Championship.Plymouth, AwayTeam = Championship.Huddersfield, Date = "05/08/2023", FTHG = 3, FTAG = 1 },
+            new() { HomeTeam = Championship.Stoke, AwayTeam = Championship.Rotherham, Date = "05/08/2023", FTHG = 4, FTAG = 1 },
+            new() { HomeTeam = Championship.Swansea, AwayTeam = Championship.Birmingham, Date = "05/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = Championship.Watford, AwayTeam = Championship.QPR, Date = "05/08/2023", FTHG = 4, FTAG = 0 },
+            new() { HomeTeam = Championship.Leicester, AwayTeam = Championship.Coventry, Date = "06/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = Championship.Leeds, AwayTeam = Championship.Cardiff, Date = "06/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = Championship.Sunderland, AwayTeam = Championship.Ipswich, Date = "06/08/2023", FTHG = 1, FTAG = 2 },
         };
 
-        var count = 0;
-       
         // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ Championship first day ------------------- ");
         foreach (var lastSixGame in upcomingMatches)
         {
-            count++;
             var actual = _matchPredictor.Execute(
                 lastSixGame.HomeTeam, 
                 lastSixGame.AwayTeam,
                 lastSixGame.Date
             );
-            _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam}{actual.Msg}");
+            var isCorrect = (lastSixGame.FTAG + lastSixGame.FTHG > 2 && actual.Type == BetType.OverTwoGoals) ||
+                            (lastSixGame is { FTHG: > 0, FTAG: > 0 } && actual.Type == BetType.BothTeamScoreGoals) ||
+                            (lastSixGame.FTAG + lastSixGame.FTHG < 3 && actual.Type == BetType.UnderThreeGoals) ||
+                            ((lastSixGame.FTAG + lastSixGame.FTHG == 2 || lastSixGame.FTAG + lastSixGame.FTHG == 3) &&
+                             actual.Type == BetType.TwoToThreeGoals) ||
+                            (lastSixGame.FTAG > lastSixGame.FTHG && actual.Type == BetType.AwayWin) ||
+                            (lastSixGame.FTHG > lastSixGame.FTAG && actual.Type == BetType.HomeWin);
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ✅ - ");
+            }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+            totalCount++;
         }
-        _testOutputHelper.WriteLine($"Count: {count}");
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
+    }
+            
+    
+    [Fact, Description("Championship second game day")]
+    public void Championship_Second_Game_Day()
+    {
+        // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
+        var upcomingMatches = new List<Matches>
+        {
+            new() { HomeTeam = Championship.Coventry, AwayTeam = Championship.Middlesbrough, Date = "12/08/2023", FTHG = 3, FTAG = 0 },
+            new() { HomeTeam = Championship.Birmingham, AwayTeam = Championship.Leeds, Date = "12/08/2023", FTHG = 1, FTAG = 0 },
+            new() { HomeTeam = Championship.Cardiff, AwayTeam = Championship.QPR, Date = "12/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = Championship.Huddersfield, AwayTeam = Championship.Leicester, Date = "12/08/2023", FTHG = 0, FTAG = 1 },
+            new() { HomeTeam = Championship.Hull, AwayTeam = Championship.SheffieldWeds, Date = "12/08/2023", FTHG = 4, FTAG = 2 },
+            new() { HomeTeam = Championship.Ipswich, AwayTeam = Championship.Stoke, Date = "12/08/2023", FTHG = 2, FTAG = 0 },
+            new() { HomeTeam = Championship.Millwall, AwayTeam = Championship.Bristol, Date = "12/08/2023", FTHG = 0, FTAG = 1 },
+            new() { HomeTeam = Championship.Preston, AwayTeam = Championship.Sunderland, Date = "12/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = Championship.Rotherham, AwayTeam = Championship.Blackburn, Date = "12/08/2023", FTHG = 2, FTAG = 2 },
+            new() { HomeTeam = Championship.Southampton, AwayTeam = Championship.Norwich, Date = "12/08/2023", FTHG = 4, FTAG = 4 },
+            new() { HomeTeam = Championship.Watford, AwayTeam = Championship.Plymouth, Date = "12/08/2023", FTHG = 0, FTAG = 0 },
+            new() { HomeTeam = Championship.WestBrom, AwayTeam = Championship.Swansea, Date = "12/08/2023", FTHG = 3, FTAG = 2 },
+        };
+
+        // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ Championship second day ------------------- ");
+        foreach (var lastSixGame in upcomingMatches)
+        {
+            var actual = _matchPredictor.Execute(
+                lastSixGame.HomeTeam, 
+                lastSixGame.AwayTeam,
+                lastSixGame.Date
+            );
+            var isCorrect = (lastSixGame.FTAG + lastSixGame.FTHG > 2 && actual.Type == BetType.OverTwoGoals) ||
+                            (lastSixGame is { FTHG: > 0, FTAG: > 0 } && actual.Type == BetType.BothTeamScoreGoals) ||
+                            (lastSixGame.FTAG + lastSixGame.FTHG < 3 && actual.Type == BetType.UnderThreeGoals) ||
+                            ((lastSixGame.FTAG + lastSixGame.FTHG == 2 || lastSixGame.FTAG + lastSixGame.FTHG == 3) &&
+                             actual.Type == BetType.TwoToThreeGoals) ||
+                            (lastSixGame.FTAG > lastSixGame.FTHG && actual.Type == BetType.AwayWin) ||
+                            (lastSixGame.FTHG > lastSixGame.FTAG && actual.Type == BetType.HomeWin);
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ✅ - ");
+            }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+            totalCount++;
+        }
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
     }
     
+        
+    [Fact, Description("Championship third game day")]
+    public void Championship_Third_Game_Day()
+    {
+        // ARRANGE
+        var totalCount = 0;
+        var correctCount = 0;
+        var wrongCount = 0;
+        var upcomingMatches = new List<Matches>
+        {
+            new() { HomeTeam = Championship.Leeds, AwayTeam = Championship.WestBrom, Date = "18/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = Championship.Plymouth, AwayTeam = Championship.Southampton, Date = "19/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = Championship.Blackburn, AwayTeam = Championship.Hull, Date = "19/08/2023", FTHG = 1, FTAG = 2 },
+            new() { HomeTeam = Championship.Bristol, AwayTeam = Championship.Birmingham, Date = "19/08/2023", FTHG = 0, FTAG = 2 },
+            new() { HomeTeam = Championship.Leicester, AwayTeam = Championship.Cardiff, Date = "19/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = Championship.Middlesbrough, AwayTeam = Championship.Huddersfield, Date = "19/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = Championship.QPR, AwayTeam = Championship.Ipswich, Date = "19/08/2023", FTHG = 0, FTAG = 1 },
+            new() { HomeTeam = Championship.SheffieldWeds, AwayTeam = Championship.Preston, Date = "19/08/2023", FTHG = 0, FTAG = 1 },
+            new() { HomeTeam = Championship.Stoke, AwayTeam = Championship.Watford, Date = "19/08/2023", FTHG = 1, FTAG = 0 },
+            new() { HomeTeam = Championship.Sunderland, AwayTeam = Championship.Rotherham, Date = "19/08/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = Championship.Swansea, AwayTeam = Championship.Coventry, Date = "19/08/2023", FTHG = 1, FTAG = 1 },
+            new() { HomeTeam = Championship.Norwich, AwayTeam = Championship.Millwall, Date = "20/08/2023", FTHG = 3, FTAG = 1 },
+        };
+
+        // ACTUAL ASSERT
+        _testOutputHelper.WriteLine(" ------------------ Championship third day ------------------- ");
+        foreach (var lastSixGame in upcomingMatches)
+        {
+            var actual = _matchPredictor.Execute(
+                lastSixGame.HomeTeam, 
+                lastSixGame.AwayTeam,
+                lastSixGame.Date
+            );
+            var isCorrect = (lastSixGame.FTAG + lastSixGame.FTHG > 2 && actual.Type == BetType.OverTwoGoals) ||
+                            (lastSixGame is { FTHG: > 0, FTAG: > 0 } && actual.Type == BetType.BothTeamScoreGoals) ||
+                            (lastSixGame.FTAG + lastSixGame.FTHG < 3 && actual.Type == BetType.UnderThreeGoals) ||
+                            ((lastSixGame.FTAG + lastSixGame.FTHG == 2 || lastSixGame.FTAG + lastSixGame.FTHG == 3) &&
+                             actual.Type == BetType.TwoToThreeGoals) ||
+                            (lastSixGame.FTAG > lastSixGame.FTHG && actual.Type == BetType.AwayWin) ||
+                            (lastSixGame.FTHG > lastSixGame.FTAG && actual.Type == BetType.HomeWin);
+
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                correctCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ✅ - ");
+            }
+            else
+            {
+                wrongCount++;
+                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
+            }
+            totalCount++;
+        }
+        
+        var accuracyRate = correctCount / (double)totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
+    }
     
 }

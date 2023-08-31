@@ -20,7 +20,7 @@ public class DataService: IDataService
             .GetHeadToHeadMatchesBy(homeTeam, awayTeam, playedOn)
             .ToList();
         
-        var scored = matches.Average(i => i.FTHG + i.FTAG);
+        var scored = (matches.Sum(i => i.FTAG) + matches.Sum(i => i.FTHG)) / (double)matches.Count;
         var overScoredAvg = GetOverGameAvg(matches);
         var underScoredAvg = GetUnderGameAvg(matches);
         var twoToThreeAvg = GetTwoToThreeGameAvg(matches);
@@ -37,7 +37,7 @@ public class DataService: IDataService
             match => match.HomeTeam == awayTeam && match.FTHG > match.FTAG ||
                                     match.AwayTeam == awayTeam && match.FTHG < match.FTAG
         );
-        var scoreProbability = scored.GetValueOrDefault().GetScoredGoalProbabilityBy();
+        var scoreProbability = scored?.GetScoredGoalProbabilityBy();
         
         var headToHead = new HeadToHeadData(
             matches.Count, 
@@ -62,10 +62,13 @@ public class DataService: IDataService
                 .Where(i => i.HomeTeam == teamName || i.AwayTeam == teamName)
                 .Take(6)
                 .ToList();
+
+        var homeScored = matches.Where(item => item.HomeTeam == teamName).Select(s => s.FTHG).Sum();
+        var awayScored = matches.Where(item => item.AwayTeam == teamName).Select(s => s.FTAG).Sum();
         
-        var scored = matches.Count(item => 
-            item.FTHG > 0 && item.HomeTeam == teamName ||
-            item.FTAG > 0 && item.AwayTeam == teamName) / (double)matches.Count;
+        var homeScoredAvg = homeScored / (double)matches.Count;
+        var awayScoredAvg = awayScored / (double)matches.Count;
+        var scored = (homeScored + awayScored) / (double)matches.Count;
         
         var overScoredAvg = GetOverGameAvg(matches);
         var underScoredAvg = GetUnderGameAvg(matches);
@@ -80,11 +83,15 @@ public class DataService: IDataService
         var moreThanThreeGoalGameAvg = GetMoreThanThreeGoalGameAvg(matches);
         var lastThreeMatchResult = GetLastThreeMatchesBetType(matches);
         
-        var scoreProbability = scored.GetScoredGoalProbabilityBy();
+        var homeScoringPower = homeScoredAvg?.GetScoredGoalProbabilityBy();
+        var awayScoringPower = awayScoredAvg?.GetScoredGoalProbabilityBy();
+        var scoringPower = scored?.GetScoredGoalProbabilityBy();
         
         var teamData = new TeamData(
             matches.Count, 
-            scoreProbability,
+            scoringPower,
+            homeScoringPower,
+            awayScoringPower,
             overScoredAvg, 
             underScoredAvg, 
             twoToThreeAvg,
@@ -135,7 +142,7 @@ public class DataService: IDataService
                 { "OverScoredGames", teamData.OverScoredGames },
                 { "BothTeamScoredGames", teamData.BothTeamScoredGames },
                 { "TwoToThreeGoalsGames", teamData.TwoToThreeGoalsGames },
-                { "UnderScoredGames", teamData.UnderScoredGames },
+                { "UnderScoredGames", teamData.UnderTwoScoredGames },
                 { "ZeroZeroGames", teamData.ZeroZeroGoalGamesAvg }
             };
         }
@@ -146,7 +153,7 @@ public class DataService: IDataService
                 { "OverScoredGames", headToHeadData.OverScoredGames },
                 { "BothTeamScoredGames", headToHeadData.BothTeamScoredGames },
                 { "TwoToThreeGoalsGames", headToHeadData.TwoToThreeGoalsGames },
-                { "UnderScoredGames", headToHeadData.UnderScoredGames }
+                { "UnderScoredGames", headToHeadData.UnderTwoScoredGames }
             };
         }
         else
@@ -179,7 +186,7 @@ public class DataService: IDataService
         matches.GetGameAvgBy(matches.Count, match => match.FTHG + match.FTAG > 3);
     
     private static double GetUnderGameAvg(IReadOnlyCollection<Matches> matches) => 
-        matches.GetGameAvgBy(matches.Count, match => match.FTHG + match.FTAG < 3);
+        matches.GetGameAvgBy(matches.Count, match => match.FTHG + match.FTAG < 2);
 
     private static double GetOverGameAvg(IReadOnlyCollection<Matches> matches) =>
         matches.GetGameAvgBy(matches.Count, match => match.FTHG + match.FTAG > 2);

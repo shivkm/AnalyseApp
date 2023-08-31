@@ -11,13 +11,13 @@ public record TeamAverage(
 
 public record HeadToHeadData(
     int Count,
-    double ScoreProbability,
+    double? ScoreProbability,
     double OverScoredGames,
-    double UnderScoredGames,
+    double UnderTwoScoredGames,
     double TwoToThreeGoalsGames,
     double BothTeamScoredGames,
     double ZeroScoredGoalGames,
-    double MoreThanThreeGoalGames,
+    double OverThreeGoalGames,
     double HomeTeamWon,
     double AwayTeamWon
 )
@@ -29,13 +29,15 @@ public record HeadToHeadData(
 
 public record TeamData(
     int GamesCount,
-    double TeamScoreProbability,
+    double? ScoringPower,
+    double? HomeScoringPower,
+    double? AwayScoringPower,
     double OverScoredGames,
-    double UnderScoredGames,
+    double UnderTwoScoredGames,
     double TwoToThreeGoalsGames,
     double BothTeamScoredGames,
     double ZeroZeroGoalGamesAvg,
-    double MoreThanThreeGoalGamesAvg,
+    double OverThreeGoalGamesAvg,
     double HomeTeamWon,
     double AwayTeamWon,
     double WinAvg,
