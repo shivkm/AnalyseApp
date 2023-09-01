@@ -29,54 +29,45 @@ public class FileProcessor: IFileProcessor
 
         return games;
     }
-    
-    public List<Game> MapMatchesToGames(IEnumerable<Matches> matches)
+
+    public List<Matches> GetUpcomingGamesBy(string fixtureFileName)
     {
-        return matches
-            .Select(match => new Game
-            {
-                League = match.Div,
-                Date = match.Date,
-                HomeTeam = match.HomeTeam,
-                AwayTeam = match.AwayTeam,
-                FullTimeGoal = match.FTHG + match.FTAG, 
-                HalfTimeGoal = match.HTHG + match.HTAG,
-            })
+        var filePath = Path.Combine(_options.Upcoming, fixtureFileName);
+
+        // Return an empty list if the file doesn't exist.
+        if (!File.Exists(filePath)) return new List<Matches>();
+        
+        var games = ReadCsvFileBy<Matches>(filePath).ToList();
+        return games;
+
+    }
+
+    public void CreateFixtureBy(string startDate, string endDate)
+    {
+        var startDateTime = Convert.ToDateTime(startDate);
+        var endDateTime = Convert.ToDateTime(endDate);
+        var historicalData = GetHistoricalMatchesBy();
+
+        var selectedMatches = historicalData
+            .Where(match => IsWithinDateRange(match, startDateTime, endDateTime))
+            .OrderByDescending(match => Convert.ToDateTime(match.Date))
             .ToList();
+
+        WriteSelectedMatchesToCsv(selectedMatches, $"fixture-{startDateTime.Date.Day}-{startDateTime.Date.Month}");
     }
 
-    public void CreateCsvFile(IEnumerable<Game> games)
+    private static bool IsWithinDateRange(Matches match, DateTime startDate, DateTime endDate)
     {
-        using var writer = new StreamWriter(_options.MachineLearning);
+        var matchStartDate = Convert.ToDateTime(match.Date);
+        return matchStartDate >= startDate && matchStartDate <= endDate;
+    }
+
+    private void WriteSelectedMatchesToCsv(IEnumerable<Matches> matches, string fileName)
+    {
+        var filePath = Path.Combine(_options.Upcoming, fileName);
+        using var writer = new StreamWriter(filePath);
         using var csv = new CsvWriter(writer, new CsvConfiguration(CultureInfo.InvariantCulture));
-        csv.WriteRecords(games);
-    }
-
-    public List<Matches> GetUpcomingGames()
-    {
-        var files = Directory.GetFiles(_options.Upcoming);
-        var games = new List<Matches>();
-        foreach (var file in files)
-        {
-            var currentFile= ReadCsvFileBy<Matches>(file);
-            games.AddRange(currentFile);
-        }
-
-        return games;
-    }
-
-    
-    public List<Game> GetHistoricalGames()
-    {
-        var files = Directory.GetFiles(_options.MachineLearning);
-        var games = new List<Game>();
-        foreach (var file in files)
-        {
-            var currentFile= ReadCsvFileBy<Game>(file);
-            games.AddRange(currentFile);
-        }
-
-        return games;
+        csv.WriteRecords(matches);
     }
     
     private static IEnumerable<T> ReadCsvFileBy<T>(string file)

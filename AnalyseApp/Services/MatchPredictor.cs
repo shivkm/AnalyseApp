@@ -23,6 +23,9 @@ public class MatchPredictor: IMatchPredictor
     private const string HomeWin = "Home will win";
     private const string AwayWin = "Away will win";
     
+    private int _totalCount = 0;
+    private int _correctCount = 0;
+    private int _wrongCount = 0;
     
     private const double Sixty = 0.60;
     private const double Fifty = 0.50;
@@ -37,21 +40,44 @@ public class MatchPredictor: IMatchPredictor
 
     public void Execute()
     {
-        var upcoming = _fileProcessor.GetUpcomingGames();
-       // SelfCheck();
-        var count = 0;
-
+        const string fixtureName = "";
+        var accuracyRate = PredictAccuracyRate(fixtureName);
+        Console.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount} accuracy rate: {accuracyRate:F}");
+    }
+    
+    public double GetPredictionAccuracyRate(string fixtureName)
+    {
+        _fileProcessor.CreateFixtureBy("11/08/23", "14/08/23");
+        _fileProcessor.CreateFixtureBy("18/08/23", "21/08/23");
+        _fileProcessor.CreateFixtureBy("25/08/23", "28/08/23");
+        var accuracyRate = PredictAccuracyRate(fixtureName);
+        return accuracyRate;
+    }
+    
+    private double PredictAccuracyRate(string fixtureName)
+    {
+        var upcoming = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         foreach (var game in upcoming)
         {
             var prediction = Execute(game.HomeTeam, game.AwayTeam, game.Date);
+            
+            if (!prediction.Qualified) continue;
 
-            if (prediction.Qualified)
+            _totalCount++;
+            var isCorrect = GetTheCorrectResult(game, prediction.Type);
+            if (isCorrect)
             {
-                count++;
-                Console.WriteLine($"{game.Date} - {game.HomeTeam}:{game.AwayTeam} {prediction.Msg}");
+                _correctCount++;
+                Console.WriteLine($"{game.Date} - {game.HomeTeam}:{game.AwayTeam} {prediction.Type} scoring power: {prediction.Percentage:F} - \u2713 - {prediction.Msg}");
+            }
+            else
+            {
+                _wrongCount++;
+                Console.WriteLine($"{game.Date} - {game.HomeTeam}:{game.AwayTeam} {prediction.Msg} - X - ");
             }
         }
-        Console.WriteLine($"Count: {count}");
+        var accuracyRate = _correctCount / (double)_totalCount * 100;
+        return accuracyRate;
     }
 
     public Prediction Execute(string home, string away, string playedOn, BetType? betType = BetType.Unknown)
@@ -65,14 +91,27 @@ public class MatchPredictor: IMatchPredictor
         var underThreeGoals = CurrentUnderThreeGoalChances();
         var winPredictions = CurrentWinChances();
 
+        var msg = string.Empty;
+        if (!string.IsNullOrEmpty(bothTeamScoreGoal.Msg))
+            msg = $"\nBth team score goal: {bothTeamScoreGoal.Msg}";
+        
+        if (!string.IsNullOrEmpty(overTwoGoals.Msg))
+            msg = $"\nOver two 2 goals: {overTwoGoals.Msg}";
+        
+        if (!string.IsNullOrEmpty(twoToThreeGoals.Msg))
+            msg = $"\nTwo to three goals: {twoToThreeGoals.Msg}";
+
+        if (!string.IsNullOrEmpty(winPredictions.Msg))
+            msg = $"\nWin predictions: {winPredictions.Msg}";
+        
         if ((!specificBetType || specificBetType && betType == BetType.OverTwoGoals) &&
             overTwoGoals.Qualified && (!overTwoGoals.HeadToHeadIgnored || overTwoGoals.HeadToHeadIgnored &&
-                !bothTeamScoreGoal.Qualified && !twoToThreeGoals.HeadToHeadIgnored))
+                !bothTeamScoreGoal.Qualified && !twoToThreeGoals.HeadToHeadIgnored && !winPredictions.Qualified))
         {
             return new Prediction(overTwoGoals.Percentage, BetType.OverTwoGoals)   
             { 
                 Qualified = true, 
-                Msg = OverTwoGoals + $" {overTwoGoals.Percentage:F}% \n{overTwoGoals.Msg}"
+                Msg = msg
             };
         }
         
@@ -82,16 +121,17 @@ public class MatchPredictor: IMatchPredictor
             return new Prediction(bothTeamScoreGoal.Percentage, BetType.BothTeamScoreGoals)   
             { 
                 Qualified = true, 
-                Msg = BothTeamScore + $" {bothTeamScoreGoal.Percentage:F}% \n{bothTeamScoreGoal.Msg}"
+                Msg = msg
             };
         }        
         
-        if ((!specificBetType || specificBetType && betType == BetType.TwoToThreeGoals) && twoToThreeGoals.Qualified)
+        if ((!specificBetType || specificBetType && betType == BetType.TwoToThreeGoals) &&
+            twoToThreeGoals.Qualified && (!twoToThreeGoals.HeadToHeadIgnored || twoToThreeGoals.HeadToHeadIgnored && !winPredictions.Qualified))
         {
             return new Prediction(twoToThreeGoals.Percentage, BetType.TwoToThreeGoals)   
             { 
                 Qualified = true, 
-                Msg = TwoToThreeGoals + $" {twoToThreeGoals.Percentage:F}% \n{twoToThreeGoals.Msg}"
+                Msg = msg
             };
         }
 
@@ -100,7 +140,7 @@ public class MatchPredictor: IMatchPredictor
             return new Prediction(winPredictions.Percentage, BetType.HomeWin)   
             { 
                 Qualified = true, 
-                Msg = HomeWin + $" {winPredictions.Percentage:F}% \n{winPredictions.Msg}"
+                Msg = msg
             };
         }
         
@@ -109,7 +149,7 @@ public class MatchPredictor: IMatchPredictor
             return new Prediction(winPredictions.AwayPercentage, BetType.AwayWin)   
             { 
                 Qualified = true, 
-                Msg = AwayWin + $" {winPredictions.AwayPercentage:F}% \n{winPredictions.Msg}"
+                Msg = msg
             };
         }
         //
@@ -227,8 +267,8 @@ public class MatchPredictor: IMatchPredictor
 
         return new Prediction(underThreeGoals.Percentage, BetType.UnderThreeGoals)
         {
-            Qualified = true,
-            Msg = UnderThreeGoals + $" risky {underThreeGoals.Percentage:F}%"
+            Qualified = true, 
+            Msg = msg
         };
     }
 
@@ -465,7 +505,7 @@ public class MatchPredictor: IMatchPredictor
                 prediction with { Qualified = true, Msg = $"{msg} away has low chances" },
 
             { Home: > Sixty, Away: > Sixty } when homeQualification && awayQualification =>
-                prediction with { Qualified = true, Msg = $"{msg} head to head ignored" },
+                prediction with { Qualified = true, Msg = $"{msg} head to head ignored", HeadToHeadIgnored = true },
 
 
             { Home: > 0.28, Away: > Sixty } when (homeQualification || awayQualification) && headToHeadQualification =>
@@ -475,7 +515,7 @@ public class MatchPredictor: IMatchPredictor
                 prediction with { Qualified = true, Msg = $"{msg} away has low chances" },
             
             { Total: > 0.50 } when homeQualification && awayQualification =>
-                prediction with { Qualified = true, Msg = $"{msg} head to head ignored" },
+                prediction with { Qualified = true, Msg = $"{msg} head to head ignored", HeadToHeadIgnored = true },
 
             _ => prediction
         };
@@ -570,22 +610,18 @@ public class MatchPredictor: IMatchPredictor
         return poisson;
     }
   
-    private double GetWinAvg(TeamData teamData, bool atHome = true)
+    private static bool GetTheCorrectResult(Matches match, BetType betType)
     {
-        var result = teamData.HomeTeamWon * 0.25 + teamData.WinAvg * 0.25 + teamData.HomeTeamWon * 0.25 + _current.Home * 0.25;
-
-        if (_headToHeadData.Count < 2)
-            result = teamData.HomeTeamWon * 0.35 + teamData.WinAvg * 0.35 + _current.Home * 0.30;
-
-        if (!atHome)
+        return betType switch
         {
-            result = teamData.AwayTeamWon * 0.25 + teamData.WinAvg * 0.25 + teamData.AwayTeamWon * 0.25 + _current.Away * 0.25;
-
-            if (_headToHeadData.Count < 2)
-                result = teamData.AwayTeamWon * 0.35 + teamData.WinAvg * 0.35 + _current.Away * 0.30;
-        }
-        
-        return result;
+            BetType.OverTwoGoals when match.FTAG + match.FTHG > 2 => true,
+            BetType.BothTeamScoreGoals when match is { FTHG: > 0, FTAG: > 0 } => true,
+            BetType.UnderThreeGoals when match.FTAG + match.FTHG < 3 => true,
+            BetType.TwoToThreeGoals when match.FTAG + match.FTHG is 2 or 3 => true,
+            BetType.HomeWin when match.FTHG > match.FTAG => true,
+            BetType.AwayWin when match.FTHG < match.FTAG => true,
+            _ => false
+        };
     }
 }
 

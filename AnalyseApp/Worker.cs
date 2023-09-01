@@ -21,7 +21,7 @@ public class Worker: BackgroundService
             {
                 using var scope = _scopeFactory.CreateScope();
                 var predictService = scope.ServiceProvider.GetRequiredService<IMatchPredictor>();
-                predictService.Execute();
+                predictService.GetPredictionAccuracyRate("");
                 // Change the match day in each league and than create upcoming matches fixtures
                 //await fileProcessor.CreateUpcomingFixtureBy(stoppingToken);
             }

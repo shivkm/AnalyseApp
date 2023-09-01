@@ -1,0 +1,111 @@
+Div,Date,HomeTeam,AwayTeam,FTHG,FTAG,HTHG,HTAG
+F2,28/08/2023,Annecy,St Etienne,1,1,1,0
+I1,28/08/2023,Salernitana,Udinese,1,1,0,0
+I1,28/08/2023,Cagliari,Inter,0,2,0,2
+SP1,28/08/2023,Getafe,Alaves,1,0,0,0
+SP1,28/08/2023,Vallecano,Ath Madrid,0,7,0,3
+SP2,28/08/2023,Eldense,Eibar,2,1,2,0
+SP2,28/08/2023,Santander,Huesca,0,0,0,0
+D1,27/08/2023,Mainz,Ein Frankfurt,1,1,1,0
+D1,27/08/2023,Bayern Munich,Augsburg,3,1,2,0
+D2,27/08/2023,Karlsruhe,Braunschweig,2,0,1,0
+D2,27/08/2023,Nurnberg,Wehen,2,1,0,0
+D2,27/08/2023,St Pauli,Magdeburg,0,0,0,0
+E0,27/08/2023,Burnley,Aston Villa,1,3,0,2
+E0,27/08/2023,Sheffield United,Man City,1,2,0,0
+E0,27/08/2023,Newcastle,Liverpool,1,2,1,0
+E1,27/08/2023,Watford,Blackburn,0,1,0,0
+F1,27/08/2023,Rennes,Le Havre,2,2,2,1
+F1,27/08/2023,Clermont,Metz,0,1,0,0
+F1,27/08/2023,Montpellier,Reims,1,3,1,2
+F1,27/08/2023,Strasbourg,Toulouse,2,0,0,0
+F1,27/08/2023,Lorient,Lille,4,1,2,0
+F1,27/08/2023,Nice,Lyon,0,0,0,0
+I1,27/08/2023,Fiorentina,Lecce,2,2,2,0
+I1,27/08/2023,Juventus,Bologna,1,1,0,1
+I1,27/08/2023,Lazio,Genoa,0,1,0,1
+I1,27/08/2023,Napoli,Sassuolo,2,0,1,0
+I2,27/08/2023,Catanzaro,Ternana,2,1,1,1
+SP1,27/08/2023,Villarreal,Barcelona,3,4,2,2
+SP1,27/08/2023,Valencia,Osasuna,1,2,0,1
+SP1,27/08/2023,Ath Bilbao,Betis,4,2,3,2
+SP2,27/08/2023,Ferrol,Sp Gijon,2,0,0,0
+SP2,27/08/2023,Amorebieta,Andorra,3,0,1,0
+SP2,27/08/2023,Mirandes,Espanol,0,1,0,0
+SP2,27/08/2023,Leganes,Albacete,2,0,1,0
+D1,26/08/2023,Bochum,Dortmund,1,1,1,0
+D1,26/08/2023,Darmstadt,Union Berlin,1,4,1,3
+D1,26/08/2023,FC Koln,Wolfsburg,1,2,0,0
+D1,26/08/2023,Freiburg,Werder Bremen,1,0,0,0
+D1,26/08/2023,Heidenheim,Hoffenheim,2,3,1,0
+D1,26/08/2023,M'gladbach,Leverkusen,0,3,0,2
+D2,26/08/2023,Elversberg,Fortuna Dusseldorf,0,5,0,3
+D2,26/08/2023,Hansa Rostock,Osnabruck,2,1,1,1
+D2,26/08/2023,Hertha,Greuther Furth,5,0,2,0
+D2,26/08/2023,Hannover,Hamburg,0,1,0,0
+E0,26/08/2023,Bournemouth,Tottenham,0,2,0,1
+E0,26/08/2023,Arsenal,Fulham,2,2,0,1
+E0,26/08/2023,Brentford,Crystal Palace,1,1,1,0
+E0,26/08/2023,Everton,Wolves,0,1,0,0
+E0,26/08/2023,Man United,Nott'm Forest,3,2,1,2
+E0,26/08/2023,Brighton,West Ham,1,3,0,1
+E1,26/08/2023,Birmingham,Plymouth,2,1,1,0
+E1,26/08/2023,Cardiff,Sheffield Weds,2,1,0,0
+E1,26/08/2023,Coventry,Sunderland,0,0,0,0
+E1,26/08/2023,Huddersfield,Norwich,0,4,0,2
+E1,26/08/2023,Ipswich,Leeds,3,4,2,3
+E1,26/08/2023,Millwall,Stoke,1,0,1,0
+E1,26/08/2023,Preston,Swansea,2,1,0,1
+E1,26/08/2023,Rotherham,Leicester,1,2,0,1
+E1,26/08/2023,Southampton,QPR,2,1,1,1
+E1,26/08/2023,West Brom,Middlesbrough,4,2,2,1
+E2,26/08/2023,Bristol Rvs,Wycombe,1,2,0,1
+E2,26/08/2023,Burton,Bolton,1,1,0,0
+E2,26/08/2023,Cheltenham,Northampton,0,1,0,0
+E2,26/08/2023,Exeter,Reading,2,1,1,1
+E2,26/08/2023,Fleetwood Town,Shrewsbury,0,1,0,1
+E2,26/08/2023,Leyton Orient,Cambridge,2,0,1,0
+E2,26/08/2023,Lincoln,Blackpool,3,0,2,0
+E2,26/08/2023,Oxford,Charlton,2,1,1,0
+E2,26/08/2023,Peterboro,Derby,2,4,1,4
+E2,26/08/2023,Port Vale,Carlisle,1,0,0,0
+E2,26/08/2023,Stevenage,Portsmouth,0,0,0,0
+E2,26/08/2023,Wigan,Barnsley,0,2,0,1
+F1,26/08/2023,Marseille,Brest,2,0,1,0
+F1,26/08/2023,Paris SG,Lens,3,1,1,0
+F2,26/08/2023,Bordeaux,Amiens,2,0,0,0
+F2,26/08/2023,Auxerre,Grenoble,0,0,0,0
+F2,26/08/2023,Bastia,Troyes,3,2,0,2
+F2,26/08/2023,Caen,Ajaccio,3,0,2,0
+F2,26/08/2023,Dunkerque,Angers,0,1,0,0
+F2,26/08/2023,Guingamp,Pau FC,4,0,2,0
+F2,26/08/2023,Paris FC,Concarneau,3,0,1,0
+F2,26/08/2023,Quevilly Rouen,Laval,0,0,0,0
+F2,26/08/2023,Rodez,Valenciennes,0,1,0,1
+I1,26/08/2023,Frosinone,Atalanta,2,1,2,0
+I1,26/08/2023,Monza,Empoli,2,0,1,0
+I1,26/08/2023,Milan,Torino,4,1,3,1
+I1,26/08/2023,Verona,Roma,2,1,2,0
+I2,26/08/2023,Venezia,Cosenza,1,1,0,1
+I2,26/08/2023,Como,Reggiana,2,2,1,0
+I2,26/08/2023,Cremonese,Bari,0,1,0,1
+I2,26/08/2023,FeralpiSalo,Sudtirol,0,2,0,1
+I2,26/08/2023,Modena,Ascoli,1,0,0,0
+I2,26/08/2023,Parma,Cittadella,2,0,1,0
+SP1,26/08/2023,Cadiz,Almeria,1,1,0,0
+SP1,26/08/2023,Granada,Mallorca,3,2,1,1
+SP1,26/08/2023,Sevilla,Girona,1,2,1,1
+SP2,26/08/2023,Burgos,Oviedo,1,0,1,0
+SP2,26/08/2023,Tenerife,Zaragoza,0,1,0,0
+SP2,26/08/2023,Elche,Villarreal B,1,0,1,0
+SP2,26/08/2023,Valladolid,Alcorcon,0,2,0,1
+D1,25/08/2023,RB Leipzig,Stuttgart,5,1,0,1
+D2,25/08/2023,Paderborn,Kaiserslautern,1,2,0,0
+D2,25/08/2023,Schalke 04,Holstein Kiel,0,2,0,1
+E0,25/08/2023,Chelsea,Luton,3,0,1,0
+E1,25/08/2023,Hull,Bristol City,1,1,1,0
+F1,25/08/2023,Nantes,Monaco,3,3,2,1
+I2,25/08/2023,Sampdoria,Pisa,0,2,0,1
+SP1,25/08/2023,Las Palmas,Sociedad,0,0,0,0
+SP1,25/08/2023,Celta,Real Madrid,0,1,0,0
+SP2,25/08/2023,Cartagena,Levante,0,1,0,1
