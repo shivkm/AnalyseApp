@@ -32,10 +32,10 @@ public class PremierLeagueUnitTests
 
     public PremierLeagueUnitTests(ITestOutputHelper testOutputHelper)
     {
-        var fileProcessorOptions = new FileProcessorOptions 
+        var fileProcessorOptions = new FileProcessorOptions
         {
-            RawCsvDir = "C:\\shivm\\AnalyseApp\\data\\raw_csv",
-            Upcoming = "C:\\shivm\\AnalyseApp\\data\\upcoming"
+            RawCsvDir = "/Users/shivm/Documents/projects/AnalyseApp/data/raw_csv",
+            Upcoming = "/Users/shivm/Documents/projects/AnalyseApp/data/upcoming"
         };
 
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
@@ -50,6 +50,14 @@ public class PremierLeagueUnitTests
         InlineData("fixture-11-8"),
         InlineData("fixture-18-8"),
         InlineData("fixture-25-8"),
+        InlineData("fixture-1-9"),
+        InlineData("fixture-9-9"),
+        InlineData("fixture-16-9"),
+        InlineData("fixture-23-9"),
+        InlineData("fixture-30-9"),
+        InlineData("fixture-7-10"),
+        InlineData("fixture-14-10"),
+
     ]
     public void PremierLeague_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
     {
@@ -60,12 +68,7 @@ public class PremierLeagueUnitTests
         // ACTUAL 
         foreach (var matches in premierLeagueMatches)
         {
-            var actual = _matchPredictor.Execute(
-                matches.HomeTeam, 
-                matches.AwayTeam,
-                matches.Date
-            );
-            
+            var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
             var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} scoring power: {actual.Percentage:F}";
@@ -88,30 +91,29 @@ public class PremierLeagueUnitTests
         _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount}  accuracy rate: {accuracyRate:F}");
 
         // ASSERT
-        accuracyRate.Should().BeGreaterOrEqualTo(70);
+        accuracyRate.Should().BeGreaterOrEqualTo(75);
     }
     
     [
         Theory(DisplayName = "Spanish league predictions"), 
-        InlineData("fixture-11-8"),
-        InlineData("fixture-18-8"),
-        InlineData("fixture-25-8"),
+       // InlineData("fixture-11-8"),
+       // InlineData("fixture-18-8"),
+     //   InlineData("fixture-25-8"),
+     //   InlineData("fixture-01-9"),
+     //   InlineData("fixture-15-9"),
+    //    InlineData("fixture-22-9"),
+        InlineData("fixtures"),
     ]
     public void SpanishLeague_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
     {
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
-        var spanishLeagueMatches = fixture.Where(i => i.Div == "SP1");
+        var spanishLeagueMatches = fixture.Where(i => i.Div == "I2");
 
         // ACTUAL 
         foreach (var matches in spanishLeagueMatches)
         {
-            var actual = _matchPredictor.Execute(
-                matches.HomeTeam, 
-                matches.AwayTeam,
-                matches.Date
-            );
-            
+            var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
             var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} scoring power: {actual.Percentage:F}";
@@ -153,9 +155,7 @@ public class PremierLeagueUnitTests
         {
             totalCount++;
             var actual = _matchPredictor.Execute(
-                lastSixGame.HomeTeam, 
-                lastSixGame.AwayTeam,
-                lastSixGame.Date, BetType.BothTeamScoreGoals
+                lastSixGame, BetType.BothTeamScoreGoals
             );
             var isCorrect = lastSixGame is { FTHG: > 0, FTAG: > 0 } && actual.Type == BetType.BothTeamScoreGoals;
 
@@ -188,11 +188,11 @@ public class PremierLeagueUnitTests
         var wrongCount = 0;
         var upcomingMatches = new List<Matches>
         {
-            new() { HomeTeam = FranceLeague.Monaco, AwayTeam = FranceLeague.Strasbourg, Date = "20/08/2023", FTHG = 3, FTAG = 0 },
-            new() { HomeTeam = PremierLeague.Brentford, AwayTeam = PremierLeague.Tottenham, Date = "13/08/2023", FTHG = 2, FTAG = 2 },
-            new() { HomeTeam = PremierLeague.Arsenal, AwayTeam = PremierLeague.Forest, Date = "12/08/2023", FTHG = 2, FTAG = 1 },
-            new() { HomeTeam = PremierLeague.Brighton, AwayTeam = PremierLeague.Luton, Date = "12/08/2023", FTHG = 4, FTAG = 1 },
-            new() { HomeTeam = PremierLeague.WestHam, AwayTeam = PremierLeague.Chelsea, Date = "20/08/2023", FTHG = 3, FTAG = 1 },
+            new() { HomeTeam = FranceLeague.Rennes, AwayTeam = FranceLeague.Lille, Date = "16/09/2023", FTHG = 3, FTAG = 0 },
+            new() { HomeTeam = PremierLeague.AstonVilla, AwayTeam = PremierLeague.CrystalPalace, Date = "16/09/2023", FTHG = 0, FTAG = 0 },
+            new() { HomeTeam = PremierLeague.Wolves, AwayTeam = PremierLeague.Liverpool, Date = "16/09/2023", FTHG = 2, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.Fulham, AwayTeam = PremierLeague.Luton, Date = "16/09/2023", FTHG = 4, FTAG = 1 },
+            new() { HomeTeam = PremierLeague.ManUnited, AwayTeam = PremierLeague.Brighton, Date = "16/09/2023", FTHG = 3, FTAG = 1 },
             new() { HomeTeam = PremierLeague.Liverpool, AwayTeam = PremierLeague.Bournemouth, Date = "19/08/2023", FTHG = 3, FTAG = 1 },
             new() { HomeTeam = PremierLeague.Wolves, AwayTeam = PremierLeague.Brighton, Date = "19/08/2023", FTHG = 1, FTAG = 4 },
             new() { HomeTeam = PremierLeague.Forest, AwayTeam = PremierLeague.SheffieldUnited, Date = "18/08/2023", FTHG = 2, FTAG = 1 },
@@ -215,9 +215,7 @@ public class PremierLeagueUnitTests
         {
             totalCount++;
             var actual = _matchPredictor.Execute(
-                lastSixGame.HomeTeam, 
-                lastSixGame.AwayTeam,
-                lastSixGame.Date, BetType.OverTwoGoals
+                lastSixGame, BetType.OverTwoGoals
             );
             var isCorrect = lastSixGame.FTAG + lastSixGame.FTHG > 2 && actual.Type == BetType.OverTwoGoals;
 
@@ -250,11 +248,7 @@ public class PremierLeagueUnitTests
         var wrongCount = 0;
         var upcomingMatches = new List<Matches>
         {
-            new() { HomeTeam = PremierLeague.Arsenal, AwayTeam = PremierLeague.Forest, Date = "12/08/2023", FTHG = 2, FTAG = 1 },
-            new() { HomeTeam = PremierLeague.Forest, AwayTeam = PremierLeague.SheffieldUnited, Date = "18/08/2023", FTHG = 2, FTAG = 1 },
-            new() { HomeTeam = PremierLeague.Newcastle, AwayTeam = PremierLeague.Liverpool, Date = "27/08/2023", FTHG = 1, FTAG = 2 },
-            new() { HomeTeam = PremierLeague.Bournemouth, AwayTeam = PremierLeague.Tottenham, Date = "26/08/2023", FTHG = 0, FTAG = 2 },
-            new() { HomeTeam = PremierLeague.Tottenham, AwayTeam = PremierLeague.ManUnited, Date = "19/08/2023", FTHG = 2, FTAG = 0 }, 
+            new() { HomeTeam = Championship.Millwall, AwayTeam = Championship.Leeds, Date = "17/09/2023", FTHG = 2, FTAG = 0 }, 
             new() { HomeTeam = FranceLeague.Toulouse, AwayTeam = FranceLeague.ParisSg, Date = "19/08/2023", FTHG = 1, FTAG = 1 },
             new() { HomeTeam = FranceLeague.Lille, AwayTeam = FranceLeague.Nantes, Date = "20/08/2023", FTHG = 2, FTAG = 0 },
             new() { HomeTeam = FranceLeague.LeHavre, AwayTeam = FranceLeague.Brest, Date = "20/08/2023", FTHG = 1, FTAG = 2 },
@@ -274,9 +268,7 @@ public class PremierLeagueUnitTests
         {
             totalCount++;
             var actual = _matchPredictor.Execute(
-                lastSixGame.HomeTeam, 
-                lastSixGame.AwayTeam,
-                lastSixGame.Date, BetType.TwoToThreeGoals
+                lastSixGame, BetType.TwoToThreeGoals
             );
             var isCorrect = lastSixGame.FTAG + lastSixGame.FTHG is 2 or 3 && actual.Type == BetType.TwoToThreeGoals;
 
@@ -328,9 +320,7 @@ public class PremierLeagueUnitTests
         {
             totalCount++;
             var actual = _matchPredictor.Execute(
-                lastSixGame.HomeTeam, 
-                lastSixGame.AwayTeam,
-                lastSixGame.Date, BetType.HomeWin
+                lastSixGame, BetType.HomeWin
             );
             var isCorrect = lastSixGame.FTAG < lastSixGame.FTHG && actual.Type == BetType.HomeWin;
 

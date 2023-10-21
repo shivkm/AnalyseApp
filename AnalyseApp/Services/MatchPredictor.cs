@@ -1,4 +1,6 @@
-﻿using AnalyseApp.Enums;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
+using AnalyseApp.Enums;
 using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
@@ -32,7 +34,7 @@ public class MatchPredictor: IMatchPredictor
     
     public MatchPredictor(IFileProcessor fileProcessor, IPoissonService poissonService, IDataService dataService)
     {
-        _historicalMatches = fileProcessor.GetHistoricalMatchesBy().AssignSeasonsToMatches();
+        _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
         _poissonService = poissonService;
         _dataService = dataService;
         _fileProcessor = fileProcessor;
@@ -50,6 +52,12 @@ public class MatchPredictor: IMatchPredictor
         _fileProcessor.CreateFixtureBy("11/08/23", "14/08/23");
         _fileProcessor.CreateFixtureBy("18/08/23", "21/08/23");
         _fileProcessor.CreateFixtureBy("25/08/23", "28/08/23");
+        _fileProcessor.CreateFixtureBy("09/09/23", "12/09/23");
+        _fileProcessor.CreateFixtureBy("16/09/23", "19/09/23");
+        _fileProcessor.CreateFixtureBy("23/09/23", "26/09/23");
+        _fileProcessor.CreateFixtureBy("30/09/23", "03/10/23");
+        _fileProcessor.CreateFixtureBy("07/10/23", "10/10/23");
+        _fileProcessor.CreateFixtureBy("14/10/23", "17/09/23");
         var accuracyRate = PredictAccuracyRate(fixtureName);
         return accuracyRate;
     }
@@ -59,7 +67,7 @@ public class MatchPredictor: IMatchPredictor
         var upcoming = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         foreach (var game in upcoming)
         {
-            var prediction = Execute(game.HomeTeam, game.AwayTeam, game.Date);
+            var prediction = Execute(game);
             
             if (!prediction.Qualified) continue;
 
@@ -80,9 +88,9 @@ public class MatchPredictor: IMatchPredictor
         return accuracyRate;
     }
 
-    public Prediction Execute(string home, string away, string playedOn, BetType? betType = BetType.Unknown)
+    public Prediction Execute(Matches matches, BetType? betType = BetType.Unknown)
     {
-        InitializeData(home, away, playedOn);
+        InitializeData(matches);
 
         var specificBetType = betType is not BetType.Unknown;
         var bothTeamScoreGoal = CurrentBothTeamScoreGoalChances();
@@ -152,118 +160,6 @@ public class MatchPredictor: IMatchPredictor
                 Msg = msg
             };
         }
-        //
-        // if (twoToThreeGoals is { Qualified: true } &&
-        //     betType != BetType.BothTeamScoreGoals &&
-        //     (!underThreeGoals.Qualified || underThreeGoals.Qualified && twoToThreeGoals.Percentage >= underThreeGoals.Percentage) 
-        //     && !homeWinPossible && !awayWinPossible)
-        // {
-        //     return new Prediction(twoToThreeGoals.Percentage, BetType.TwoToThreeGoals)
-        //     { 
-        //         Qualified = true, 
-        //         Msg = TwoToThreeGoals + $" {twoToThreeGoals.Percentage:F}%"
-        //     };
-        // }
-        //         
-        // if (underThreeGoals is { Qualified: true, Percentage: >= 0.55 } &&
-        //     !winPredictions.Qualified &&
-        //     betType != BetType.BothTeamScoreGoals &&
-        //     _homeTeamData.LastThreeMatchResult != BetType.UnderThreeGoals &&
-        //     _awayTeamData.LastThreeMatchResult != BetType.UnderThreeGoals && !homeWinPossible && !awayWinPossible)
-        // {
-        //     return new Prediction(underThreeGoals.Percentage, BetType.UnderThreeGoals)
-        //     { 
-        //         Qualified = true, 
-        //         Msg = UnderThreeGoals + $" {underThreeGoals.Percentage:F}%"
-        //     };;
-        // }
-        //
-        // if (
-        //     betType != BetType.BothTeamScoreGoals && winPredictions is { Qualified: true, isHome: true, HomePercentage: >= 0.50 } ||
-        //     (winPredictions.HomePercentage >= 1.0 && winPredictions.HomePercentage > winPredictions.AwayPercentage))
-        // {
-        //     return new Prediction(winPredictions.HomePercentage, BetType.HomeWin)
-        //     {
-        //         Qualified = true,
-        //         Msg = HomeWin + $" {winPredictions.HomePercentage:F}%"
-        //     };
-        // }
-        //
-        // if (
-        //     betType != BetType.BothTeamScoreGoals && winPredictions is { Qualified: true, isHome: false, AwayPercentage: >= 0.50 } ||
-        //     (winPredictions.AwayPercentage >= 1.0 && winPredictions.AwayPercentage > winPredictions.HomePercentage))
-        // {
-        //     return new Prediction(winPredictions.AwayPercentage, BetType.AwayWin)
-        //     {
-        //         Qualified = true,
-        //         Msg = AwayWin + $" {winPredictions.HomePercentage:F}%"
-        //     };
-        // }
-        //
-        // // if the code reach this area that means all previous prediction failed to approve
-        // if (
-        //     betType != BetType.BothTeamScoreGoals &&
-        //     _homeTeamData.HomeScoringPower > 0.30 && _awayTeamData.AwayScoringPower > 0.30 &&
-        //     (overTwoGoals.Percentage > bothTeamScoreGoal.Percentage || overTwoGoals.Percentage <= bothTeamScoreGoal.Percentage && !string.IsNullOrEmpty(bothTeamScoreGoal.Msg)) &&
-        //     overTwoGoals.Percentage > underThreeGoals.Percentage &&
-        //     _homeTeamData.UnderTwoScoredGames <= 0.50 && _awayTeamData.UnderTwoScoredGames <= 0.50 && _homeTeamData.TwoToThreeGoalsGames <= 0.50 && _awayTeamData.TwoToThreeGoalsGames <= 0.50 &&
-        //     (overTwoGoals.Percentage > twoToThreeGoals.Percentage ||
-        //      _homeTeamData.OverScoredGames >= 0.50 && _awayTeamData.OverScoredGames >= 0.50 && _headToHeadData.OverScoredGames >= 0.50 && _homeTeamData.ScoringPower >= 0.62 && _awayTeamData.ScoringPower >= 0.62))
-        // {
-        //     return new Prediction(overTwoGoals.Percentage, BetType.OverTwoGoals)
-        //     {
-        //         Qualified = true,
-        //         Msg = OverTwoGoals + $" risky: {overTwoGoals.Percentage:F}%"
-        //     };
-        // }
-        //
-        // if (
-        //     betType != BetType.BothTeamScoreGoals && bothTeamScoreGoal.Qualified && bothTeamScoreGoal.Percentage > twoToThreeGoals.Percentage && 
-        //     _homeTeamData.BothTeamScoredGames >= 0.50 && _awayTeamData.BothTeamScoredGames >= 0.50)
-        // {
-        //     return new Prediction(bothTeamScoreGoal.Percentage, BetType.BothTeamScoreGoals)    
-        //     {
-        //         Qualified = true,
-        //         Msg = BothTeamScore + $" risky {bothTeamScoreGoal.Percentage:F}%"
-        //     };
-        // }    
-        //
-        // if (
-        //     betType != BetType.BothTeamScoreGoals && (twoToThreeGoals is { Qualified: true, Percentage: > 0.55 } || twoToThreeGoals.Percentage >= underThreeGoals.Percentage) &&
-        //     _homeTeamData.HomeScoringPower >= 0.20 && _awayTeamData.AwayScoringPower >= 0.20)
-        // {
-        //     return new Prediction(twoToThreeGoals.Percentage, BetType.TwoToThreeGoals)
-        //     {
-        //         Qualified = true,
-        //         Msg = TwoToThreeGoals + $" risky {twoToThreeGoals.Percentage:F}%"
-        //     };
-        // }
-        //
-        // if ( 
-        //     betType != BetType.BothTeamScoreGoals && _homeTeamData.ScoringPower > _awayTeamData.ScoringPower &&
-        //     _homeTeamData.HomeScoringPower > _awayTeamData.AwayScoringPower &&
-        //     _homeTeamData.WinAvg > _awayTeamData.WinAvg &&
-        //     (_headToHeadData.Count >= 2 && _headToHeadData.HomeTeamWon > _headToHeadData.AwayTeamWon))
-        // {
-        //     return new Prediction(winPredictions.HomePercentage, BetType.HomeWin)
-        //     {
-        //         Qualified = true,
-        //         Msg = HomeWin + $" risky {winPredictions.HomePercentage:F}%"
-        //     };
-        // }
-        //
-        // if (
-        //     betType != BetType.BothTeamScoreGoals && _awayTeamData.ScoringPower > _homeTeamData.ScoringPower &&
-        //     _awayTeamData.HomeScoringPower > _homeTeamData.AwayScoringPower &&
-        //     _awayTeamData.WinAvg > _homeTeamData.WinAvg &&
-        //     (_headToHeadData.Count >= 2 && _headToHeadData.AwayTeamWon > _headToHeadData.HomeTeamWon))
-        // {
-        //     return new Prediction(winPredictions.AwayPercentage, BetType.AwayWin)
-        //     {
-        //         Qualified = true,
-        //         Msg = AwayWin + $" risky {winPredictions.AwayPercentage:F}%"
-        //     };
-        // }
 
         return new Prediction(underThreeGoals.Percentage, BetType.UnderThreeGoals)
         {
@@ -272,21 +168,35 @@ public class MatchPredictor: IMatchPredictor
         };
     }
 
-    private void InitializeData(string home, string away, string playedOn)
+    private static DateTime GetDateTime(string date)
     {
-        var playedOnDateTime = Convert.ToDateTime(playedOn);
+        if (DateTime.TryParseExact(date, "dd/MM/yy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedDate) ||
+            DateTime.TryParseExact(date, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate))
+        {
+            return parsedDate;
+        }
+        return DateTime.MinValue;
+    }
+
+    private void InitializeData(Matches matches)
+    {
+        var playedOnDateTime = GetDateTime(matches.Date);
         var historicalData = _historicalMatches.OrderMatchesBy(playedOnDateTime).ToList();
         
-        _headToHeadData = _dataService.GetHeadToHeadDataBy(home, away, playedOn);
-        _homeTeamData = _dataService.GetTeamDataBy(home, historicalData);
-        _awayTeamData = _dataService.GetTeamDataBy(away, historicalData);
-        _current = CalculatePoissonProbability(home, away, playedOn, true);
+        _headToHeadData = _dataService.GetHeadToHeadDataBy(matches.HomeTeam, matches.AwayTeam, matches.Date);
+        _homeTeamData = _dataService.GetTeamDataBy(matches.HomeTeam, historicalData);
+        _awayTeamData = _dataService.GetTeamDataBy(matches.AwayTeam, historicalData);
+        _current = CalculatePoissonProbability(matches.HomeTeam, matches.AwayTeam, matches.Date, true);
     }
     
     private Prediction CurrentBothTeamScoreGoalChances()
     { 
         var msg = "";
         var scoringPower = _homeTeamData.GetScoreProbability(_awayTeamData);
+
+        var homeScoringPower = _homeTeamData.HomeScoringPower + _homeTeamData.HomeConcededPower;
+        var awayScoringPower = _awayTeamData.AwayScoringPower + _awayTeamData.AwayConcededPower;
+        
         var prediction = new Prediction(scoringPower.Total, BetType.BothTeamScoreGoals);
         
         if (_homeTeamData.LastThreeMatchResult == BetType.BothTeamScoreGoals)
@@ -297,6 +207,11 @@ public class MatchPredictor: IMatchPredictor
 
         if (_homeTeamData.HomeScoringPower <= 0.28 && _awayTeamData.AwayScoringPower <= 0.28)
             return prediction with { Qualified = false, Msg = "scoring power is too low!" };
+
+        if (homeScoringPower > 0.60 && awayScoringPower > 0.60 &&
+            _homeTeamData.BothTeamScoredGames > 0.60 && _awayTeamData.BothTeamScoredGames > 0.60)
+            return prediction with { Qualified = true };
+
 
         var homeQualification = _homeTeamData is
         {

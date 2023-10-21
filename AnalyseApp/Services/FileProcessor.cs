@@ -44,13 +44,26 @@ public class FileProcessor: IFileProcessor
 
     public void CreateFixtureBy(string startDate, string endDate)
     {
-        var startDateTime = Convert.ToDateTime(startDate);
-        var endDateTime = Convert.ToDateTime(endDate);
+        // Parse the start date using the expected format "dd/MM/yy"
+        var startDateTime = DateTime.ParseExact(startDate, "dd/MM/yy", CultureInfo.InvariantCulture);
+
+        // Parse the end date using the expected format "dd/MM/yy"
+        var endDateTime = DateTime.ParseExact(endDate, "dd/MM/yy", CultureInfo.InvariantCulture);
+
         var historicalData = GetHistoricalMatchesBy();
 
         var selectedMatches = historicalData
             .Where(match => IsWithinDateRange(match, startDateTime, endDateTime))
-            .OrderByDescending(match => Convert.ToDateTime(match.Date))
+            .OrderByDescending(match =>
+            {
+                DateTime parsedDate;
+                if (DateTime.TryParseExact(match.Date, "dd/MM/yy", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate) ||
+                    DateTime.TryParseExact(match.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate))
+                {
+                    return parsedDate;
+                }
+                return DateTime.MinValue;
+            })
             .ToList();
 
         WriteSelectedMatchesToCsv(selectedMatches, $"fixture-{startDateTime.Date.Day}-{startDateTime.Date.Month}");
@@ -58,7 +71,7 @@ public class FileProcessor: IFileProcessor
 
     private static bool IsWithinDateRange(Matches match, DateTime startDate, DateTime endDate)
     {
-        var matchStartDate = Convert.ToDateTime(match.Date);
+        var matchStartDate = DateTime.ParseExact(match.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
         return matchStartDate >= startDate && matchStartDate <= endDate;
     }
 

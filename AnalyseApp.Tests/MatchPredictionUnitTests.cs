@@ -13,12 +13,12 @@ public class MatchPredictionUnitTests
 
     public MatchPredictionUnitTests(ITestOutputHelper testOutputHelper)
     {
-        var fileProcessorOptions = new FileProcessorOptions 
+        var fileProcessorOptions = new FileProcessorOptions
         {
-            RawCsvDir = "C:\\shivm\\AnalyseApp\\data\\raw_csv",
-            Upcoming = "C:\\shivm\\AnalyseApp\\data\\upcoming"
+            RawCsvDir = "/Users/shivm/Documents/projects/AnalyseApp/data/raw_csv",
+            Upcoming = "/Users/shivm/Documents/projects/AnalyseApp/data/upcoming"
         };
-        
+
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         var fileProcessor = new FileProcessor(optionsWrapper);
         

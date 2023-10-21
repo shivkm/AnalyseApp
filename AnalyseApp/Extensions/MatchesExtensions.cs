@@ -49,6 +49,8 @@ internal static class MatchesExtensions
 
     public static Season GetSeason(this Matches match)
     {
+        if (match.Date is null) return Season.Unknown;
+
         var matchDate = Convert.ToDateTime(match.Date);
 
         return matchDate.Month switch
@@ -271,11 +273,11 @@ internal static class MatchesExtensions
 
     public static Percentage GetScoreProbability(this TeamData homeTeam, TeamData awayTeam)
     {
-        var homeScoringPower = homeTeam.ScoringPower.GetValueOrDefault() * Forty +
-                               homeTeam.HomeScoringPower.GetValueOrDefault() * Sixty;
+        var homeScoringPower = homeTeam.HomeScoringPower.GetValueOrDefault() * 0.50 +
+                               homeTeam.HomeConcededPower.GetValueOrDefault() * 0.50;
         
-        var awayScoringPower = awayTeam.ScoringPower.GetValueOrDefault() * Forty +
-                               awayTeam.AwayScoringPower.GetValueOrDefault() * Sixty;
+        var awayScoringPower = awayTeam.AwayScoringPower.GetValueOrDefault() * 0.50 +
+                               awayTeam.AwayConcededPower.GetValueOrDefault() * 0.50;
 
         var total = homeScoringPower * 0.50 + awayScoringPower * 0.50;
         

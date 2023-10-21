@@ -11,7 +11,8 @@ public record TeamAverage(
 
 public record HeadToHeadData(
     int Count,
-    double? ScoreProbability,
+    double HomeScoringPower,
+    double AwayScoringPower,
     double OverScoredGames,
     double UnderTwoScoredGames,
     double TwoToThreeGoalsGames,
@@ -28,10 +29,14 @@ public record HeadToHeadData(
 
 
 public record TeamData(
+    Goals Goals,
     int GamesCount,
     double? ScoringPower,
+    double? ConcededPower,
     double? HomeScoringPower,
+    double? HomeConcededPower,
     double? AwayScoringPower,
+    double? AwayConcededPower,
     double OverScoredGames,
     double UnderTwoScoredGames,
     double TwoToThreeGoalsGames,
@@ -49,5 +54,6 @@ public record TeamData(
     public Suggestion Suggestion { get; set; } = default!;
 }
 
+public record Goals(int Scored, int Conceded, int HomeScoored, int HomeConceded, int AwayScored, int AwayConceded);
 
 public record Suggestion(string Name, double Value);
