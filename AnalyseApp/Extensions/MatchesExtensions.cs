@@ -5,36 +5,18 @@ namespace AnalyseApp.Extensions;
 
 internal static class MatchesExtensions
 {
-    /// <summary>
-    /// Query last ten matches of the given team name
-    /// </summary>
-    /// <param name="matches">Historical matches</param>
-    /// <param name="team">team name</param>
-    /// <param name="lastMatchDateTime">last played match date</param>
-    /// <returns>Filter Matches by team name and order by Date in descending order</returns>
-    internal static List<Matches> GetLastTenGamesBy(this List<Matches> matches, string team, DateTime lastMatchDateTime)
-    {
-        matches = matches.Where(i =>
-                    {
-                        var matchDate = Convert.ToDateTime(i.Date);
-                        return matchDate < lastMatchDateTime;
-                    })
-            .Where(item => item.HomeTeam == team || item.AwayTeam == team)
-            .OrderByDescending(i => Convert.ToDateTime(i.Date))
-            .Take(12)
-            .ToList();
-        
-        return matches;
-    }
+    private const double TwentyFactor =  0.20;
+    private const double ThirtyFactor =  0.30;
+    private const double Forty =  0.40;
+    private const double Sixty =  0.60;
     
-    internal static List<Matches> GetCurrentSeasonGamesBy(this List<Matches> matches, List<string> leagues, DateTime startDate, DateTime endDate)
+    internal static IEnumerable<Matches> OrderMatchesBy(this List<Matches> matches, DateTime playDate)
     {
         matches = matches.Where(i =>
             {
                 var matchDate = Convert.ToDateTime(i.Date);
-                return matchDate >= startDate && matchDate <= endDate;
+                return matchDate < playDate;
             })
-            .Where(item => leagues.Contains(item.Div))
             .OrderByDescending(i => Convert.ToDateTime(i.Date))
             .ToList();
 
@@ -67,6 +49,8 @@ internal static class MatchesExtensions
 
     public static Season GetSeason(this Matches match)
     {
+        if (match.Date is null) return Season.Unknown;
+
         var matchDate = Convert.ToDateTime(match.Date);
 
         return matchDate.Month switch
@@ -77,30 +61,6 @@ internal static class MatchesExtensions
             >= 9 and <= 11 => Season.Autumn,
             
         };
-    }
-
-    internal static List<Matches> AssignBreaksToMatches(this List<Matches> historicalMatches)
-    {
-        var teamFirstTwoMatches = new Dictionary<string, string>();
-
-        var orderedSummerGames = historicalMatches
-            .Where(i => i.Season == Season.Summer)
-            .OrderBy(i => Convert.ToDateTime(i.Date))
-            .ToList();
-        
-        foreach (var match in orderedSummerGames)
-        {
-            if (teamFirstTwoMatches.Keys.Count(i => i == match.HomeTeam) +
-                teamFirstTwoMatches.Values.Count(i => i == match.HomeTeam) >= 3 &&
-                teamFirstTwoMatches.Keys.Count(i => i == match.AwayTeam) +
-                teamFirstTwoMatches.Values.Count(i => i == match.AwayTeam) >= 3) 
-                continue;
-            
-            match.AfterSummerBreak = true;
-            teamFirstTwoMatches.Add(match.HomeTeam, match.AwayTeam);
-        }
-
-        return historicalMatches;
     }
 
     internal static IEnumerable<Matches> GetHeadToHeadMatchesBy(this List<Matches> premierLeagueGames, string homeTeam, string awayTeam, string playedOn)
@@ -118,17 +78,6 @@ internal static class MatchesExtensions
         return homeMatches;
     }
     
-    internal static double GetScoredGoalAverageBy(this List<Matches> matches, string teamName)
-    {
-        var homeSideMatches = matches.Where(ii => ii.HomeTeam == teamName);
-        var homeSideGoals = homeSideMatches.Sum(i => i.FTHG);
-        
-        var awaySideMatches = matches.Where(ii => ii.AwayTeam == teamName);
-        var awaySideGoals = awaySideMatches.Sum(i => i.FTAG);
-        var value = (double)(homeSideGoals + awaySideGoals) / matches.Count;
-
-        return value;
-    }
     
     internal static TeamAverage GetTeamAverageBy(this List<Matches> matches, string teamName)
     {
@@ -322,78 +271,65 @@ internal static class MatchesExtensions
         return (scores, conceded, totalGoals);
     }
 
-
-    internal static double GetConcededGoalAverageBy(this List<Matches> matches, string teamName)
+    public static Percentage GetScoreProbability(this TeamData homeTeam, TeamData awayTeam)
     {
-        var homeSideGoals = matches
-            .Where(ii => ii.HomeTeam == teamName)
-            .Sum(i => i.FTAG);
+        var homeScoringPower = homeTeam.HomeScoringPower.GetValueOrDefault() * 0.50 +
+                               homeTeam.HomeConcededPower.GetValueOrDefault() * 0.50;
         
-        var awaySideGoals = matches
-            .Where(ii => ii.AwayTeam == teamName)
-            .Sum(i => i.FTHG);
-        
-        var value = (double)(homeSideGoals + awaySideGoals) / matches.Count;
+        var awayScoringPower = awayTeam.AwayScoringPower.GetValueOrDefault() * 0.50 +
+                               awayTeam.AwayConcededPower.GetValueOrDefault() * 0.50;
 
-        return value;
+        var total = homeScoringPower * 0.50 + awayScoringPower * 0.50;
+        
+        return new Percentage(total, homeScoringPower, awayScoringPower);
     }
     
-    internal static double GetAwayGoalScoredAverageBy(this List<Matches> matches, string teamName)
+    public static Percentage GetBothScoredGameProbability(this TeamData homeTeam, TeamData awayTeam)
     {
-        var awaySideMatches = matches.Where(ii => ii.AwayTeam == teamName);
-        var awaySideGoals = awaySideMatches.Sum(i => i.FTAG);
+        var homeScoringPower = homeTeam.BothTeamScoredGames * Forty +
+                               homeTeam.TeamScoredGames * Sixty;
         
-        var value = (double)awaySideGoals / matches.Count;
+        var awayScoringPower = awayTeam.BothTeamScoredGames * Forty +
+                               awayTeam.TeamScoredGames * Sixty;
 
-        return value;
+        var total = homeScoringPower * 0.50 + awayScoringPower * 0.50;
+        
+        return new Percentage(total, homeScoringPower, awayScoringPower);
     }
     
-    internal static double GetHomeGoalScoredAverageBy(this List<Matches> matches, string teamName)
+    public static double GetOverTwoGoalGameProbability(this TeamData homeTeam, TeamData awayTeam)
     {
-        var homeSideMatches = matches.Where(ii => ii.HomeTeam == teamName);
-        var homeSideGoals = homeSideMatches.Sum(i => i.FTHG);
-        
-        var value = (double)homeSideGoals / matches.Count;
+        var scoreProbability = 
+            homeTeam.OverScoredGames * ThirtyFactor + homeTeam.TeamScoredGames * TwentyFactor +
+            awayTeam.OverScoredGames * ThirtyFactor + awayTeam.TeamScoredGames * TwentyFactor;
 
-        return value;
-    }
-       
-    internal static double GetHomeGoalConcededAverageBy(this List<Matches> matches, string teamName)
-    {
-        var homeSideMatches = matches.Where(ii => ii.HomeTeam == teamName);
-        var homeSideGoals = homeSideMatches.Sum(i => i.FTAG);
-       
-        var value = (double)homeSideGoals / matches.Count;
-
-        return value;
-    }
-       
-    internal static double GetAwayGoalConcededAverageBy(this List<Matches> matches, string teamName)
-    {
-        var homeSideMatches = matches.Where(ii => ii.AwayTeam == teamName);
-        var homeSideGoals = homeSideMatches.Sum(i => i.FTHG);
-       
-        var value = (double)homeSideGoals / matches.Count;
-
-        return value;
+        return scoreProbability;
     }
     
-    /// <summary>
-    /// Query head to head matches
-    /// </summary>
-    /// <param name="matches">Historical matches</param>
-    /// <param name="homeTeam"></param>
-    /// <param name="awayTeam"></param>
-    /// <returns>Filter Matches by team name and order by Date in descending order</returns>
-    internal static List<Matches> GetHeadToHeadGamesBy(this List<Matches> matches, string homeTeam, string awayTeam)
+    public static double GetOverThreeGoalGameProbability(this TeamData homeTeam, TeamData awayTeam)
     {
-        matches = matches
-            .Where(item => (item.HomeTeam == homeTeam && item.AwayTeam == awayTeam) ||
-                                  (item.HomeTeam == awayTeam && item.AwayTeam == homeTeam))
-            .OrderByDescending(i => Convert.ToDateTime(i.Date))
-            .Take(12)
-            .ToList();
-        
-        return matches;
+        var scoreProbability = 
+            homeTeam.OverThreeGoalGamesAvg * ThirtyFactor + homeTeam.TeamScoredGames * TwentyFactor +
+            awayTeam.OverThreeGoalGamesAvg * ThirtyFactor + awayTeam.TeamScoredGames * TwentyFactor;
+
+        return scoreProbability;
+    }
+    
+    public static double GetTwoToThreeGoalGameProbability(this TeamData homeTeam, TeamData awayTeam)
+    {
+        var scoreProbability = 
+            homeTeam.TwoToThreeGoalsGames * ThirtyFactor + homeTeam.TeamScoredGames * TwentyFactor +
+            awayTeam.TwoToThreeGoalsGames * ThirtyFactor + awayTeam.TeamScoredGames * TwentyFactor;
+
+        return scoreProbability;
+    }
+    
+    public static double GetUnderTwoGoalGameProbability(this TeamData homeTeam, TeamData awayTeam)
+    {
+        var scoreProbability = 
+            homeTeam.UnderTwoScoredGames * ThirtyFactor + homeTeam.TeamScoredGames * TwentyFactor +
+            awayTeam.UnderTwoScoredGames * ThirtyFactor + awayTeam.TeamScoredGames * TwentyFactor;
+
+        return scoreProbability;
     }
 }

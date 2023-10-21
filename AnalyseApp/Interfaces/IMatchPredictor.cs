@@ -1,9 +1,11 @@
-﻿using AnalyseApp.models;
+﻿using AnalyseApp.Enums;
+using AnalyseApp.models;
 
 namespace AnalyseApp.Interfaces;
 
 public interface IMatchPredictor
 {
     void Execute();
-    Prediction Execute(string home, string away, string playedOn);
+    double GetPredictionAccuracyRate(string fixtureName);
+    Prediction Execute(Matches matches, BetType? betType = BetType.Unknown);
 }

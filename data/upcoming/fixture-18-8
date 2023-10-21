@@ -1,0 +1,109 @@
+Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG,HTHG,HTAG
+E0,21/08/2023,20:00,Crystal Palace,Arsenal,0,1,0,0
+I1,21/08/2023,17:30,Torino,Cagliari,0,0,0,0
+I1,21/08/2023,19:45,Bologna,Milan,0,2,0,2
+SP1,21/08/2023,18:00,Alaves,Sevilla,4,3,2,2
+SP1,21/08/2023,20:30,Granada,Vallecano,0,2,0,0
+SP2,21/08/2023,18:00,Villarreal B,Eldense,3,1,2,1
+SP2,21/08/2023,20:30,Huesca,Tenerife,0,2,0,1
+F2,21/08/2023,19:45,Ajaccio,Bordeaux,0,0,0,0
+E0,20/08/2023,14:00,Aston Villa,Everton,4,0,2,0
+E0,20/08/2023,16:30,West Ham,Chelsea,3,1,1,1
+E1,20/08/2023,12:00,Norwich,Millwall,3,1,1,0
+I2,20/08/2023,17:00,Sudtirol,Spezia,3,3,1,2
+I2,20/08/2023,19:30,Cittadella,Reggiana,1,0,1,0
+I2,20/08/2023,19:30,Parma,FeralpiSalo,2,0,1,0
+I2,20/08/2023,19:30,Venezia,Como,3,0,2,0
+I1,20/08/2023,17:30,Roma,Salernitana,2,2,1,1
+I1,20/08/2023,17:30,Sassuolo,Atalanta,0,2,0,0
+I1,20/08/2023,19:45,Lecce,Lazio,2,1,0,1
+I1,20/08/2023,19:45,Udinese,Juventus,0,3,0,3
+I2,20/08/2023,17:00,Sudtirol,Spezia,3,3,1,2
+I2,20/08/2023,19:30,Cittadella,Reggiana,1,0,1,0
+I2,20/08/2023,19:30,Parma,FeralpiSalo,2,0,1,0
+I2,20/08/2023,19:30,Venezia,Como,3,0,2,0
+SP1,20/08/2023,18:00,Girona,Getafe,3,0,1,0
+SP1,20/08/2023,18:30,Barcelona,Cadiz,2,0,0,0
+SP1,20/08/2023,20:30,Betis,Ath Madrid,0,0,0,0
+D1,20/08/2023,14:30,Union Berlin,Mainz,4,1,2,0
+D1,20/08/2023,16:30,Ein Frankfurt,Darmstadt,1,0,1,0
+SP2,20/08/2023,16:00,Oviedo,Ferrol,1,1,0,1
+SP2,20/08/2023,18:30,Sp Gijon,Mirandes,3,0,3,0
+SP2,20/08/2023,21:00,Albacete,Amorebieta,2,2,1,2
+F1,20/08/2023,12:00,Lille,Nantes,2,0,0,0
+F1,20/08/2023,14:00,Le Havre,Brest,1,2,0,1
+F1,20/08/2023,14:00,Lorient,Nice,1,1,0,0
+F1,20/08/2023,14:00,Reims,Clermont,2,0,1,0
+F1,20/08/2023,16:05,Monaco,Strasbourg,3,0,2,0
+F1,20/08/2023,19:45,Lens,Rennes,1,1,1,0
+E0,19/08/2023,15:00,Fulham,Brentford,0,3,0,1
+E0,19/08/2023,15:00,Liverpool,Bournemouth,3,1,2,1
+E0,19/08/2023,15:00,Wolves,Brighton,1,4,0,1
+E0,19/08/2023,17:30,Tottenham,Man United,2,0,0,0
+E0,19/08/2023,20:00,Man City,Newcastle,1,0,1,0
+E1,19/08/2023,12:30,Plymouth,Southampton,1,2,0,0
+E1,19/08/2023,15:00,Blackburn,Hull,1,2,0,0
+E1,19/08/2023,15:00,Bristol City,Birmingham,0,2,0,1
+E1,19/08/2023,15:00,Leicester,Cardiff,2,1,1,1
+E1,19/08/2023,15:00,Middlesbrough,Huddersfield,1,1,0,0
+E1,19/08/2023,15:00,QPR,Ipswich,0,1,0,0
+E1,19/08/2023,15:00,Sheffield Weds,Preston,0,1,0,0
+E1,19/08/2023,15:00,Stoke,Watford,1,0,0,0
+E1,19/08/2023,15:00,Sunderland,Rotherham,2,1,1,1
+E1,19/08/2023,15:00,Swansea,Coventry,1,1,1,1
+I2,19/08/2023,19:30,Cosenza,Ascoli,3,0,1,0
+I2,19/08/2023,19:30,Cremonese,Catanzaro,0,0,0,0
+I2,19/08/2023,19:30,Ternana,Sampdoria,1,2,0,1
+E2,19/08/2023,12:30,Bolton,Wigan,0,4,0,3
+E2,19/08/2023,15:00,Barnsley,Oxford,1,3,0,1
+E2,19/08/2023,15:00,Blackpool,Leyton Orient,0,0,0,0
+E2,19/08/2023,15:00,Cambridge,Bristol Rvs,2,0,0,0
+E2,19/08/2023,15:00,Carlisle,Exeter,0,2,0,0
+E2,19/08/2023,15:00,Charlton,Port Vale,2,3,1,0
+E2,19/08/2023,15:00,Derby,Fleetwood Town,1,0,1,0
+E2,19/08/2023,15:00,Northampton,Peterboro,1,0,0,0
+E2,19/08/2023,15:00,Portsmouth,Cheltenham,0,0,0,0
+E2,19/08/2023,15:00,Reading,Stevenage,2,0,1,0
+E2,19/08/2023,15:00,Shrewsbury,Lincoln,0,1,0,0
+E2,19/08/2023,15:00,Wycombe,Burton,0,0,0,0
+I1,19/08/2023,17:30,Empoli,Verona,0,1,0,0
+I1,19/08/2023,17:30,Frosinone,Napoli,1,3,1,2
+I1,19/08/2023,19:45,Genoa,Fiorentina,1,4,0,3
+I1,19/08/2023,19:45,Inter,Monza,2,0,1,0
+I2,19/08/2023,19:30,Cosenza,Ascoli,3,0,1,0
+I2,19/08/2023,19:30,Cremonese,Catanzaro,0,0,0,0
+I2,19/08/2023,19:30,Ternana,Sampdoria,1,2,0,1
+SP1,19/08/2023,16:00,Sociedad,Celta,1,1,1,0
+SP1,19/08/2023,18:30,Almeria,Real Madrid,1,3,1,1
+SP1,19/08/2023,20:30,Osasuna,Ath Bilbao,0,2,0,2
+D1,19/08/2023,14:30,Augsburg,M'gladbach,4,4,3,3
+D1,19/08/2023,14:30,Hoffenheim,Freiburg,1,2,0,2
+D1,19/08/2023,14:30,Leverkusen,RB Leipzig,3,2,2,1
+D1,19/08/2023,14:30,Stuttgart,Bochum,5,0,2,0
+D1,19/08/2023,14:30,Wolfsburg,Heidenheim,2,0,2,0
+D1,19/08/2023,17:30,Dortmund,FC Koln,1,0,0,0
+SP2,19/08/2023,16:00,Eibar,Elche,2,1,1,0
+SP2,19/08/2023,18:00,Espanol,Santander,2,0,1,0
+SP2,19/08/2023,18:30,Levante,Burgos,3,2,2,1
+SP2,19/08/2023,21:00,Alcorcon,Leganes,0,2,0,0
+F2,19/08/2023,14:00,Angers,Auxerre,2,2,1,1
+F2,19/08/2023,18:00,Amiens,Bastia,2,1,1,1
+F2,19/08/2023,18:00,Annecy,Dunkerque,3,0,0,0
+F2,19/08/2023,18:00,Concarneau,Caen,0,2,0,0
+F2,19/08/2023,18:00,Grenoble,Troyes,0,0,0,0
+F2,19/08/2023,18:00,Laval,Rodez,1,0,0,0
+F2,19/08/2023,18:00,Pau FC,Paris FC,2,0,1,0
+F2,19/08/2023,18:00,St Etienne,Quevilly Rouen,2,1,2,0
+F2,19/08/2023,18:00,Valenciennes,Guingamp,0,0,0,0
+F1,19/08/2023,18:00,Lyon,Montpellier,1,4,0,2
+F1,19/08/2023,20:00,Toulouse,Paris SG,1,1,0,0
+E0,18/08/2023,19:45,Nott'm Forest,Sheffield United,2,1,1,0
+E1,18/08/2023,20:00,Leeds,West Brom,1,1,0,0
+I2,18/08/2023,19:30,Bari,Palermo,0,0,0,0
+I2,18/08/2023,19:30,Bari,Palermo,0,0,0,0
+SP1,18/08/2023,18:30,Mallorca,Villarreal,0,1,0,0
+SP1,18/08/2023,20:30,Valencia,Las Palmas,1,0,0,0
+D1,18/08/2023,19:30,Werder Bremen,Bayern Munich,0,4,0,1
+SP2,18/08/2023,18:00,Andorra,Cartagena,3,2,0,0
+SP2,18/08/2023,20:30,Zaragoza,Valladolid,1,0,1,0
+F1,18/08/2023,20:00,Metz,Marseille,2,2,0,1

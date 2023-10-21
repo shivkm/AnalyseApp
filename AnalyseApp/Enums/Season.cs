@@ -7,5 +7,6 @@ public enum Season
     Summer,
     Autumn,
     StartSeason,
-    EndSeason
+    EndSeason,
+    Unknown
 }
