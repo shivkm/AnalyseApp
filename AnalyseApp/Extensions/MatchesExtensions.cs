@@ -14,7 +14,7 @@ internal static class MatchesExtensions
     {
         matches = matches.Where(i =>
             {
-                var matchDate = Convert.ToDateTime(i.Date);
+                var matchDate = i.Date.Parse();
                 return matchDate < playDate;
             })
             .OrderByDescending(i => Convert.ToDateTime(i.Date))
@@ -37,14 +37,22 @@ internal static class MatchesExtensions
         return homeMatches;
     } 
     
-    internal static List<Matches> AssignSeasonsToMatches(this List<Matches> historicalMatches)
+    internal static IEnumerable<Matches> GetCurrentLeagueGamesBy(this IList<Matches> matches, string teamName, int currentSeasonYear)
     {
-        foreach (var match in historicalMatches)
-        {
-            match.Season = match.GetSeason();
-        }
+        var formatStartDate = $"20/07/{currentSeasonYear}";
+        var test = matches
+            .Where(i => i.HomeTeam == teamName || i.AwayTeam == teamName);
+        var foundMatches = matches
+            .Where(i => i.HomeTeam == teamName || i.AwayTeam == teamName)
+            .Where(i =>
+            {
+                var matchDate = i.Date.Parse();
+                return matchDate > formatStartDate.Parse();
+            })
+            .OrderByDescending(i => i.Date.Parse())
+            .ToList();
 
-        return historicalMatches;
+        return foundMatches;
     }
 
     public static Season GetSeason(this Matches match)
@@ -271,65 +279,12 @@ internal static class MatchesExtensions
         return (scores, conceded, totalGoals);
     }
 
-    public static Percentage GetScoreProbability(this TeamData homeTeam, TeamData awayTeam)
+    public static bool IsGoalsPossible(this double scoredProbability, double concededProbability)
     {
-        var homeScoringPower = homeTeam.HomeScoringPower.GetValueOrDefault() * 0.50 +
-                               homeTeam.HomeConcededPower.GetValueOrDefault() * 0.50;
-        
-        var awayScoringPower = awayTeam.AwayScoringPower.GetValueOrDefault() * 0.50 +
-                               awayTeam.AwayConcededPower.GetValueOrDefault() * 0.50;
+        const double fifty = 0.50;
+        const double sixtyEight = 0.68;
 
-        var total = homeScoringPower * 0.50 + awayScoringPower * 0.50;
-        
-        return new Percentage(total, homeScoringPower, awayScoringPower);
-    }
-    
-    public static Percentage GetBothScoredGameProbability(this TeamData homeTeam, TeamData awayTeam)
-    {
-        var homeScoringPower = homeTeam.BothTeamScoredGames * Forty +
-                               homeTeam.TeamScoredGames * Sixty;
-        
-        var awayScoringPower = awayTeam.BothTeamScoredGames * Forty +
-                               awayTeam.TeamScoredGames * Sixty;
-
-        var total = homeScoringPower * 0.50 + awayScoringPower * 0.50;
-        
-        return new Percentage(total, homeScoringPower, awayScoringPower);
-    }
-    
-    public static double GetOverTwoGoalGameProbability(this TeamData homeTeam, TeamData awayTeam)
-    {
-        var scoreProbability = 
-            homeTeam.OverScoredGames * ThirtyFactor + homeTeam.TeamScoredGames * TwentyFactor +
-            awayTeam.OverScoredGames * ThirtyFactor + awayTeam.TeamScoredGames * TwentyFactor;
-
-        return scoreProbability;
-    }
-    
-    public static double GetOverThreeGoalGameProbability(this TeamData homeTeam, TeamData awayTeam)
-    {
-        var scoreProbability = 
-            homeTeam.OverThreeGoalGamesAvg * ThirtyFactor + homeTeam.TeamScoredGames * TwentyFactor +
-            awayTeam.OverThreeGoalGamesAvg * ThirtyFactor + awayTeam.TeamScoredGames * TwentyFactor;
-
-        return scoreProbability;
-    }
-    
-    public static double GetTwoToThreeGoalGameProbability(this TeamData homeTeam, TeamData awayTeam)
-    {
-        var scoreProbability = 
-            homeTeam.TwoToThreeGoalsGames * ThirtyFactor + homeTeam.TeamScoredGames * TwentyFactor +
-            awayTeam.TwoToThreeGoalsGames * ThirtyFactor + awayTeam.TeamScoredGames * TwentyFactor;
-
-        return scoreProbability;
-    }
-    
-    public static double GetUnderTwoGoalGameProbability(this TeamData homeTeam, TeamData awayTeam)
-    {
-        var scoreProbability = 
-            homeTeam.UnderTwoScoredGames * ThirtyFactor + homeTeam.TeamScoredGames * TwentyFactor +
-            awayTeam.UnderTwoScoredGames * ThirtyFactor + awayTeam.TeamScoredGames * TwentyFactor;
-
-        return scoreProbability;
+        return scoredProbability > fifty && concededProbability > sixtyEight ||
+               concededProbability > fifty && scoredProbability > fifty;
     }
 }

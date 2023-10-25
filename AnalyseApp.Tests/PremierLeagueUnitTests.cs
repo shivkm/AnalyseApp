@@ -16,8 +16,7 @@ public class PremierLeagueUnitTests
     private readonly IFileProcessor _fileProcessor;
     private readonly IMatchPredictor _matchPredictor;
     private readonly ITestOutputHelper _testOutputHelper;
-    
-    
+
     private int totalCount = 0;
     private int correctCount = 0;
     private int wrongCount = 0;
@@ -63,8 +62,12 @@ public class PremierLeagueUnitTests
     {
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
-        var premierLeagueMatches = fixture.Where(i => i.Div == "E0");
+        var premierLeagueMatches = fixture
+            .Where(i => i.Div == "E0")
+            .ToList();
 
+        if (premierLeagueMatches.Count() is 0) return;
+        
         // ACTUAL 
         foreach (var matches in premierLeagueMatches)
         {

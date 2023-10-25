@@ -61,79 +61,41 @@ public class DataService: IDataService
         return headToHead;
     }
 
-    public TeamData GetTeamDataBy(string teamName, IEnumerable<Matches> data)
+    /// <summary>
+    /// Prepare Teams data
+    /// </summary>
+    /// <param name="teamName">Team name</param>
+    /// <param name="historicalMatches">List of teams matches</param>
+    /// <returns></returns>
+    public TeamData GetTeamDataBy(string teamName, IList<Matches> historicalMatches)
     {
-        var matches = data.Where(i => i.HomeTeam == teamName || i.AwayTeam == teamName)
-                .Take(6)
-                .ToList();
-        // teams scored and conceded goals
-        // home side scored and conceded gooals
-        // away side scored and conceded goals
-        // if home home side score more goals than away and conceded goals athome and  
-        var homeScored = matches.Where(item => item.HomeTeam == teamName).Select(s => s.FTHG).Sum();
-        var awayScored = matches.Where(item => item.AwayTeam == teamName).Select(s => s.FTAG).Sum();
-
-        var homeConceded = matches.Where(item => item.HomeTeam == teamName).Select(s => s.FTAG).Sum();
-        var awayConceded = matches.Where(item => item.AwayTeam == teamName).Select(s => s.FTHG).Sum();
-
-        var homeScoredAvg = homeScored / (double)matches.Count;
-        var awayScoredAvg = awayScored / (double)matches.Count;
-
-        var homeConcededAvg = homeConceded / (double)matches.Count;
-        var awayConcededAvg = awayConceded / (double)matches.Count;
-
-        var totalScoredAvg = (homeScoredAvg + awayScoredAvg) / 2;
-        var totalConcededAvg = (homeConcededAvg + awayConcededAvg) / 2;
-
-        var teamScores = homeScored + awayScored;
-        var teamConceded = homeConceded + awayConceded;
-
-        var overTwoGoals = GetOverGameAvg(matches) + 0.2;
-        var underTwoGoals = GetUnderGameAvg(matches);
-        var twoToThreeGoals = GetTwoToThreeGameAvg(matches) + 0.3;
-        var goalGoals = GetBothScoredGameAvg(matches) +0.1;
-        var noGoal = GetZeroScoredGameAvg(matches);
-        var homeSideWin = GetHomeWinGameAvg(matches, teamName) + 0.5;
-        var awaySideWin = GetAwayWinGameAvg(matches, teamName);
-        var totalWinAvg = GetWinGameAvg(matches, teamName);
-        var teamScoredGames = GetTeamScoredGamesAvg(matches, teamName);
-        var teamConcededGames = GetTeamAllowedGamesAvg(matches, teamName);
-        var overThreeGoals = GetMoreThanThreeGoalGameAvg(matches);
-        var lastThreeMatchResult = GetLastThreeMatchesBetType(matches);
-
-        var homeScoringPower = homeScoredAvg?.GetScoredGoalProbabilityBy();
-        var awayScoringPower = awayScoredAvg?.GetScoredGoalProbabilityBy();
-        var homeConcededPower = homeConcededAvg?.GetScoredGoalProbabilityBy();
-        var awayConcededPower = awayConcededAvg?.GetScoredGoalProbabilityBy();
-
-        var scoringPower = totalScoredAvg?.GetScoredGoalProbabilityBy();
-        var concededPower = totalConcededAvg?.GetScoredGoalProbabilityBy();
+        var games = historicalMatches
+            .Where(i => i.HomeTeam == teamName || i.AwayTeam == teamName)
+            .Take(6)
+            .ToList();
         
+         var teamGoals = GetTeamGoalsDataBy(teamName, games);
+        
+        var currentLeagueGames = historicalMatches
+            .GetCurrentLeagueGamesBy(teamName, 2023)
+            .ToList();
+
+        var teamSeasonGoals = GetTeamGoalsDataBy(teamName, currentLeagueGames);
+        
+        var teamResults = GetMatchResults(games);
+        var teamOdds = GetMatchOdds(games, teamName);
+        
+        var lastThreeMatchResult = GetLastThreeMatchesBetType(games);
+        var teamScoredGames = GetTeamScoredGamesAvg(games, teamName);
+        var teamConcededGames = GetTeamAllowedGamesAvg(games, teamName);
+        var totalWinAvg = GetWinGameAvg(games, teamName);
+
         var teamData = new TeamData(
-            new Goals(
-                teamScores.GetValueOrDefault(),
-                teamConceded.GetValueOrDefault(),
-                homeScored.GetValueOrDefault(),
-                homeConceded.GetValueOrDefault(),
-                awayScored.GetValueOrDefault(),
-                awayConceded.GetValueOrDefault()
-            ),
-            matches.Count, 
-            scoringPower,
-            concededPower,
-            homeScoringPower,
-            homeConcededPower,
-            awayScoringPower,
-            awayConcededPower,
-            overTwoGoals, 
-            underTwoGoals, 
-            twoToThreeGoals,
-            goalGoals,
-            noGoal,
-            overThreeGoals,
-            homeSideWin,
-            awaySideWin,
-            totalWinAvg,
+            games.Count, 
+            teamResults,
+            teamOdds,
+            teamGoals,
+            teamSeasonGoals,
             teamScoredGames,
             teamConcededGames,
             lastThreeMatchResult
@@ -142,6 +104,78 @@ public class DataService: IDataService
         teamData = teamData with { Suggestion = GetHighValue(teamData: teamData) };
         
         return teamData;
+    }
+
+    private static TeamResult GetMatchResults(List<Matches> games)
+    {
+        var overTwoGoals = GetOverGameAvg(games);
+        var underTwoGoals = GetUnderGameAvg(games);
+        var twoToThreeGoals = GetTwoToThreeGameAvg(games);
+        var bothScoredGoals = GetBothScoredGameAvg(games);
+        var noGoal = GetZeroScoredGameAvg(games);
+        var overThreeGoals = GetMoreThanThreeGoalGameAvg(games);
+
+        var matchResult = new TeamResult(overTwoGoals, bothScoredGoals, twoToThreeGoals, underTwoGoals);
+        return matchResult;
+    } 
+    
+    private static TeamOdds GetMatchOdds(List<Matches> games, string teamName)
+    {
+        
+        var homeSideWin = GetHomeWinGameAvg(games, teamName);
+        var awaySideWin = GetAwayWinGameAvg(games, teamName);
+        var draws = GetDrawGameAvg(games);
+
+        var matchResult = new TeamOdds(homeSideWin, awaySideWin, draws);
+        return matchResult;
+    }
+
+    /// <summary>
+    /// Prepare goals data for team
+    /// </summary>
+    /// <param name="teamName">Team name</param>
+    /// <param name="matches">List of matches</param>
+    /// <returns></returns>
+    private static TeamGoals GetTeamGoalsDataBy(string teamName, List<Matches> matches)
+    {
+        // Teams total scored Goals in home and away side
+        var homeMatches = matches.Where(item => item.HomeTeam == teamName).ToList();
+        var awayMatches = matches.Where(item => item.AwayTeam == teamName).ToList();
+        
+        var homeScoredGoals = homeMatches.Select(s => s.FTHG).Sum().GetValueOrDefault();
+        var awayScoredGoals = awayMatches.Select(s => s.FTAG).Sum().GetValueOrDefault();
+
+        // Teams total conceded Gaols in home and away side
+        var homeConcededGoals = homeMatches.Select(s => s.FTAG).Sum().GetValueOrDefault();
+        var awayConcededGoals = awayMatches.Select(s => s.FTHG).Sum().GetValueOrDefault();
+
+        // Calculate Averages
+        var homeScoredAvg = homeScoredGoals / (double)homeMatches.Count;
+        var awayScoredAvg = awayScoredGoals / (double)awayMatches.Count;
+
+        var homeConcededAvg = homeConcededGoals / (double)homeMatches.Count;
+        var awayConcededAvg = awayConcededGoals / (double)awayMatches.Count;
+
+        var teamTotalScores = homeScoredGoals + awayScoredGoals;
+        var teamTotalConceded = homeConcededGoals + awayConcededGoals;
+
+        var totalScoredAvg = teamTotalScores / (double)matches.Count;
+        var totalConcededAvg = teamTotalConceded / (double)matches.Count;
+
+        // Calculate probabilities
+        var homeScoringPower = homeScoredAvg.GetScoredGoalProbabilityBy();
+        var awayScoringPower = awayScoredAvg.GetScoredGoalProbabilityBy();
+        var totalScoringPower = totalScoredAvg.GetScoredGoalProbabilityBy();
+        var homeConcededPower = homeConcededAvg.GetScoredGoalProbabilityBy();
+        var awayConcededPower = awayConcededAvg.GetScoredGoalProbabilityBy();
+        var totalConcededPower = totalConcededAvg.GetScoredGoalProbabilityBy();
+        
+        var goalData = new TeamGoals(
+            new Goals(matches.Count, teamTotalScores, teamTotalConceded, totalScoredAvg, totalConcededAvg, totalScoringPower, totalConcededPower),
+            new Goals(homeMatches.Count, homeScoredGoals, homeConcededGoals, homeScoredAvg, homeConcededAvg, homeScoringPower, homeConcededPower),
+            new Goals(awayMatches.Count, awayScoredGoals, awayConcededGoals, awayScoredAvg, awayConcededAvg, awayScoringPower, awayConcededPower)
+        );
+        return goalData;
     }
 
     private static BetType GetLastThreeMatchesBetType(IEnumerable<Matches> matches)
@@ -172,11 +206,10 @@ public class DataService: IDataService
         {
             probabilityMap = new Dictionary<string, double>
             {
-                { "OverScoredGames", teamData.OverScoredGames },
-                { "BothTeamScoredGames", teamData.BothTeamScoredGames },
-                { "TwoToThreeGoalsGames", teamData.TwoToThreeGoalsGames },
-                { "UnderScoredGames", teamData.UnderTwoScoredGames },
-                { "ZeroZeroGames", teamData.ZeroZeroGoalGamesAvg }
+                { "OverScoredGames", teamData.TeamResult.OverTwoGoals },
+                { "BothTeamScoredGames", teamData.TeamResult.BothScoredGoals },
+                { "TwoToThreeGoalsGames", teamData.TeamResult.TwoToThreeGoals },
+                { "UnderScoredGames", teamData.TeamResult.UnderTwoGoals },
             };
         }
         else if (headToHeadData is not null)
@@ -209,7 +242,6 @@ public class DataService: IDataService
         return avg.GetValueOrDefault();
     }
     
-
     private static double GetTeamScoredGamesAvg(IReadOnlyCollection<Matches> matches, string teamName) =>
         matches.GetGameAvgBy(matches.Count, match => match.FTHG > 0 && match.HomeTeam == teamName ||
                                                      match.FTAG > 0 && match.AwayTeam == teamName);
@@ -240,10 +272,13 @@ public class DataService: IDataService
         matches.GetGameAvgBy(matches.Count, match => match is { FTHG: 0, FTAG: 0 });
     
     private static double GetHomeWinGameAvg(IReadOnlyCollection<Matches> matches, string teamName) =>
-        matches.GetGameAvgBy(matches.Count, match => match.HomeTeam == teamName && match.FTHG > match.FTAG);
-    
+        matches.GetGameAvgBy(matches.Count(i => i.HomeTeam == teamName), match => match.HomeTeam == teamName && match.FTHG > match.FTAG);
+   
+    private static double GetDrawGameAvg(IReadOnlyCollection<Matches> matches) =>
+        matches.GetGameAvgBy(matches.Count, match => match.FTHG == match.FTAG);
+
     private static double GetAwayWinGameAvg(IReadOnlyCollection<Matches> matches, string teamName) =>
-        matches.GetGameAvgBy(matches.Count, match => match.AwayTeam == teamName && match.FTHG < match.FTAG);
+        matches.GetGameAvgBy(matches.Count(i => i.AwayTeam == teamName), match => match.AwayTeam == teamName && match.FTHG < match.FTAG);
     
     private static double GetWinGameAvg(IReadOnlyCollection<Matches> matches, string teamName) =>
         matches.GetGameAvgBy(
@@ -251,9 +286,4 @@ public class DataService: IDataService
             match => (match.AwayTeam == teamName && match.FTHG < match.FTAG) ||
                                     match.HomeTeam == teamName && match.FTHG > match.FTAG
         );
-
-    public TeamData GetTeamSeasonBy(string teamName, IEnumerable<Matches> data)
-    {
-        throw new NotImplementedException();
-    }
 }

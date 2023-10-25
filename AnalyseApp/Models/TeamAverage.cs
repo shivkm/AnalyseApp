@@ -29,31 +29,28 @@ public record HeadToHeadData(
 
 
 public record TeamData(
-    Goals Goals,
     int GamesCount,
-    double? ScoringPower,
-    double? ConcededPower,
-    double? HomeScoringPower,
-    double? HomeConcededPower,
-    double? AwayScoringPower,
-    double? AwayConcededPower,
-    double OverScoredGames,
-    double UnderTwoScoredGames,
-    double TwoToThreeGoalsGames,
-    double BothTeamScoredGames,
-    double ZeroZeroGoalGamesAvg,
-    double OverThreeGoalGamesAvg,
-    double HomeTeamWon,
-    double AwayTeamWon,
-    double WinAvg,
+    TeamResult TeamResult,
+    TeamOdds TeamOdds,
+    TeamGoals TeamGoals,
+    TeamGoals SeasonTeamGoals,
     double TeamScoredGames,
-    double TeamAllowedGoalGames,
+    double TeamConcededGoalGames,
     BetType LastThreeMatchResult
 )
 {
     public Suggestion Suggestion { get; set; } = default!;
 }
 
-public record Goals(int Scored, int Conceded, int HomeScoored, int HomeConceded, int AwayScored, int AwayConceded);
+public record MatchGoalsData(Goals Home, Goals Away);
+
+public record TeamOdds(double HomeWin, double AwayWin, double Draw);
+public record TeamResult(double OverTwoGoals, double BothScoredGoals, double TwoToThreeGoals, double UnderTwoGoals);
+public record TeamGoals(Goals Total, Goals Home, Goals Away);
+public record Goals(int MatchCount, int Scored, int Conceded, double ScoredAvg, double ConcededAvg, double ScoreProbability, double ConcededProbability);
+
+
+
 
 public record Suggestion(string Name, double Value);
+

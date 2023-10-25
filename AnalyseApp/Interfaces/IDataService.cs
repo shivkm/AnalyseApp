@@ -6,6 +6,5 @@ public interface IDataService
 {
     HeadToHeadData GetHeadToHeadDataBy(string homeTeam, string awayTeam, string playedOn);
 
-    TeamData GetTeamDataBy(string teamName, IEnumerable<Matches> data);
-    TeamData GetTeamSeasonBy(string teamName, IEnumerable<Matches> data);
+    TeamData GetTeamDataBy(string teamName, IList<Matches> data);
 }

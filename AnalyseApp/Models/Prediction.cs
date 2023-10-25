@@ -12,3 +12,5 @@ public record Prediction(double Percentage, BetType Type)
 };
 
 public record Percentage(double Total, double Home, double Away);
+public record GoalAnalysis(bool Qualified, QualificationType Type, BetType BetType);
+

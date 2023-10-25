@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
 using AnalyseApp.Options;
@@ -19,7 +20,7 @@ public class FileProcessor: IFileProcessor
     
     public List<Matches> GetHistoricalMatchesBy()
     {
-        var files = Directory.GetFiles(_options.RawCsvDir);
+        var files = Directory.GetFiles(_options.RawCsvDir, "*.csv");
         var games = new List<Matches>();
         foreach (var file in files)
         {
@@ -45,10 +46,10 @@ public class FileProcessor: IFileProcessor
     public void CreateFixtureBy(string startDate, string endDate)
     {
         // Parse the start date using the expected format "dd/MM/yy"
-        var startDateTime = DateTime.ParseExact(startDate, "dd/MM/yy", CultureInfo.InvariantCulture);
+        var startDateTime =startDate.Parse();
 
         // Parse the end date using the expected format "dd/MM/yy"
-        var endDateTime = DateTime.ParseExact(endDate, "dd/MM/yy", CultureInfo.InvariantCulture);
+        var endDateTime = endDate.Parse();
 
         var historicalData = GetHistoricalMatchesBy();
 
@@ -56,13 +57,9 @@ public class FileProcessor: IFileProcessor
             .Where(match => IsWithinDateRange(match, startDateTime, endDateTime))
             .OrderByDescending(match =>
             {
-                DateTime parsedDate;
-                if (DateTime.TryParseExact(match.Date, "dd/MM/yy", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate) ||
-                    DateTime.TryParseExact(match.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out parsedDate))
-                {
-                    return parsedDate;
-                }
-                return DateTime.MinValue;
+                var parsedDate = match.Date.Parse();
+                return parsedDate;
+                
             })
             .ToList();
 
@@ -71,7 +68,7 @@ public class FileProcessor: IFileProcessor
 
     private static bool IsWithinDateRange(Matches match, DateTime startDate, DateTime endDate)
     {
-        var matchStartDate = DateTime.ParseExact(match.Date, "dd/MM/yyyy", CultureInfo.InvariantCulture);
+        var matchStartDate = match.Date.Parse();
         return matchStartDate >= startDate && matchStartDate <= endDate;
     }
 
