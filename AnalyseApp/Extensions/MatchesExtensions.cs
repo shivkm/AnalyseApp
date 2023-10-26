@@ -287,4 +287,17 @@ internal static class MatchesExtensions
         return scoredProbability > fifty && concededProbability > sixtyEight ||
                concededProbability > fifty && scoredProbability > fifty;
     }
+
+    public static bool IsChaliGame(this TeamResult teamResult, TeamData teamData)
+    {
+        return teamResult.TwoToThreeGoals > 0.80 && 
+               (teamResult.OverTwoGoals < 0.34 || teamResult.UnderTwoGoals < 0.34 || teamResult.BothScoredGoals < 0.34) &&
+               teamData is { TeamScoredGames: >= 0.50, TeamConcededGoalGames: >= 0.66 };
+    }
+    
+    public static bool IsUnPredictableGame(this TeamResult teamResult, TeamData teamData)
+    {
+        return teamResult is { TwoToThreeGoals: <= 0.50, OverTwoGoals: <= 0.50, BothScoredGoals: <= 0.50, UnderTwoGoals: <= 0.50 } && 
+               teamData is { TeamScoredGames: >= 0.50, TeamConcededGoalGames: >= 0.66, LastThreeMatchResult: BetType.Unknown };
+    }
 }
