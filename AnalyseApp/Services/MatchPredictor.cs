@@ -1,5 +1,4 @@
-﻿using Accord;
-using AnalyseApp.Enums;
+﻿using AnalyseApp.Enums;
 using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
@@ -9,7 +8,6 @@ namespace AnalyseApp.Services;
 public class MatchPredictor: IMatchPredictor
 {   
     private readonly List<Matches> _historicalMatches;
-    private readonly IPoissonService _poissonService;
     private readonly IDataService _dataService;
     private readonly IFileProcessor _fileProcessor;
 
@@ -21,10 +19,10 @@ public class MatchPredictor: IMatchPredictor
     private const double FiftyPercentage = 0.50;
     private const double SixtyEightPercentage = 0.68;
     private const double SeventyPercentage = 0.70;
-    public MatchPredictor(IFileProcessor fileProcessor, IPoissonService poissonService, IDataService dataService)
+    
+    public MatchPredictor(IFileProcessor fileProcessor, IDataService dataService)
     {
         _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
-        _poissonService = poissonService;
         _dataService = dataService;
         _fileProcessor = fileProcessor;
     }
@@ -111,8 +109,8 @@ public class MatchPredictor: IMatchPredictor
         var awayTeamGoalsAvg = awayTotalGoals.ScoreProbability.IsGoalsPossible(awayTotalGoals.ConcededProbability);
         
         if (homeTeamGoalsAvg && awayTeamGoalsAvg ||
-            homeTotalGoals.ScoreProbability > 0.68 && awayTotalGoals.ConcededProbability > 0.80 ||
-            awayTotalGoals.ScoreProbability > 0.68 && homeTotalGoals.ConcededProbability > 0.80)
+            homeTotalGoals.ScoreProbability > 0.68 && awayTotalGoals.ConcededProbability > 0.60 ||
+            awayTotalGoals.ScoreProbability > 0.68 && homeTotalGoals.ConcededProbability > 0.60)
         {
             // Home and away teams scoring and conceding goals performance in current collision
             if (homeHomeGoals.ScoreProbability.IsGoalsPossible(homeHomeGoals.ConcededProbability) &&

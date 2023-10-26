@@ -22,7 +22,7 @@ public class MatchPredictionUnitTests
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         var fileProcessor = new FileProcessor(optionsWrapper);
         
-        _matchPredictor = new MatchPredictor(fileProcessor, new PoissonService(), new DataService(fileProcessor));
+        _matchPredictor = new MatchPredictor(fileProcessor, new DataService(fileProcessor));
     }
     
     [Fact]

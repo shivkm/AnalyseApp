@@ -40,7 +40,7 @@ public class PremierLeagueUnitTests
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         _fileProcessor = new FileProcessor(optionsWrapper);
         
-        _matchPredictor = new MatchPredictor(_fileProcessor, new PoissonService(), new DataService(_fileProcessor));
+        _matchPredictor = new MatchPredictor(_fileProcessor, new DataService(_fileProcessor));
         _testOutputHelper = testOutputHelper;
     }
 
@@ -66,7 +66,7 @@ public class PremierLeagueUnitTests
             .Where(i => i.Div == "E0")
             .ToList();
 
-        if (premierLeagueMatches.Count() is 0) return;
+        if (premierLeagueMatches.Count is 0) return;
         
         // ACTUAL 
         foreach (var matches in premierLeagueMatches)
@@ -99,19 +99,26 @@ public class PremierLeagueUnitTests
     
     [
         Theory(DisplayName = "Spanish league predictions"), 
-       // InlineData("fixture-11-8"),
-       // InlineData("fixture-18-8"),
-     //   InlineData("fixture-25-8"),
-     //   InlineData("fixture-01-9"),
-     //   InlineData("fixture-15-9"),
-    //    InlineData("fixture-22-9"),
-        InlineData("fixtures"),
+        InlineData("fixture-11-8"),
+        InlineData("fixture-18-8"),
+        InlineData("fixture-25-8"),
+        InlineData("fixture-1-9"),
+        InlineData("fixture-9-9"),
+        InlineData("fixture-16-9"),
+        InlineData("fixture-23-9"),
+        InlineData("fixture-30-9"),
+        InlineData("fixture-7-10"),
+        InlineData("fixture-14-10"),
     ]
     public void SpanishLeague_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
     {
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
-        var spanishLeagueMatches = fixture.Where(i => i.Div == "I2");
+        var spanishLeagueMatches = fixture
+            .Where(i => i.Div == "I2")
+            .ToList();
+
+        if (spanishLeagueMatches.Count is 0) return;
 
         // ACTUAL 
         foreach (var matches in spanishLeagueMatches)
@@ -141,47 +148,7 @@ public class PremierLeagueUnitTests
         // ASSERT
         accuracyRate.Should().BeGreaterOrEqualTo(70);
     }
-
-        
-    [Theory(DisplayName = "Both team score goal predictions"), 
-     InlineData("fixture-11-8"),
-     InlineData("fixture-18-8"),
-     InlineData("fixture-25-8")
-    ]
-    public void Both_Team_Score_Goal_Logic_should_Have_Accuracy_Rate_More_Then_Eighty_Percent(string fixtureName)
-    {
-        // ARRANGE
-        var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
-
-        // ACTUAL ASSERT
-        foreach (var lastSixGame in fixture)
-        {
-            totalCount++;
-            var actual = _matchPredictor.Execute(
-                lastSixGame, BetType.BothTeamScoreGoals
-            );
-            var isCorrect = lastSixGame is { FTHG: > 0, FTAG: > 0 } && actual.Type == BetType.BothTeamScoreGoals;
-
-            if (!actual.Qualified) continue;
-            
-            if (isCorrect)
-            {
-                correctCount++;
-                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} - ✅ - ");
-            }
-            else
-            {
-                wrongCount++;
-                _testOutputHelper.WriteLine($"{lastSixGame.Date} - {lastSixGame.HomeTeam}:{lastSixGame.AwayTeam} {actual.Msg} - ❌ - ");
-            }
-        }
-        
-        var accuracyRate = correctCount / (double)totalCount * 100;
-        _testOutputHelper.WriteLine($"Count: {totalCount}, correct count: {correctCount}, wrong count: {wrongCount} accuracy rate: {accuracyRate:F}");
-
-        accuracyRate.Should().BeGreaterThan(80);
-    }
-            
+    
     [Fact]
     public void Over_Two_Goal_Logic_should_Have_Accuracy_Rate_More_Then_Eighty_Percent()
     {

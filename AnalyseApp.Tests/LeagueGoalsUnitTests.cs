@@ -28,7 +28,7 @@ public class LeagueGoalsUnitTests
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         _fileProcessor = new FileProcessor(optionsWrapper);
         
-        _matchPredictor = new MatchPredictor(_fileProcessor, new PoissonService(), new DataService(_fileProcessor));
+        _matchPredictor = new MatchPredictor(_fileProcessor, new DataService(_fileProcessor));
         _testOutputHelper = testOutputHelper;
     }
 
