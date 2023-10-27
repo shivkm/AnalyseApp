@@ -1,4 +1,5 @@
-﻿using AnalyseApp.Enums;
+﻿using Accord;
+using AnalyseApp.Enums;
 using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
@@ -34,7 +35,6 @@ public class MatchPredictor: IMatchPredictor
 
     public double GetPredictionAccuracyRate(string fixtureName)
     {
-        _fileProcessor.CreateFixtureBy("11/08/23", "14/08/23");
         _fileProcessor.CreateFixtureBy("18/08/23", "21/08/23");
         _fileProcessor.CreateFixtureBy("25/08/23", "28/08/23");
         _fileProcessor.CreateFixtureBy("01/09/23", "04/09/23");
@@ -42,7 +42,7 @@ public class MatchPredictor: IMatchPredictor
         _fileProcessor.CreateFixtureBy("22/09/23", "25/09/23");
         _fileProcessor.CreateFixtureBy("29/09/23", "02/10/23");
         _fileProcessor.CreateFixtureBy("06/10/23", "09/10/23");
-        _fileProcessor.CreateFixtureBy("20/10/23", "23/09/23");
+        _fileProcessor.CreateFixtureBy("21/10/23", "23/10/23");
 
         return 0.0;
     }
@@ -54,6 +54,7 @@ public class MatchPredictor: IMatchPredictor
         
         _homeTeamData = _dataService.GetTeamDataBy(matches.HomeTeam, historicalData);
         _awayTeamData = _dataService.GetTeamDataBy(matches.AwayTeam, historicalData);
+        _headToHeadData = _dataService.GetHeadToHeadDataBy(matches.HomeTeam, matches.AwayTeam, playedOnDateTime);
         
         var overallScoringChance = GoalChancesInMatch();
         var currentScoringChance = GoalChancesInMatch();
@@ -102,6 +103,10 @@ public class MatchPredictor: IMatchPredictor
             homeTotalGoals.ScoreProbability > 0.68 && awayTotalGoals.ConcededProbability > 0.60 ||
             awayTotalGoals.ScoreProbability > 0.68 && homeTotalGoals.ConcededProbability > 0.60)
         {
+            if (_awayTeamData.LastThreeMatchResult is (BetType.OverTwoGoals or BetType.BothTeamScoreGoals) and (BetType.OverTwoGoals or BetType.BothTeamScoreGoals) )
+            {
+                return new GoalAnalysis(true, QualificationType.Both, BetType.UnderThreeGoals);
+            }
             if (_homeTeamData is { LastThreeMatchResult: BetType.Unknown, TeamScoredGames: >= 1.0 }  &&
                 _awayTeamData is { LastThreeMatchResult: BetType.TwoToThreeGoals, TeamScoredGames: > 0.66 and < 0.90 } ||
                 _awayTeamData is { LastThreeMatchResult: BetType.Unknown, TeamScoredGames: >= 0.98 }   &&
@@ -120,7 +125,9 @@ public class MatchPredictor: IMatchPredictor
             
             // Home and away teams scoring and conceding goals performance in current collision
             if (homeHomeGoals.ScoreProbability.IsGoalsPossible(homeHomeGoals.ConcededProbability) &&
-                awayAwayGoals.ScoreProbability.IsGoalsPossible(awayAwayGoals.ConcededProbability) 
+                awayAwayGoals.ScoreProbability.IsGoalsPossible(awayAwayGoals.ConcededProbability) &&
+                _headToHeadData.HomeTeamData.Home.ScoreProbability.IsGoalsPossible(_headToHeadData.HomeTeamData.Home.ConcededProbability) &&
+                _headToHeadData.AwayTeamData.Away.ScoreProbability.IsGoalsPossible(_headToHeadData.AwayTeamData.Away.ConcededProbability)
                )
             {
                 return new GoalAnalysis(true, QualificationType.Both, BetType.OverTwoGoals);
@@ -129,17 +136,17 @@ public class MatchPredictor: IMatchPredictor
                 awayAwayGoals.ScoreProbability.IsGoalsPossible(awayAwayGoals.ConcededProbability) 
                )
             {
-                if (homeResult.OverTwoGoals >= 0.66 && awayResult.OverTwoGoals >= 0.66)
+                if (homeResult.OverTwoGoals >= 0.66 && awayResult.OverTwoGoals >= 0.66 && _headToHeadData.OverScoredGames >= 0.66)
                 {
                     return new GoalAnalysis(true, QualificationType.Both, BetType.OverTwoGoals);
                 }
-                if (homeResult.BothScoredGoals >= 0.66 && awayResult.BothScoredGoals >= 0.66)
+                if (homeResult.BothScoredGoals >= 0.66 && awayResult.BothScoredGoals >= 0.66 && _headToHeadData.OverScoredGames >= 0.66)
                 {
                     return new GoalAnalysis(true, QualificationType.Both, BetType.BothTeamScoreGoals);
                 }
-                if (homeResult.TwoToThreeGoals >= 0.66 && awayResult.TwoToThreeGoals >= 0.66 ||
-                    (homeResult.UnderTwoGoals >= 0.50 || homeResult.TwoToThreeGoals >= 0.66) &&
-                    (awayResult.UnderTwoGoals >= 0.50 || awayResult.TwoToThreeGoals >= 0.66))
+                if ((homeResult.TwoToThreeGoals >= 0.66 && awayResult.TwoToThreeGoals >= 0.66 ||
+                     (homeResult.UnderTwoGoals >= 0.50 || homeResult.TwoToThreeGoals >= 0.66) &&
+                     (awayResult.UnderTwoGoals >= 0.50 || awayResult.TwoToThreeGoals >= 0.66)) && _headToHeadData.TwoToThreeGoalsGames >= 0.66 )
                 {
                     return new GoalAnalysis(true, QualificationType.Both, BetType.TwoToThreeGoals);
                 }

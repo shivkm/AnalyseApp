@@ -71,13 +71,13 @@ internal static class MatchesExtensions
         };
     }
 
-    internal static IEnumerable<Matches> GetHeadToHeadMatchesBy(this List<Matches> premierLeagueGames, string homeTeam, string awayTeam, string playedOn)
+    internal static IEnumerable<Matches> GetHeadToHeadMatchesBy(this List<Matches> premierLeagueGames, string homeTeam, string awayTeam, DateTime playedOn)
     {
         var homeMatches = premierLeagueGames
             .Where(i =>
             {
-                var matchDate = Convert.ToDateTime(i.Date);
-                return matchDate < Convert.ToDateTime(playedOn);
+                var matchDate = i.Date.Parse();
+                return matchDate < playedOn;
             })
             .Where(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam ||
                         i.AwayTeam == homeTeam && i.HomeTeam == awayTeam)

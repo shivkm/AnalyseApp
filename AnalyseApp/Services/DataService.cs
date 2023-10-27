@@ -14,14 +14,14 @@ public class DataService: IDataService
         _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
     }
     
-    public HeadToHeadData GetHeadToHeadDataBy(string homeTeam, string awayTeam, string playedOn)
+    public HeadToHeadData GetHeadToHeadDataBy(string homeTeam, string awayTeam, DateTime playedOn)
     {
         var matches = _historicalMatches
             .GetHeadToHeadMatchesBy(homeTeam, awayTeam, playedOn)
             .ToList();
 
-        var homeTeamScoringAvg = GetTeamScoredGooalsAvg(matches,homeTeam);
-        var awayTeamScoringAvg = GetTeamScoredGooalsAvg(matches, awayTeam);
+        var homeTeamData = GetTeamGoalsDataBy(homeTeam, matches);
+        var awayTeamData = GetTeamGoalsDataBy(awayTeam, matches);
 
         var overTwoGoals = GetOverGameAvg(matches) + 0.2;
         var underThreeGoals = GetUnderGameAvg(matches) + 0.3;
@@ -30,22 +30,20 @@ public class DataService: IDataService
         var noGoals = GetZeroScoredGameAvg(matches);
         var overThreeGoals = GetMoreThanThreeGoalGameAvg(matches);
         var homeTeamWon = matches.GetGameAvgBy(
-            matches.Count,
+            matches.Count(i => i.HomeTeam == homeTeam),
             match => match.HomeTeam == homeTeam && match.FTHG > match.FTAG ||
                                     match.AwayTeam == homeTeam && match.FTHG < match.FTAG
         );
         var awayTeamWon = matches.GetGameAvgBy(
-            matches.Count,
+            matches.Count(i => i.AwayTeam == awayTeam),
             match => match.HomeTeam == awayTeam && match.FTHG > match.FTAG ||
-                                    match.AwayTeam == awayTeam && match.FTHG < match.FTAG
+                     match.AwayTeam == awayTeam && match.FTHG < match.FTAG
         );
-        var homeScoringPower = homeTeamScoringAvg.GetScoredGoalProbabilityBy();
-        var awayScoringPower = awayTeamScoringAvg.GetScoredGoalProbabilityBy();
 
         var headToHead = new HeadToHeadData(
             matches.Count,
-            homeScoringPower,
-            awayScoringPower,
+            homeTeamData,
+            awayTeamData,
             overTwoGoals, 
             underThreeGoals, 
             twoToThreeGoals,

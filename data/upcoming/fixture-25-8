@@ -15,7 +15,9 @@ I1,27/08/2023,17:30,Fiorentina,Lecce,2,2,2,0
 I1,27/08/2023,17:30,Juventus,Bologna,1,1,0,1
 I1,27/08/2023,19:45,Lazio,Genoa,0,1,0,1
 I1,27/08/2023,19:45,Napoli,Sassuolo,2,0,1,0
-I2,27/08/2023,19:30,Catanzaro,Ternana,2,1,1,1
+D2,27/08/2023,12:30,Karlsruhe,Braunschweig,2,0,1,0
+D2,27/08/2023,12:30,Nurnberg,Wehen,2,1,0,0
+D2,27/08/2023,12:30,St Pauli,Magdeburg,0,0,0,0
 SP1,27/08/2023,16:30,Villarreal,Barcelona,3,4,2,2
 SP1,27/08/2023,18:30,Valencia,Osasuna,1,2,0,1
 SP1,27/08/2023,20:30,Ath Bilbao,Betis,4,2,3,2
@@ -69,12 +71,10 @@ I1,26/08/2023,17:30,Frosinone,Atalanta,2,1,2,0
 I1,26/08/2023,17:30,Monza,Empoli,2,0,1,0
 I1,26/08/2023,19:45,Milan,Torino,4,1,3,1
 I1,26/08/2023,19:45,Verona,Roma,2,1,2,0
-I2,26/08/2023,17:00,Venezia,Cosenza,1,1,0,1
-I2,26/08/2023,19:30,Como,Reggiana,2,2,1,0
-I2,26/08/2023,19:30,Cremonese,Bari,0,1,0,1
-I2,26/08/2023,19:30,FeralpiSalo,Sudtirol,0,2,0,1
-I2,26/08/2023,19:30,Modena,Ascoli,1,0,0,0
-I2,26/08/2023,19:30,Parma,Cittadella,2,0,1,0
+D2,26/08/2023,12:00,Elversberg,Fortuna Dusseldorf,0,5,0,3
+D2,26/08/2023,12:00,Hansa Rostock,Osnabruck,2,1,1,1
+D2,26/08/2023,12:00,Hertha,Greuther Furth,5,0,2,0
+D2,26/08/2023,19:30,Hannover,Hamburg,0,1,0,0
 SP1,26/08/2023,18:00,Cadiz,Almeria,1,1,0,0
 SP1,26/08/2023,18:30,Granada,Mallorca,3,2,1,1
 SP1,26/08/2023,20:30,Sevilla,Girona,1,2,1,1
@@ -102,7 +102,8 @@ F1,26/08/2023,20:00,Paris SG,Lens,3,1,1,0
 E0,25/08/2023,20:00,Chelsea,Luton,3,0,1,0
 E1,25/08/2023,19:30,Hull,Bristol City,1,1,1,0
 I2,25/08/2023,19:30,Sampdoria,Pisa,0,2,0,1
-I2,25/08/2023,19:30,Sampdoria,Pisa,0,2,0,1
+D2,25/08/2023,17:30,Paderborn,Kaiserslautern,1,2,0,0
+D2,25/08/2023,17:30,Schalke 04,Holstein Kiel,0,2,0,1
 SP1,25/08/2023,18:30,Las Palmas,Sociedad,0,0,0,0
 SP1,25/08/2023,20:30,Celta,Real Madrid,0,1,0,0
 D1,25/08/2023,19:30,RB Leipzig,Stuttgart,5,1,0,1

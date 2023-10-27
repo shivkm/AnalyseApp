@@ -11,8 +11,8 @@ public record TeamAverage(
 
 public record HeadToHeadData(
     int Count,
-    double HomeScoringPower,
-    double AwayScoringPower,
+    TeamGoals HomeTeamData,
+    TeamGoals AwayTeamData,
     double OverScoredGames,
     double UnderTwoScoredGames,
     double TwoToThreeGoalsGames,

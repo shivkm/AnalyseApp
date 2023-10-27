@@ -4,7 +4,7 @@ namespace AnalyseApp.Interfaces;
 
 public interface IDataService
 {
-    HeadToHeadData GetHeadToHeadDataBy(string homeTeam, string awayTeam, string playedOn);
+    HeadToHeadData GetHeadToHeadDataBy(string homeTeam, string awayTeam, DateTime playedOn);
 
     TeamData GetTeamDataBy(string teamName, IList<Matches> data);
 }

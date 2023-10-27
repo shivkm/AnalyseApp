@@ -17,9 +17,9 @@ I1,24/09/2023,14:00,Atalanta,Cagliari,2,0,1,0
 I1,24/09/2023,14:00,Udinese,Fiorentina,0,2,0,1
 I1,24/09/2023,17:00,Bologna,Napoli,0,0,0,0
 I1,24/09/2023,19:45,Torino,Roma,1,1,0,0
-I2,24/09/2023,15:15,Bari,Catanzaro,2,2,1,2
-I2,24/09/2023,15:15,Cittadella,Como,0,3,0,2
-I2,24/09/2023,15:15,Parma,Sampdoria,1,1,0,1
+D2,24/09/2023,12:30,Fortuna Dusseldorf,Hannover,1,1,0,1
+D2,24/09/2023,12:30,Holstein Kiel,Hertha,2,3,0,2
+D2,24/09/2023,12:30,Kaiserslautern,Hansa Rostock,3,1,2,1
 SP1,24/09/2023,13:00,Sociedad,Getafe,4,3,1,2
 SP1,24/09/2023,15:15,Vallecano,Villarreal,1,1,1,1
 SP1,24/09/2023,17:30,Betis,Cadiz,1,1,0,1
@@ -69,12 +69,10 @@ E2,23/09/2023,15:00,Portsmouth,Lincoln,2,1,2,1
 I1,23/09/2023,14:00,Milan,Verona,1,0,1,0
 I1,23/09/2023,17:00,Sassuolo,Juventus,4,2,2,1
 I1,23/09/2023,19:45,Lazio,Monza,1,1,1,1
-I2,23/09/2023,13:00,Brescia,Venezia,0,0,0,0
-I2,23/09/2023,13:00,Cremonese,Ascoli,2,2,1,1
-I2,23/09/2023,13:00,FeralpiSalo,Pisa,0,1,0,0
-I2,23/09/2023,13:00,Modena,Lecco,0,0,0,0
-I2,23/09/2023,13:00,Ternana,Sudtirol,1,1,1,0
-I2,23/09/2023,15:15,Spezia,Reggiana,1,2,0,0
+D2,23/09/2023,12:00,Braunschweig,Nurnberg,2,2,1,2
+D2,23/09/2023,12:00,Greuther Furth,Karlsruhe,4,3,3,3
+D2,23/09/2023,12:00,Wehen,Elversberg,0,2,0,1
+D2,23/09/2023,19:30,St Pauli,Schalke 04,3,1,1,1
 SP1,23/09/2023,13:00,Girona,Mallorca,5,3,4,1
 SP1,23/09/2023,15:15,Osasuna,Sevilla,0,0,0,0
 SP1,23/09/2023,17:30,Barcelona,Celta,3,2,0,1
@@ -105,7 +103,8 @@ E1,22/09/2023,20:00,Birmingham,QPR,0,0,0,0
 I2,22/09/2023,19:30,Palermo,Cosenza,0,1,0,0
 I1,22/09/2023,17:30,Salernitana,Frosinone,1,1,0,1
 I1,22/09/2023,19:45,Lecce,Genoa,1,0,0,0
-I2,22/09/2023,19:30,Palermo,Cosenza,0,1,0,0
+D2,22/09/2023,17:30,Magdeburg,Paderborn,1,1,0,1
+D2,22/09/2023,17:30,Osnabruck,Hamburg,2,1,2,1
 SP1,22/09/2023,20:00,Alaves,Ath Bilbao,0,2,0,1
 D1,22/09/2023,19:30,Stuttgart,Darmstadt,3,1,2,1
 SP2,22/09/2023,20:00,Cartagena,Eibar,1,2,0,1
