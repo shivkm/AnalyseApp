@@ -39,12 +39,11 @@ public class PremierLeagueUnitTests
         InlineData("fixture-18-8"),
         InlineData("fixture-25-8"),
         InlineData("fixture-1-9"),
-        InlineData("fixture-9-9"),
-        InlineData("fixture-16-9"),
-        InlineData("fixture-23-9"),
-        InlineData("fixture-30-9"),
-        InlineData("fixture-7-10"),
-        InlineData("fixture-14-10"),
+        InlineData("fixture-15-9"),
+        InlineData("fixture-22-9"),
+        InlineData("fixture-29-9"),
+        InlineData("fixture-6-10"),
+        InlineData("fixture-21-10"),
 
     ]
     public void PremierLeague_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
@@ -63,7 +62,7 @@ public class PremierLeagueUnitTests
             var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
-            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} scoring power: {actual.Percentage:F}";
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
             if (!actual.Qualified) continue;
             
             if (isCorrect)
@@ -80,11 +79,224 @@ public class PremierLeagueUnitTests
         }
 
         var accuracyRate = _correctCount / (double)_totalCount * 100;
-        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  accuracy rate: {accuracyRate:F}");
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
         accuracyRate.Should().BeGreaterOrEqualTo(75);
     }
+    
+    [
+        Theory(DisplayName = "championship league predictions"), 
+        InlineData("fixture-18-8"),
+        InlineData("fixture-25-8"),
+        InlineData("fixture-1-9"),
+        InlineData("fixture-15-9"),
+        InlineData("fixture-22-9"),
+        InlineData("fixture-29-9"),
+        InlineData("fixture-7-10"),
+        InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
+
+    ]
+    public void ChampionshipLeague_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
+    {
+        // ARRANGE
+        var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
+        var premierLeagueMatches = fixture
+            .Where(i => i.Div == "E1")
+            .ToList();
+
+        if (premierLeagueMatches.Count is 0) return;
+        
+        // ACTUAL 
+        foreach (var matches in premierLeagueMatches)
+        {
+            var actual = _matchPredictor.Execute(matches);
+            var isCorrect = GetTheCorrectResult(matches, actual.Type);
+            
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                _correctCount++;
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+            }
+            else
+            {
+                _wrongCount++;
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+            }
+            _totalCount++;
+        }
+
+        var accuracyRate = _correctCount / (double)_totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
+
+        // ASSERT
+        accuracyRate.Should().BeGreaterOrEqualTo(75);
+    }
+    
+    [
+        Theory(DisplayName = "League one predictions"), 
+        InlineData("fixture-18-8"),
+        InlineData("fixture-25-8"),
+        InlineData("fixture-1-9"),
+        InlineData("fixture-9-9"),
+        InlineData("fixture-16-9"),
+        InlineData("fixture-23-9"),
+        InlineData("fixture-30-9"),
+        InlineData("fixture-7-10"),
+        InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
+
+    ]
+    public void LeagueOne_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
+    {
+        // ARRANGE
+        var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
+        var premierLeagueMatches = fixture
+            .Where(i => i.Div == "E2")
+            .ToList();
+
+        if (premierLeagueMatches.Count is 0) return;
+        
+        // ACTUAL 
+        foreach (var matches in premierLeagueMatches)
+        {
+            var actual = _matchPredictor.Execute(matches);
+            var isCorrect = GetTheCorrectResult(matches, actual.Type);
+            
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                _correctCount++;
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+            }
+            else
+            {
+                _wrongCount++;
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+            }
+            _totalCount++;
+        }
+
+        var accuracyRate = _correctCount / (double)_totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
+
+        // ASSERT
+        accuracyRate.Should().BeGreaterOrEqualTo(75);
+    }
+
+    [
+        Theory(DisplayName = "Bundesliga predictions"), 
+        InlineData("fixture-18-8"),
+        InlineData("fixture-25-8"),
+        InlineData("fixture-1-9"),
+        InlineData("fixture-9-9"),
+        InlineData("fixture-16-9"),
+        InlineData("fixture-23-9"),
+        InlineData("fixture-30-9"),
+        InlineData("fixture-7-10"),
+        InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
+
+    ]
+    public void Bundesliga_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
+    {
+        // ARRANGE
+        var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
+        var premierLeagueMatches = fixture
+            .Where(i => i.Div == "D1")
+            .ToList();
+
+        if (premierLeagueMatches.Count is 0) return;
+        
+        // ACTUAL 
+        foreach (var matches in premierLeagueMatches)
+        {
+            var actual = _matchPredictor.Execute(matches);
+            var isCorrect = GetTheCorrectResult(matches, actual.Type);
+            
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                _correctCount++;
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+            }
+            else
+            {
+                _wrongCount++;
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+            }
+            _totalCount++;
+        }
+
+        var accuracyRate = _correctCount / (double)_totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
+
+        // ASSERT
+        accuracyRate.Should().BeGreaterOrEqualTo(75);
+    }
+
+    
+    [
+        Theory(DisplayName = "Bundesliga 2 predictions"), 
+        InlineData("fixture-18-8"),
+        InlineData("fixture-25-8"),
+        InlineData("fixture-1-9"),
+        InlineData("fixture-9-9"),
+        InlineData("fixture-16-9"),
+        InlineData("fixture-23-9"),
+        InlineData("fixture-30-9"),
+        InlineData("fixture-7-10"),
+        InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
+
+    ]
+    public void Bundesliga2_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
+    {
+        // ARRANGE
+        var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
+        var premierLeagueMatches = fixture
+            .Where(i => i.Div == "D2")
+            .ToList();
+
+        if (premierLeagueMatches.Count is 0) return;
+        
+        // ACTUAL 
+        foreach (var matches in premierLeagueMatches)
+        {
+            var actual = _matchPredictor.Execute(matches);
+            var isCorrect = GetTheCorrectResult(matches, actual.Type);
+            
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
+            if (!actual.Qualified) continue;
+            
+            if (isCorrect)
+            {
+                _correctCount++;
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+            }
+            else
+            {
+                _wrongCount++;
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+            }
+            _totalCount++;
+        }
+
+        var accuracyRate = _correctCount / (double)_totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
+
+        // ASSERT
+        accuracyRate.Should().BeGreaterOrEqualTo(75);
+    }
+
     
     [
         Theory(DisplayName = "Spanish league predictions"), 
@@ -97,6 +309,7 @@ public class PremierLeagueUnitTests
         InlineData("fixture-30-9"),
         InlineData("fixture-7-10"),
         InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
     ]
     public void SpanishLeague_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
     {
@@ -114,7 +327,7 @@ public class PremierLeagueUnitTests
             var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
-            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} scoring power: {actual.Percentage:F}";
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
             if (!actual.Qualified) continue;
             
             if (isCorrect)
@@ -131,7 +344,7 @@ public class PremierLeagueUnitTests
         }
 
         var accuracyRate = _correctCount / (double)_totalCount * 100;
-        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  accuracy rate: {accuracyRate:F}");
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
         accuracyRate.Should().BeGreaterOrEqualTo(70);
@@ -148,6 +361,7 @@ public class PremierLeagueUnitTests
         InlineData("fixture-30-9"),
         InlineData("fixture-7-10"),
         InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
     ]
     public void ItalianLeague_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
     {
@@ -165,7 +379,7 @@ public class PremierLeagueUnitTests
             var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
-            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} scoring power: {actual.Percentage:F}";
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
             if (!actual.Qualified) continue;
             
             if (isCorrect)
@@ -182,7 +396,7 @@ public class PremierLeagueUnitTests
         }
 
         var accuracyRate = _correctCount / (double)_totalCount * 100;
-        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  accuracy rate: {accuracyRate:F}");
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
         accuracyRate.Should().BeGreaterOrEqualTo(70);
@@ -199,6 +413,7 @@ public class PremierLeagueUnitTests
         InlineData("fixture-30-9"),
         InlineData("fixture-7-10"),
         InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
     ]
     public void FrenchLeague_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
     {
@@ -216,7 +431,7 @@ public class PremierLeagueUnitTests
             var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
-            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} scoring power: {actual.Percentage:F}";
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
             if (!actual.Qualified) continue;
             
             if (isCorrect)
@@ -233,7 +448,7 @@ public class PremierLeagueUnitTests
         }
 
         var accuracyRate = _correctCount / (double)_totalCount * 100;
-        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  accuracy rate: {accuracyRate:F}");
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
         accuracyRate.Should().BeGreaterOrEqualTo(70);
@@ -250,6 +465,7 @@ public class PremierLeagueUnitTests
         InlineData("fixture-30-9"),
         InlineData("fixture-7-10"),
         InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
     ]
     public void SpanishLeagueTwo_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
     {
@@ -267,7 +483,7 @@ public class PremierLeagueUnitTests
             var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
-            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} scoring power: {actual.Percentage:F}";
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
             if (!actual.Qualified) continue;
             
             if (isCorrect)
@@ -284,7 +500,7 @@ public class PremierLeagueUnitTests
         }
 
         var accuracyRate = _correctCount / (double)_totalCount * 100;
-        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  accuracy rate: {accuracyRate:F}");
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
         accuracyRate.Should().BeGreaterOrEqualTo(70);
@@ -301,6 +517,7 @@ public class PremierLeagueUnitTests
         InlineData("fixture-30-9"),
         InlineData("fixture-7-10"),
         InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
     ]
     public void ItalianLeagueTwo_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
     {
@@ -318,7 +535,7 @@ public class PremierLeagueUnitTests
             var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
-            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} scoring power: {actual.Percentage:F}";
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
             if (!actual.Qualified) continue;
             
             if (isCorrect)
@@ -335,7 +552,7 @@ public class PremierLeagueUnitTests
         }
 
         var accuracyRate = _correctCount / (double)_totalCount * 100;
-        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  accuracy rate: {accuracyRate:F}");
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
         accuracyRate.Should().BeGreaterOrEqualTo(70);
@@ -352,6 +569,7 @@ public class PremierLeagueUnitTests
         InlineData("fixture-30-9"),
         InlineData("fixture-7-10"),
         InlineData("fixture-14-10"),
+        InlineData("fixture-21-10"),
     ]
     public void FrenchLeagueTwo_Prediction_TheAccuracyRate_ShouldBeEqualOrGreaterThan_80Percent(string fixtureName)
     {
@@ -369,7 +587,7 @@ public class PremierLeagueUnitTests
             var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
-            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} scoring power: {actual.Percentage:F}";
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
             if (!actual.Qualified) continue;
             
             if (isCorrect)
@@ -386,7 +604,7 @@ public class PremierLeagueUnitTests
         }
 
         var accuracyRate = _correctCount / (double)_totalCount * 100;
-        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  accuracy rate: {accuracyRate:F}");
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
         accuracyRate.Should().BeGreaterOrEqualTo(70);

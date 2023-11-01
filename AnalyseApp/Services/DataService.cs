@@ -2,6 +2,7 @@
 using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
+using AnalyseApp.Models;
 
 namespace AnalyseApp.Services;
 
@@ -23,10 +24,10 @@ public class DataService: IDataService
         var homeTeamData = GetTeamGoalsDataBy(homeTeam, matches);
         var awayTeamData = GetTeamGoalsDataBy(awayTeam, matches);
 
-        var overTwoGoals = GetOverGameAvg(matches) + 0.2;
-        var underThreeGoals = GetUnderGameAvg(matches) + 0.3;
+        var overTwoGoals = GetOverGameAvg(matches);
+        var underThreeGoals = GetUnderGameAvg(matches);
         var twoToThreeGoals = GetTwoToThreeGameAvg(matches);
-        var goalGoal = GetBothScoredGameAvg(matches) + 0.1;
+        var goalGoal = GetBothScoredGameAvg(matches);
         var noGoals = GetZeroScoredGameAvg(matches);
         var overThreeGoals = GetMoreThanThreeGoalGameAvg(matches);
         var homeTeamWon = matches.GetGameAvgBy(
@@ -104,6 +105,48 @@ public class DataService: IDataService
         return teamData;
     }
 
+    public TeamGoalAverage CalculateTeamGoalAverageBy(string teamName, IList<Matches> matches)
+    {
+        var homeMatches = matches.Where(m => m.HomeTeam == teamName).ToList();
+        var awayMatches = matches.Where(m => m.AwayTeam == teamName).ToList();
+
+        // Recent matches
+        var recentHomeMatches = homeMatches.TakeLast(6).ToList();
+        var recentAwayMatches = awayMatches.TakeLast(6).ToList();
+
+        var overallPerformance = GetPerformanceBy(homeMatches, awayMatches);
+        var recentPerformance = GetPerformanceBy(recentHomeMatches, recentAwayMatches);
+        
+        return new TeamGoalAverage(overallPerformance, recentPerformance);
+    }
+
+    public HeadToHeadGoalAverage CalculateHeadToHeadAverageBy(string homeTeam, string awayTeam, DateTime playedOn)
+    {
+        var matches = _historicalMatches
+            .GetHeadToHeadMatchesBy(homeTeam, awayTeam, playedOn)
+            .ToList();
+        
+        var homeMatches = matches.Where(m => m.HomeTeam == homeTeam).ToList();
+        var awayMatches = matches.Where(m => m.AwayTeam == awayTeam).ToList();
+        var head2HeadGoalAverage = GetPerformanceBy(homeMatches, awayMatches);
+
+        return new HeadToHeadGoalAverage(head2HeadGoalAverage.AvgGoalsScored, head2HeadGoalAverage.AvgGoalsConceded);
+    }
+
+    private static GoalAverage GetPerformanceBy(IList<Matches> homeMatches, IList<Matches> awayMatches)
+    {
+        var avgGoalsScoredHome = homeMatches.Average(m => m.FTHG).GetValueOrDefault();
+        var avgGoalsScoredAway = awayMatches.Average(m => m.FTAG).GetValueOrDefault();
+
+        var avgGoalsConcededHome = homeMatches.Average(m => m.FTAG).GetValueOrDefault();
+        var avgGoalsConcededAway = awayMatches.Average(m => m.FTHG).GetValueOrDefault();
+
+        var avgGoalsScored = (avgGoalsScoredHome + avgGoalsScoredAway) / 2;
+        var avgGoalsConceded = (avgGoalsConcededHome + avgGoalsConcededAway) / 2;
+        
+        return new GoalAverage(avgGoalsScored, avgGoalsConceded);
+    }
+    
     private static TeamResult GetMatchResults(List<Matches> games)
     {
         var overTwoGoals = GetOverGameAvg(games);
