@@ -295,9 +295,12 @@ internal static class MatchesExtensions
                teamData is { TeamScoredGames: >= 0.50, TeamConcededGoalGames: >= 0.66 };
     }
     
-    public static bool IsUnPredictableGame(this TeamResult teamResult, TeamData teamData)
+    public static bool IsScoredGame(this TeamData teamData)
     {
-        return teamResult is { TwoToThreeGoals: <= 0.50, OverTwoGoals: <= 0.50, BothScoredGoals: <= 0.50, UnderTwoGoals: <= 0.50 } && 
-               teamData is { TeamScoredGames: >= 0.50, TeamConcededGoalGames: >= 0.66, LastThreeMatchResult: BetType.Unknown };
+        return teamData is 
+            { TeamScoredGames: >= 0.60, TeamConcededGoalGames: >= 0.60 } or
+            {TeamScoredGames: >= 0.60, TeamConcededGoalGames: >= 0.50 } or
+            {TeamScoredGames: >= 0.50, TeamConcededGoalGames: >= 0.60 }
+            ;
     }
 }

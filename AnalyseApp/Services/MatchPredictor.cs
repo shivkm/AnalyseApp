@@ -1,5 +1,4 @@
-﻿using Accord.Math;
-using AnalyseApp.Enums;
+﻿using AnalyseApp.Enums;
 using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
@@ -13,18 +12,17 @@ public class MatchPredictor: IMatchPredictor
     private readonly IDataService _dataService;
     private readonly IFileProcessor _fileProcessor;
 
-    public double ScoreProbabilityHigh = 0.68;
-    public double ConcededProbabilityHigh = 0.80;
-    public double ScoreDifference = 0.25;
+    private const double EightPercentageThreshold = 75;
+    private const double SeventyPercentageThreshold = 68;
+    private const double SixtyPercentageThreshold = 60;
+    
+    private double _homeProbability = 0.0;
+    private double _awayProbability = 0.0;
     
     private PoissonProbability _current = default!;
     private HeadToHeadData _headToHeadData = default!;
     private TeamData _homeTeamData = default!;
     private TeamData _awayTeamData = default!;
-    
-    private const double FiftyPercentage = 0.50;
-    private const double SixtyEightPercentage = 0.68;
-    private const double SeventyPercentage = 0.70;
     
     public MatchPredictor(IFileProcessor fileProcessor, IDataService dataService)
     {
@@ -63,159 +61,126 @@ public class MatchPredictor: IMatchPredictor
         
         var homeTeamGoalAvg = _dataService.CalculateTeamGoalAverageBy(matches.HomeTeam, historicalData);
         var awayTeamGoalAvg = _dataService.CalculateTeamGoalAverageBy(matches.AwayTeam, historicalData);
-        var headToHeadGoalAvg = _dataService.CalculateHeadToHeadAverageBy(matches.HomeTeam, matches.AwayTeam, matches.Date.Parse());
-        var goalProbabilities = CalculateGoalProbability(homeTeamGoalAvg, awayTeamGoalAvg, headToHeadGoalAvg, matches);
+        
+        // Define weights for each factor
+        _homeProbability = CombinedGoalProbability(homeTeamGoalAvg);
+        _awayProbability = CombinedGoalProbability(awayTeamGoalAvg);
 
-        if (goalProbabilities.Qualified)
+        var overTwoGoals = IsOverTwoGoals();
+        var bothTeamScoreGoals = IsBothTeamGoals();
+        var twoToThreeScoreGoals = IsTwoToThreeGoals();
+
+        if (overTwoGoals.Qualified)
         {
-            return new Prediction(0.0, goalProbabilities.BetType)
-            {
-                Qualified = true
-            };
+            return overTwoGoals;
+        }
+        
+        if (bothTeamScoreGoals.Qualified)
+        {
+            return bothTeamScoreGoals;
+        }
+        
+        if (twoToThreeScoreGoals.Qualified)
+        {
+            return twoToThreeScoreGoals;
         }
 
-        return new Prediction(0.0, BetType.Unknown) { Qualified = false };
-        
-        var overallScoringChance = GoalChancesInMatch();
-        var currentScoringChance = GoalChancesInMatch();
-        
-        if (overallScoringChance is { Qualified: true, Type: not QualificationType.None } &&
-            currentScoringChance is { Qualified: true, Type: not QualificationType.None })
-        {
-            return new Prediction(0.0, currentScoringChance.BetType)
-            {
-                Qualified = true
-            };
-        }
-
-        return new Prediction(0.0, BetType.UnderThreeGoals)
-        {
-            Qualified = true
-        };
+        return new Prediction(BetType.Unknown) { Qualified = false };
     }
 
+
+    private bool IsBothTeamsDefenceWeek() =>
+        _homeTeamData.TeamGoals.Total.ConcededProbability > 0.50 && 
+        _awayTeamData.TeamGoals.Total.ConcededProbability > 0.50;
+
     /// <summary>
-    /// This method will analyse the scoring and conceding goals based on the teams data
+    /// Analyse the Over two goals chance
     /// </summary>
     /// <returns></returns>
-    private GoalAnalysis GoalChancesInMatch()
+    private Prediction IsOverTwoGoals()
     {
-        // Teams overall scoring and conceding goals performance
-        var homeTotalGoals = _homeTeamData.TeamGoals.Total;
-        var awayTotalGoals = _awayTeamData.TeamGoals.Total;
-        var homeHomeGoals = _homeTeamData.TeamGoals.Home;
-        var awayAwayGoals = _awayTeamData.TeamGoals.Away;
-        var homeResult = _homeTeamData.TeamResult;
-        var awayResult = _awayTeamData.TeamResult;
-        
-        var homeTeamGoalsAvg = homeTotalGoals.ScoreProbability.IsGoalsPossible(homeTotalGoals.ConcededProbability);
-        var awayTeamGoalsAvg = awayTotalGoals.ScoreProbability.IsGoalsPossible(awayTotalGoals.ConcededProbability);
-        
-        if (homeTeamGoalsAvg && awayTeamGoalsAvg ||
-            homeTotalGoals.ScoreProbability > 0.68 && awayTotalGoals.ConcededProbability > 0.60 ||
-            awayTotalGoals.ScoreProbability > 0.68 && homeTotalGoals.ConcededProbability > 0.60)
+        // Team scoring performance of both team qualified for over two goals
+        if (_homeProbability >= EightPercentageThreshold && _awayProbability >= EightPercentageThreshold)
         {
-            if (_awayTeamData.LastThreeMatchResult is BetType.OverTwoGoals or BetType.BothTeamScoreGoals && _awayTeamData.TeamResult.UnderTwoGoals == 0 &&
-                _homeTeamData.LastThreeMatchResult is BetType.OverTwoGoals or BetType.BothTeamScoreGoals && _homeTeamData.TeamResult.UnderTwoGoals == 0)
+            // Both teams defence is not too strong (Both teams conceded goals are above 50%)
+            if (IsBothTeamsDefenceWeek())
             {
-                return new GoalAnalysis(true, QualificationType.Both, BetType.UnderThreeGoals);
-            }
-
-            // Home and away teams scoring and conceding goals performance in current collision
-            if (homeHomeGoals.ScoreProbability.IsGoalsPossible(homeHomeGoals.ConcededProbability) &&
-                awayAwayGoals.ScoreProbability.IsGoalsPossible(awayAwayGoals.ConcededProbability) &&
-                _headToHeadData.OverScoredGames >= 0.50
-               )
-            {
-                return new GoalAnalysis(true, QualificationType.Both, BetType.OverTwoGoals);
-            }
-            if (homeHomeGoals.ScoreProbability.IsGoalsPossible(homeHomeGoals.ConcededProbability) ||
-                awayAwayGoals.ScoreProbability.IsGoalsPossible(awayAwayGoals.ConcededProbability) 
-               )
-            {
-                if (homeResult.OverTwoGoals >= 0.50 && awayResult.OverTwoGoals >= 0.50 && _headToHeadData.OverScoredGames >= 0.50)
+                // Both teams has scoring and conceded games over seventy percentage
+                if (_awayTeamData.IsScoredGame() && _homeTeamData.IsScoredGame())
                 {
-                    return new GoalAnalysis(true, QualificationType.Both, BetType.OverTwoGoals);
-                }
-                if (homeResult.BothScoredGoals >= 0.50 && awayResult.BothScoredGoals >= 0.50 && _headToHeadData.OverScoredGames >= 0.50)
-                {
-                    return new GoalAnalysis(true, QualificationType.Both, BetType.BothTeamScoreGoals);
-                }
-                if ((homeResult.TwoToThreeGoals >= 0.50 && awayResult.TwoToThreeGoals >= 0.50 ||
-                     (homeResult.UnderTwoGoals >= 0.50 || homeResult.TwoToThreeGoals >= 0.50) &&
-                     (awayResult.UnderTwoGoals >= 0.50 || awayResult.TwoToThreeGoals >= 0.50)) && _headToHeadData.TwoToThreeGoalsGames >= 0.50 )
-                {
-                    return new GoalAnalysis(true, QualificationType.Both, BetType.TwoToThreeGoals);
-                }
-            }
-
-            var homeQualified = homeHomeGoals.ScoreProbability >= 0.68 &&
-                                awayAwayGoals.ConcededProbability > FiftyPercentage;
-
-            var awayQualified = awayAwayGoals.ScoreProbability >= 0.68 &&
-                                homeHomeGoals.ConcededProbability > FiftyPercentage;
-
-            // If one of the following condition doesn't fit than it has chance to be two to three goals
-            if (homeQualified && !awayQualified || !homeQualified && awayQualified)
-            {
-                if (homeResult.TwoToThreeGoals > FiftyPercentage && awayResult.TwoToThreeGoals > FiftyPercentage)
-                {
-                    return new GoalAnalysis(true, QualificationType.Both, BetType.TwoToThreeGoals);
+                    if (_homeTeamData.TeamResult.UnderTwoGoals < 0.30 && _homeTeamData.TeamResult.OverTwoGoals >= 0.60)
+                    {
+                        var scoringPower = _homeProbability + _awayProbability / 2;
+                        return new Prediction(BetType.OverTwoGoals)
+                        {
+                            Qualified = true,
+                            Percentage = scoringPower,
+                            Msg = "Both teams qualified to score over two goals"
+                        };
+                    }
                 }
             }
         }
 
-        if (homeTeamGoalsAvg || awayTeamGoalsAvg)
-        {
-            // Combination of this conditions make Chali games
-            if ((homeResult.IsChaliGame(_homeTeamData) || homeResult.IsUnPredictableGame(_awayTeamData)) &&
-                (awayResult.IsChaliGame(_awayTeamData) || awayResult.IsUnPredictableGame(_awayTeamData)))
-            {
-                return new GoalAnalysis(true, QualificationType.Both, BetType.OverTwoGoals);
-            }
-        }
-        return new GoalAnalysis(false, QualificationType.None, BetType.Unknown);
+        return new Prediction(BetType.Unknown);
     }
     
-    /// <summary>
-    /// This method will analyse the scoring and conceding goals based on the teams data
-    /// </summary>
-    /// <returns></returns>
-    private GoalAnalysis CalculateGoalProbability(TeamGoalAverage homeTeam, TeamGoalAverage awayTeam, HeadToHeadGoalAverage headToHeadGoalAverage, Matches match)
+    private Prediction IsBothTeamGoals()
     {
-        // Define weights for each factor
-        var homeProbability = CombinedGoalProbability(homeTeam);
-        var awayProbability = CombinedGoalProbability(awayTeam);
-        var headToHeadGoalProbability = CombinedGoalProbabilityH2H(headToHeadGoalAverage);
-
-        var scoringPower = (homeProbability + awayProbability + headToHeadGoalProbability) / 3;
-        const double eightPercentageThreshold = 75;
-        const double seventyPercentageThreshold = 70;
-        const double sixtyPercentageThreshold = 60;
-
-        var homeGoals = _homeTeamData.TeamGoals;
-        var awayGoals = _awayTeamData.TeamGoals;
-        var headToHeads = _headToHeadData;
-        
-        var teamsDefence = homeGoals.Total.ConcededProbability > 0.50 &&
-                                awayGoals.Total.ConcededProbability > 0.50;
-        
-        if (homeProbability >= eightPercentageThreshold && awayProbability >= eightPercentageThreshold && teamsDefence)
+        // Team scoring performance of both team qualified for over two goals
+        if (_homeProbability >= SeventyPercentageThreshold && _awayProbability >= SeventyPercentageThreshold)
         {
-            return new GoalAnalysis(true, QualificationType.Both, BetType.OverTwoGoals);
-        }
-        if (homeProbability >= seventyPercentageThreshold && awayProbability >= seventyPercentageThreshold && teamsDefence)
-        {
-            return new GoalAnalysis(true, QualificationType.Both, BetType.BothTeamScoreGoals);
-        }
-        if (homeProbability >= sixtyPercentageThreshold && awayProbability >= sixtyPercentageThreshold && teamsDefence)
-        {
-            return new GoalAnalysis(true, QualificationType.Both, BetType.TwoToThreeGoals);
+            // Both teams defence is not too strong (Both teams conceded goals are above 50%)
+            if (IsBothTeamsDefenceWeek())
+            {
+                // Both teams has scoring and conceded games over seventy percentage
+                if (_awayTeamData.IsScoredGame() && _homeTeamData.IsScoredGame())
+                {
+                    if (_homeTeamData.TeamResult is { UnderTwoGoals: < 0.30, BothScoredGoals: >= 0.60 })
+                    {
+                        var scoringPower = _homeProbability + _awayProbability / 2;
+                        return new Prediction(BetType.BothTeamScoreGoals)
+                        {
+                            Qualified = true,
+                            Percentage = scoringPower,
+                            Msg = "Both teams qualified to score over two goals"
+                        };
+                    }
+                }
+            }
         }
 
-        return new GoalAnalysis(true, QualificationType.Both, BetType.UnderThreeGoals);
+        return new Prediction(BetType.Unknown);
     }
 
+    private Prediction IsTwoToThreeGoals()
+    {
+        // Team scoring performance of both team qualified for over two goals
+        if (_homeProbability >= SixtyPercentageThreshold && _awayProbability >= SixtyPercentageThreshold)
+        {
+            // Both teams defence is not too strong (Both teams conceded goals are above 50%)
+            if (IsBothTeamsDefenceWeek())
+            {
+                // Both teams has scoring and conceded games over seventy percentage
+                if (_awayTeamData.IsScoredGame() && _homeTeamData.IsScoredGame())
+                {
+                    if (_homeTeamData.TeamResult is { UnderTwoGoals: < 0.30, BothScoredGoals: >= 0.60 })
+                    {
+                        var scoringPower = _homeProbability + _awayProbability / 2;
+                        return new Prediction(BetType.TwoToThreeGoals)
+                        {
+                            Qualified = true,
+                            Percentage = scoringPower,
+                            Msg = "Qualified for two to three goals"
+                        };
+                    }
+                }
+            }
+        }
+
+        return new Prediction(BetType.Unknown);
+    }
+    
     /// <summary>
     /// hypothetical formula based on sigmoid activation function (common in neural networks). The idea is that the weighted
     /// average goes through this formula to generate a value between 0 (no chance of scoring) and
@@ -223,10 +188,8 @@ public class MatchPredictor: IMatchPredictor
     /// </summary>
     /// <param name="x"></param>
     /// <returns></returns>
-    private static double SigmoidProbability(double x)
-    {
-        return 1 / (1 + Math.Exp(-x));
-    }
+    private static double SigmoidProbability(double x) => 1 / (1 + Math.Exp(-x));
+    
 
     /// <summary>
     /// Approach to reach linear prediction based on the current season and last six game
