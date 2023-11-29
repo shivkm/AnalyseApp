@@ -1,0 +1,113 @@
+Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG,HTHG,HTAG
+E0,02/10/2023,20:00,Fulham,Chelsea,0,2,0,2
+I1,02/10/2023,17:30,Sassuolo,Monza,0,1,0,0
+I1,02/10/2023,17:30,Torino,Verona,0,0,0,0
+I1,02/10/2023,19:45,Fiorentina,Cagliari,3,0,2,0
+SP1,02/10/2023,20:00,Las Palmas,Celta,2,1,0,0
+SP2,02/10/2023,20:00,Espanol,Ferrol,3,0,1,0
+F2,02/10/2023,19:45,Ajaccio,Bastia,2,0,0,0
+E0,01/10/2023,14:00,Nott'm Forest,Brentford,1,1,0,0
+E1,01/10/2023,12:00,Blackburn,Leicester,1,4,1,2
+I2,01/10/2023,15:15,Bari,Como,1,1,0,0
+I2,01/10/2023,15:15,Cittadella,Lecco,2,1,0,1
+I2,01/10/2023,15:15,Palermo,Sudtirol,2,1,0,1
+I2,01/10/2023,15:15,Sampdoria,Catanzaro,1,2,1,2
+I2,01/10/2023,17:30,Cremonese,Parma,1,2,0,0
+I1,01/10/2023,11:30,Bologna,Empoli,3,0,1,0
+I1,01/10/2023,14:00,Udinese,Genoa,2,2,1,2
+I1,01/10/2023,17:00,Atalanta,Juventus,0,0,0,0
+I1,01/10/2023,19:45,Roma,Frosinone,2,0,1,0
+D2,01/10/2023,12:30,Elversberg,Greuther Furth,1,1,1,1
+D2,01/10/2023,12:30,Nurnberg,Magdeburg,1,0,0,0
+D2,01/10/2023,12:30,Osnabruck,Kaiserslautern,2,2,2,1
+SP1,01/10/2023,13:00,Almeria,Granada,3,3,3,0
+SP1,01/10/2023,15:15,Alaves,Osasuna,0,2,0,1
+SP1,01/10/2023,20:00,Ath Madrid,Cadiz,3,2,1,2
+SP1,01/10/2023,20:00,Betis,Valencia,3,0,1,0
+D1,01/10/2023,14:30,Darmstadt,Werder Bremen,4,2,2,0
+D1,01/10/2023,16:30,Freiburg,Augsburg,2,0,1,0
+SP2,01/10/2023,13:00,Eldense,Oviedo,1,3,0,3
+SP2,01/10/2023,17:30,Amorebieta,Cartagena,0,0,0,0
+SP2,01/10/2023,17:30,Valladolid,Burgos,3,0,2,0
+SP2,01/10/2023,17:30,Zaragoza,Mirandes,0,1,0,0
+SP2,01/10/2023,20:00,Huesca,Sp Gijon,0,1,0,0
+F1,01/10/2023,12:00,Reims,Lyon,2,0,1,0
+F1,01/10/2023,14:00,Le Havre,Lille,0,2,0,1
+F1,01/10/2023,14:00,Nice,Brest,0,0,0,0
+F1,01/10/2023,14:00,Toulouse,Metz,3,0,2,0
+F1,01/10/2023,16:05,Lorient,Montpellier,0,3,0,1
+F1,01/10/2023,19:45,Rennes,Nantes,3,1,1,1
+E0,30/09/2023,12:30,Aston Villa,Brighton,6,1,3,0
+E0,30/09/2023,15:00,Bournemouth,Arsenal,0,4,0,2
+E0,30/09/2023,15:00,Everton,Luton,1,2,1,2
+E0,30/09/2023,15:00,Man United,Crystal Palace,0,1,0,1
+E0,30/09/2023,15:00,Newcastle,Burnley,2,0,1,0
+E0,30/09/2023,15:00,West Ham,Sheffield United,2,0,2,0
+E0,30/09/2023,15:00,Wolves,Man City,2,1,1,0
+E0,30/09/2023,17:30,Tottenham,Liverpool,2,1,1,1
+E1,30/09/2023,12:30,Southampton,Leeds,3,1,3,0
+E1,30/09/2023,15:00,Bristol City,Stoke,2,3,2,1
+E1,30/09/2023,15:00,Cardiff,Rotherham,2,0,0,0
+E1,30/09/2023,15:00,Huddersfield,Ipswich,1,1,0,0
+E1,30/09/2023,15:00,Hull,Plymouth,1,1,1,1
+E1,30/09/2023,15:00,Millwall,Swansea,0,3,0,1
+E1,30/09/2023,15:00,Norwich,Birmingham,2,0,0,0
+E1,30/09/2023,15:00,Preston,West Brom,0,4,0,2
+E1,30/09/2023,15:00,QPR,Coventry,1,3,0,0
+E1,30/09/2023,15:00,Watford,Middlesbrough,2,3,1,2
+I2,30/09/2023,13:00,Brescia,Ascoli,1,1,0,1
+I2,30/09/2023,13:00,FeralpiSalo,Spezia,1,2,0,2
+I2,30/09/2023,13:00,Modena,Venezia,1,3,0,0
+I2,30/09/2023,13:00,Pisa,Cosenza,1,2,0,1
+I2,30/09/2023,15:15,Ternana,Reggiana,3,0,2,0
+E2,30/09/2023,15:00,Barnsley,Blackpool,0,1,0,1
+E2,30/09/2023,15:00,Derby,Cambridge,0,0,0,0
+E2,30/09/2023,15:00,Exeter,Northampton,0,2,0,1
+E2,30/09/2023,15:00,Fleetwood Town,Leyton Orient,1,0,0,0
+E2,30/09/2023,15:00,Lincoln,Cheltenham,2,0,2,0
+E2,30/09/2023,15:00,Peterboro,Bristol Rvs,2,0,1,0
+E2,30/09/2023,15:00,Port Vale,Bolton,0,1,0,1
+E2,30/09/2023,15:00,Reading,Burton,0,0,0,0
+E2,30/09/2023,15:00,Shrewsbury,Charlton,0,0,0,0
+E2,30/09/2023,15:00,Stevenage,Oxford,1,3,1,1
+E2,30/09/2023,15:00,Wigan,Portsmouth,1,2,1,2
+E2,30/09/2023,15:00,Wycombe,Carlisle,2,0,1,0
+I1,30/09/2023,14:00,Lecce,Napoli,0,4,0,1
+I1,30/09/2023,17:00,Milan,Lazio,2,0,0,0
+I1,30/09/2023,19:45,Salernitana,Inter,0,4,0,0
+D2,30/09/2023,12:00,Hannover,Wehen,2,0,1,0
+D2,30/09/2023,12:00,Hansa Rostock,Braunschweig,1,0,0,0
+D2,30/09/2023,12:00,Karlsruhe,Holstein Kiel,0,2,0,2
+D2,30/09/2023,19:30,Hertha,St Pauli,1,2,0,1
+SP1,30/09/2023,13:00,Getafe,Villarreal,0,0,0,0
+SP1,30/09/2023,15:15,Vallecano,Mallorca,2,2,1,1
+SP1,30/09/2023,17:30,Girona,Real Madrid,0,3,0,2
+SP1,30/09/2023,20:00,Sociedad,Ath Bilbao,3,0,1,0
+D1,30/09/2023,14:30,Bochum,M'gladbach,1,3,0,3
+D1,30/09/2023,14:30,FC Koln,Stuttgart,0,2,0,0
+D1,30/09/2023,14:30,Heidenheim,Union Berlin,1,0,0,0
+D1,30/09/2023,14:30,Mainz,Leverkusen,0,3,0,1
+D1,30/09/2023,14:30,Wolfsburg,Ein Frankfurt,2,0,1,0
+D1,30/09/2023,17:30,RB Leipzig,Bayern Munich,2,2,2,0
+SP2,30/09/2023,15:15,Eibar,Tenerife,3,0,0,0
+SP2,30/09/2023,17:30,Elche,Levante,0,0,0,0
+SP2,30/09/2023,20:00,Albacete,Andorra,3,1,2,0
+SP2,30/09/2023,20:00,Villarreal B,Alcorcon,2,2,1,2
+F2,30/09/2023,14:00,Troyes,St Etienne,0,1,0,0
+F2,30/09/2023,18:00,Angers,Concarneau,2,0,0,0
+F2,30/09/2023,18:00,Annecy,Paris FC,2,2,1,0
+F2,30/09/2023,18:00,Auxerre,Rodez,3,1,1,0
+F2,30/09/2023,18:00,Caen,Guingamp,0,1,0,0
+F2,30/09/2023,18:00,Dunkerque,Quevilly Rouen,0,1,0,0
+F2,30/09/2023,18:00,Grenoble,Bordeaux,2,0,1,0
+F2,30/09/2023,18:00,Laval,Valenciennes,1,0,0,0
+F2,30/09/2023,18:00,Pau FC,Amiens,1,0,1,0
+F1,30/09/2023,16:00,Clermont,Paris SG,0,0,0,0
+F1,30/09/2023,20:00,Monaco,Marseille,3,2,2,2
+E1,29/09/2023,20:00,Sheffield Weds,Sunderland,0,3,0,3
+D2,29/09/2023,17:30,Hamburg,Fortuna Dusseldorf,1,0,0,0
+D2,29/09/2023,17:30,Paderborn,Schalke 04,3,1,1,0
+SP1,29/09/2023,20:00,Barcelona,Sevilla,1,0,0,0
+D1,29/09/2023,19:30,Hoffenheim,Dortmund,1,3,1,2
+SP2,29/09/2023,20:00,Leganes,Santander,2,1,1,0
+F1,29/09/2023,20:00,Strasbourg,Lens,0,1,0,1

@@ -2,20 +2,21 @@
 
 public static class PoissonServiceExtensions
 {
+    /// <summary>
+    /// - This method calculates the probability of scoring a certain number of goals based on a given average (lambda),
+    ///   summing up the probabilities for scoring 1 to 10 goals.
+    /// </summary>
+    /// <param name="lambda"></param>
+    /// <returns></returns>
     public static double GetScoredGoalProbabilityBy(this double lambda)
     {
-        var score = new List<int> { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         var probability = 0.0;
-
-        score.ForEach(i => { probability += PoissonProbability(lambda, i); });
+        for (var k = 1; k < 10; k++)
+        {
+            probability += Math.Pow(lambda, k) * Math.Exp(-lambda) / Factorial(k);
+        }
         
         return probability;
-    }
-    
-    private static double PoissonProbability(double lambda, int k)
-    {
-        // Calculate the Poisson probability for k goals given a lambda value
-        return Math.Pow(lambda, k) * Math.Exp(-lambda) / Factorial(k);
     }
     
     private static double Factorial(int n)
