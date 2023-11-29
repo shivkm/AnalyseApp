@@ -1,5 +1,6 @@
 ﻿using AnalyseApp.Enums;
 using AnalyseApp.models;
+using AnalyseApp.Models;
 
 namespace AnalyseApp.Extensions;
 
@@ -7,9 +8,9 @@ internal static class MatchesExtensions
 {
     private const double TwentyFactor =  0.20;
     private const double ThirtyFactor =  0.30;
-    private const double Forty =  0.40;
+    private const double Fifty =  0.50;
     private const double Sixty =  0.60;
-    
+    private const double Seventy = 0.70;
     internal static IEnumerable<Matches> OrderMatchesBy(this List<Matches> matches, DateTime playDate)
     {
         matches = matches.Where(i =>
@@ -291,7 +292,7 @@ internal static class MatchesExtensions
     public static bool IsChaliGame(this TeamResult teamResult, TeamData teamData)
     {
         return teamResult.TwoToThreeGoals > 0.80 && 
-               (teamResult.OverTwoGoals < 0.34 || teamResult.UnderTwoGoals < 0.34 || teamResult.BothScoredGoals < 0.34) &&
+               (teamResult.OverTwoGoals < 0.34 || teamResult.UnderThreeGoals < 0.34 || teamResult.BothScoredGoals < 0.34) &&
                teamData is { TeamScoredGames: >= 0.50, TeamConcededGoalGames: >= 0.66 };
     }
     
@@ -303,4 +304,108 @@ internal static class MatchesExtensions
             {TeamScoredGames: >= 0.50, TeamConcededGoalGames: >= 0.60 }
             ;
     }
+    
+   
+
+    public static HighestProbability GetHighestProbabilityBy(this TeamResult homeTeam, TeamResult awayTeam, HeadToHeadData headToHeadData)
+    {
+        var goalGoalProbability =  homeTeam.AtLeastOneGoalGameAvg.GetProbabilityBy(
+            awayTeam.AtLeastOneGoalGameAvg,
+            headToHeadData.GetHead2HeadValueBy("GoalGoal")
+            );
+        
+        var overTwoGoalsProbability = homeTeam.OverTwoGoals.GetProbabilityBy(
+            awayTeam.OverTwoGoals,
+            headToHeadData.GetHead2HeadValueBy("OverTwoGoals")
+            );
+        
+        var twoToThreeGoalProbability = homeTeam.TwoToThreeGoals.GetProbabilityBy(
+            awayTeam.TwoToThreeGoals,
+            headToHeadData.GetHead2HeadValueBy("TwoToThreeGoals")
+            );
+
+        var highestProbabilityOutcome = overTwoGoalsProbability.GetHighestProbability(
+            goalGoalProbability, 
+            twoToThreeGoalProbability
+        );
+
+        return highestProbabilityOutcome;
+    }
+
+    private static double GetHead2HeadValueBy(this HeadToHeadData headToHead, string type)
+    {
+        if (headToHead.Count < 2) return 0.0;
+
+        return type switch
+        {
+            "GoalGoal" => headToHead.BothTeamScoredGames,
+            "OverTwoGoals" => headToHead.OverScoredGames,
+            "UnderThreeGoals" => headToHead.UnderThreeScoredGames,
+            "TwoToThreeGoals" => headToHead.TwoToThreeGoalsGames,
+            _ => 0.0
+        };
+    }
+    
+    
+    private static double GetProbabilityBy(this double left, double right, double middle = 0.0)
+    {
+        var percentage = middle == 0.0 ? left + right / 2 : left + middle + right / 3;
+        var probability = Math.Exp(-percentage);
+        return 1 - probability;
+    }
+    
+    private static HighestProbability GetHighestProbability(this double overTwoGoals, double goalGoal, double twoToThreeGoal)
+    {
+        var probabilities = new List<Probability>
+        {
+            new("Over Two Goals", overTwoGoals),
+            new("Goal Goal", goalGoal),
+            new("Two to Three Goals", twoToThreeGoal)
+        };
+
+        var orderByProbability = probabilities.OrderByDescending(o => o.Percentage).ToList();
+        
+        return new HighestProbability(
+            orderByProbability.First(),
+            orderByProbability
+        );
+    } 
+    
+    public static BetType ToBetType(this string type)
+    {
+        return type switch
+        {
+            "Over Two Goals" => BetType.OverTwoGoals,
+            "Two to Three Goals" => BetType.TwoToThreeGoals,
+            "Goal Goal" => BetType.GoalGoal,
+            _ => BetType.Unknown,
+        };
+    }
+
+    private static double LinearPrediction(this Goals teamOne, Goals teamTwo) =>
+        teamOne.ScoreProbability * Fifty + teamTwo.ScoreProbability * Fifty;
+    
+    public static double ExponentialPrediction(this TeamGoalAverage performance) =>
+        Math.Pow(performance.Recent.ScoredGoalProbability, 2) * 0.40 + performance.Overall.ScoredGoalProbability * 0.60;
+
+    public static double RatioPrediction(this TeamGoalAverage performance)
+    {
+        // Avoiding division by zero
+        if (performance.Overall.ConcededGoalProbability == 0 || performance.Recent.ConcededGoalProbability == 0) 
+            return performance.Overall.ScoredGoalProbability + performance.Recent.ScoredGoalProbability;
+
+        var seasonRatio = performance.Overall.ScoredGoalProbability / performance.Overall.ConcededGoalProbability;
+        var recentRatio = performance.Recent.ScoredGoalProbability / performance.Recent.ConcededGoalProbability;
+
+        return 0.6 * seasonRatio + 0.4 * recentRatio;
+    }
+    
+    /// <summary>
+    /// hypothetical formula based on sigmoid activation function (common in neural networks). The idea is that the weighted
+    /// average goes through this formula to generate a value between 0 (no chance of scoring) and
+    /// 1 (guaranteed to score). We can then multiply by 100 to get a percentage.
+    /// </summary>
+    /// <param name="x"></param>
+    /// <returns></returns>
+    private static double SigmoidProbability(double x) => 1 / (1 + Math.Exp(-x));
 }

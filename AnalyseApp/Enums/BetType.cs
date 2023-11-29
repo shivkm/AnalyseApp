@@ -6,7 +6,7 @@ public enum BetType
     OverThreeGoals,
     UnderThreeGoals,
     TwoToThreeGoals,
-    BothTeamScoreGoals,
+    GoalGoal,
     HomeWin,
     AwayWin,
     Unknown

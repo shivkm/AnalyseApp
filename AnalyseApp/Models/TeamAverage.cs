@@ -1,4 +1,5 @@
 ﻿using AnalyseApp.Enums;
+using AnalyseApp.Models;
 
 namespace AnalyseApp.models;
 
@@ -11,10 +12,10 @@ public record TeamAverage(
 
 public record HeadToHeadData(
     int Count,
-    TeamGoals HomeTeamData,
-    TeamGoals AwayTeamData,
+    double HomeProbability,
+    double AwayProbability,
     double OverScoredGames,
-    double UnderTwoScoredGames,
+    double UnderThreeScoredGames,
     double TwoToThreeGoalsGames,
     double BothTeamScoredGames,
     double ZeroScoredGoalGames,
@@ -32,11 +33,10 @@ public record TeamData(
     int GamesCount,
     TeamResult TeamResult,
     TeamOdds TeamOdds,
-    TeamGoals TeamGoals,
-    TeamGoals SeasonTeamGoals,
+    GoalPower GoalPower,
     double TeamScoredGames,
     double TeamConcededGoalGames,
-    BetType LastThreeMatchResult
+    LastThreeGameType LastThreeGameType
 )
 {
     public Suggestion Suggestion { get; set; } = default!;
@@ -44,8 +44,9 @@ public record TeamData(
 
 public record MatchGoalsData(Goals Home, Goals Away);
 
-public record TeamOdds(double HomeWin, double AwayWin, double Draw);
-public record TeamResult(double OverTwoGoals, double BothScoredGoals, double TwoToThreeGoals, double UnderTwoGoals);
+public record TeamOdds(double HomeWin, double AwayWin, double Win, double Loss, double Draw);
+public record TeamResult(double OverTwoGoals, double BothScoredGoals, double TwoToThreeGoals,
+    double UnderThreeGoals, double NoGoalGameAvg, double AtLeastOneGoalGameAvg, double UnderFourGoalsGameAvg);
 public record TeamGoals(Goals Total, Goals Home, Goals Away);
 public record Goals(int MatchCount, int Scored, int Conceded, double ScoredAvg, double ConcededAvg, double ScoreProbability, double ConcededProbability);
 

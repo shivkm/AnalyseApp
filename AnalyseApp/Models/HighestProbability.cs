@@ -1,3 +1,4 @@
 namespace AnalyseApp.Models;
 
-public record HighestProbability();
+public record HighestProbability(Probability Suggestion, List<Probability> Probabilities);
+public record Probability(string Type, double Percentage);

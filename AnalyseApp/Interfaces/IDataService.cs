@@ -8,6 +8,6 @@ public interface IDataService
     HeadToHeadData GetHeadToHeadDataBy(string homeTeam, string awayTeam, DateTime playedOn);
 
     TeamData GetTeamDataBy(string teamName, IList<Matches> data);
-    TeamGoalAverage CalculateTeamGoalAverageBy(string teamName, IList<Matches> data);
+    TeamGoalAverage CalculateTeamGoalAverageBy(string teamName, IList<Matches> data, bool isHome = false);
     HeadToHeadGoalAverage CalculateHeadToHeadAverageBy(string homeTeam, string awayTeam, DateTime playedOn);
 }
