@@ -1,16 +1,6 @@
-using AnalyseApp.Interfaces;
-using AnalyseApp.models;
-
 namespace AnalyseApp.Services;
 
-public class DataProcessor : IDataProcessor
+public class DataProcessor
 {
-    private readonly List<Matches> _historicalMatches;
-
-    public DataProcessor(IFileProcessor fileProcessor)
-    {
-        _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
-    }
-    
     
 }
