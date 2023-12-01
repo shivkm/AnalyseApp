@@ -3,7 +3,7 @@ using AnalyseApp.Models;
 
 namespace AnalyseApp.models;
 
-public record TeamAverage(
+public record TeamScoringAverage(
     double ScoreAvg,
     double ScoreAvgAtHome,
     double ScoreAvgAtAway,

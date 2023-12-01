@@ -21,7 +21,7 @@ public class Worker: BackgroundService
             {
                 using var scope = _scopeFactory.CreateScope();
                 var predictService = scope.ServiceProvider.GetRequiredService<IMatchPredictor>();
-                predictService.GetPredictionAccuracyRate("");
+                predictService.GenerateFixtureFiles("");
             }
             catch (HttpRequestException ex)
             {

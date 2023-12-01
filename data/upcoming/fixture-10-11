@@ -1,0 +1,111 @@
+Div,Date,Time,HomeTeam,AwayTeam,FTHG,FTAG,HTHG,HTAG
+SP2,13/11/2023,20:00,Oviedo,Cartagena,1,1,0,1
+E0,12/11/2023,14:00,Aston Villa,Fulham,3,1,2,0
+E0,12/11/2023,14:00,Brighton,Sheffield United,1,1,1,0
+E0,12/11/2023,14:00,Liverpool,Brentford,3,0,1,0
+E0,12/11/2023,14:00,West Ham,Nott'm Forest,3,2,1,1
+E0,12/11/2023,16:30,Chelsea,Man City,4,4,2,2
+I2,12/11/2023,15:15,Brescia,Cremonese,0,3,0,2
+I2,12/11/2023,15:15,Lecco,Parma,3,2,2,1
+I2,12/11/2023,15:15,Palermo,Cittadella,0,1,0,0
+I2,12/11/2023,15:15,Spezia,Ternana,2,2,1,1
+I1,12/11/2023,11:30,Napoli,Empoli,0,1,0,0
+I1,12/11/2023,14:00,Fiorentina,Bologna,2,1,1,1
+I1,12/11/2023,14:00,Udinese,Atalanta,1,1,1,0
+I1,12/11/2023,17:00,Lazio,Roma,0,0,0,0
+I1,12/11/2023,19:45,Inter,Frosinone,2,0,1,0
+D2,12/11/2023,12:30,Greuther Furth,Fortuna Dusseldorf,1,0,0,0
+D2,12/11/2023,12:30,Magdeburg,Hansa Rostock,1,2,1,0
+D2,12/11/2023,12:30,Wehen,Kaiserslautern,2,1,0,1
+SP1,12/11/2023,15:15,Barcelona,Alaves,2,1,0,1
+SP1,12/11/2023,17:30,Sevilla,Betis,1,1,0,0
+SP1,12/11/2023,20:00,Ath Madrid,Villarreal,3,1,1,1
+D1,12/11/2023,14:30,Leverkusen,Union Berlin,4,0,1,0
+D1,12/11/2023,16:30,Werder Bremen,Ein Frankfurt,2,2,1,0
+D1,12/11/2023,18:30,RB Leipzig,Freiburg,3,1,1,1
+SP2,12/11/2023,13:00,Burgos,Alcorcon,4,2,0,2
+SP2,12/11/2023,15:15,Andorra,Eldense,1,3,1,1
+SP2,12/11/2023,17:30,Huesca,Espanol,1,1,0,0
+SP2,12/11/2023,17:30,Tenerife,Villarreal B,0,1,0,1
+SP2,12/11/2023,20:00,Eibar,Albacete,1,1,1,0
+F1,12/11/2023,14:00,Clermont,Lorient,1,0,0,0
+F1,12/11/2023,14:00,Lille,Toulouse,1,1,1,0
+F1,12/11/2023,14:00,Metz,Nantes,3,1,2,1
+F1,12/11/2023,16:05,Rennes,Lyon,0,1,0,0
+F1,12/11/2023,19:45,Lens,Marseille,1,0,0,0
+E0,11/11/2023,12:30,Wolves,Tottenham,2,1,0,1
+E0,11/11/2023,15:00,Arsenal,Burnley,3,1,1,0
+E0,11/11/2023,15:00,Crystal Palace,Everton,2,3,1,1
+E0,11/11/2023,15:00,Man United,Luton,1,0,0,0
+E0,11/11/2023,17:30,Bournemouth,Newcastle,2,0,0,0
+E1,11/11/2023,12:30,Sunderland,Birmingham,3,1,1,1
+E1,11/11/2023,15:00,Cardiff,Norwich,2,3,2,1
+E1,11/11/2023,15:00,Coventry,Stoke,0,0,0,0
+E1,11/11/2023,15:00,Hull,Huddersfield,1,0,0,0
+E1,11/11/2023,15:00,Ipswich,Swansea,3,2,2,1
+E1,11/11/2023,15:00,Leeds,Plymouth,2,1,2,0
+E1,11/11/2023,15:00,Middlesbrough,Leicester,1,0,0,0
+E1,11/11/2023,15:00,QPR,Bristol City,0,0,0,0
+E1,11/11/2023,15:00,Sheffield Weds,Millwall,0,4,0,2
+E1,11/11/2023,15:00,Southampton,West Brom,2,1,1,0
+E1,11/11/2023,15:00,Watford,Rotherham,5,0,2,0
+I2,11/11/2023,13:00,Ascoli,Como,0,1,0,1
+I2,11/11/2023,13:00,Cosenza,Reggiana,2,0,1,0
+I2,11/11/2023,13:00,FeralpiSalo,Bari,3,3,0,1
+I2,11/11/2023,13:00,Sudtirol,Pisa,1,2,0,1
+I2,11/11/2023,15:15,Modena,Sampdoria,0,2,0,1
+E2,11/11/2023,12:00,Peterboro,Cambridge,5,0,3,0
+E2,11/11/2023,15:00,Bolton,Blackpool,1,0,0,0
+E2,11/11/2023,15:00,Carlisle,Bristol Rvs,0,1,0,1
+E2,11/11/2023,15:00,Cheltenham,Wigan,1,1,1,1
+E2,11/11/2023,15:00,Derby,Barnsley,3,0,1,0
+E2,11/11/2023,15:00,Fleetwood Town,Exeter,3,0,3,0
+E2,11/11/2023,15:00,Leyton Orient,Oxford,2,3,0,2
+E2,11/11/2023,15:00,Lincoln,Port Vale,1,1,0,1
+E2,11/11/2023,15:00,Northampton,Burton,2,0,0,0
+E2,11/11/2023,15:00,Portsmouth,Charlton,2,2,1,0
+E2,11/11/2023,15:00,Shrewsbury,Reading,3,2,1,2
+E2,11/11/2023,15:00,Wycombe,Stevenage,0,1,0,1
+I1,11/11/2023,14:00,Lecce,Milan,2,2,0,2
+I1,11/11/2023,17:00,Juventus,Cagliari,2,1,0,0
+I1,11/11/2023,19:45,Monza,Torino,1,1,0,0
+D2,11/11/2023,12:00,Braunschweig,Osnabruck,3,2,1,1
+D2,11/11/2023,12:00,Holstein Kiel,Hamburg,4,2,1,0
+D2,11/11/2023,12:00,Paderborn,Nurnberg,1,3,0,3
+D2,11/11/2023,19:30,Hertha,Karlsruhe,2,2,2,1
+SP1,11/11/2023,13:00,Vallecano,Girona,1,2,1,1
+SP1,11/11/2023,15:15,Almeria,Sociedad,1,3,0,0
+SP1,11/11/2023,17:30,Granada,Getafe,1,1,1,1
+SP1,11/11/2023,17:30,Osasuna,Las Palmas,1,1,0,0
+SP1,11/11/2023,20:00,Real Madrid,Valencia,5,1,2,0
+D1,11/11/2023,14:30,Augsburg,Hoffenheim,1,1,0,1
+D1,11/11/2023,14:30,Bayern Munich,Heidenheim,4,2,2,0
+D1,11/11/2023,14:30,Darmstadt,Mainz,0,0,0,0
+D1,11/11/2023,14:30,Stuttgart,Dortmund,2,1,1,1
+D1,11/11/2023,17:30,Bochum,FC Koln,1,1,1,0
+SP2,11/11/2023,15:15,Santander,Valladolid,2,3,0,1
+SP2,11/11/2023,17:30,Elche,Zaragoza,2,0,0,0
+SP2,11/11/2023,17:30,Mirandes,Ferrol,1,2,0,2
+SP2,11/11/2023,20:00,Sp Gijon,Amorebieta,1,1,0,0
+F2,11/11/2023,14:00,Bordeaux,Annecy,3,1,2,1
+F2,11/11/2023,18:00,Ajaccio,Troyes,1,0,1,0
+F2,11/11/2023,18:00,Amiens,Grenoble,1,2,1,1
+F2,11/11/2023,18:00,Auxerre,St Etienne,5,2,3,1
+F2,11/11/2023,18:00,Caen,Quevilly Rouen,3,3,2,2
+F2,11/11/2023,18:00,Laval,Concarneau,0,3,0,1
+F2,11/11/2023,18:00,Paris FC,Bastia,1,0,1,0
+F2,11/11/2023,18:00,Pau FC,Angers,4,4,2,1
+F2,11/11/2023,18:00,Rodez,Guingamp,0,0,0,0
+F2,11/11/2023,18:00,Valenciennes,Dunkerque,0,1,0,0
+F1,11/11/2023,16:00,Reims,Paris SG,0,3,0,1
+F1,11/11/2023,20:00,Le Havre,Monaco,0,0,0,0
+E1,10/11/2023,20:00,Blackburn,Preston,1,2,0,1
+I2,10/11/2023,19:30,Venezia,Catanzaro,2,1,2,1
+I1,10/11/2023,17:30,Sassuolo,Salernitana,2,2,1,2
+I1,10/11/2023,19:45,Genoa,Verona,1,0,1,0
+D2,10/11/2023,17:30,Schalke 04,Elversberg,1,2,1,2
+D2,10/11/2023,17:30,St Pauli,Hannover,0,0,0,0
+SP1,10/11/2023,20:00,Ath Bilbao,Celta,4,3,2,2
+D1,10/11/2023,19:30,M'gladbach,Wolfsburg,4,0,2,0
+SP2,10/11/2023,19:30,Leganes,Levante,2,1,0,1
+F1,10/11/2023,20:00,Montpellier,Nice,0,0,0,0

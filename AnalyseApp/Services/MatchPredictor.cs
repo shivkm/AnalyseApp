@@ -1,10 +1,8 @@
-﻿using Accord.IO;
-using AnalyseApp.Enums;
+﻿using AnalyseApp.Enums;
 using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
 using AnalyseApp.Models;
-using Microsoft.ML;
 
 namespace AnalyseApp.Services;
 
@@ -29,12 +27,46 @@ public class MatchPredictor: IMatchPredictor
         _fileProcessor = fileProcessor;
     }
 
-    public void Execute()
+    public List<Ticket> GenerateTicketBy(int gameCount, int ticketCount, BetType type, string fixture = "fixture-24-11")
     {
-        throw new NotImplementedException();
+        var fixtures = _fileProcessor.GetUpcomingGamesBy(fixture);
+        var predictions = new List<Prediction>();
+        
+        foreach (var nextMatch in fixtures)
+        {
+            var prediction = Execute(nextMatch, BetType.GoalGoal);
+            predictions.Add(prediction);
+        }
+        
+        // Ensure there are enough games for the random selection
+        if (predictions.Count < gameCount)
+        {
+            Console.WriteLine("Not enough games to generate ticket.");
+            return null;
+        }
+
+        // Randomly select games based on gameCount
+        var random = new Random();
+        
+        var selectedPredictions = predictions
+            .Where(i => i.Qualified)
+            .OrderBy(x => random.Next())
+            .Take(gameCount)
+            .ToList();
+
+        // Output prediction messages
+        var finalPredictions = new List<Prediction>();
+        var tickets = new List<Ticket>();
+        foreach (var selectedPrediction in selectedPredictions)
+        {
+            var msg = $"{selectedPrediction.Match} {selectedPrediction.Type}";
+            finalPredictions.Add(selectedPrediction with { Match = msg });
+        }
+        tickets.Add(new Ticket(finalPredictions));
+        return tickets;
     }
 
-    public double GetPredictionAccuracyRate(string fixtureName)
+    public void GenerateFixtureFiles(string fixtureName)
     {
         _fileProcessor.CreateFixtureBy("18/08/23", "21/08/23");
         _fileProcessor.CreateFixtureBy("25/08/23", "28/08/23");
@@ -43,30 +75,100 @@ public class MatchPredictor: IMatchPredictor
         _fileProcessor.CreateFixtureBy("22/09/23", "25/09/23");
         _fileProcessor.CreateFixtureBy("29/09/23", "02/10/23");
         _fileProcessor.CreateFixtureBy("06/10/23", "09/10/23");
-        _fileProcessor.CreateFixtureBy("21/10/23", "23/10/23");
-
-        return 0.0;
+        _fileProcessor.CreateFixtureBy("20/10/23", "23/10/23");
+        _fileProcessor.CreateFixtureBy("27/10/23", "30/10/23");
+        _fileProcessor.CreateFixtureBy("03/11/23", "06/11/23");
+        _fileProcessor.CreateFixtureBy("10/11/23", "13/11/23");
+        _fileProcessor.CreateFixtureBy("24/11/23", "27/11/23");
     }
 
     public Prediction Execute(Matches matches, BetType? betType)
     {
         var playedOnDateTime = matches.Date.Parse();
         var historicalData = _historicalMatches.OrderMatchesBy(playedOnDateTime).ToList();
-        
-        _homeTeamData = _dataService.GetTeamDataBy(matches.HomeTeam, historicalData);
-        _awayTeamData = _dataService.GetTeamDataBy(matches.AwayTeam, historicalData);
-        _headToHeadData = _dataService.GetHeadToHeadDataBy(matches.HomeTeam, matches.AwayTeam, playedOnDateTime);
-
-        var expectedHomeProbability = CalculateProbability(out var expectedAwayProbability);
-
-        if (_homeTeamData.TeamResult.NoGoalGameAvg >= 0.30 || _awayTeamData.TeamResult.NoGoalGameAvg >= 0.30)
+        var match = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam}";
+        var prediction = new Prediction(BetType.Unknown)
         {
-            var percentage = _homeTeamData.TeamResult.NoGoalGameAvg + _awayTeamData.TeamResult.NoGoalGameAvg / 2;
-            var probability = Math.Exp(-percentage);
-            return new Prediction(BetType.UnderThreeGoals) { Qualified = true, Percentage = probability };
+            HomeScore = matches.FTHG,
+            AwayScore = matches.FTAG
+        };
+
+        
+        if (matches.HomeTeam == "Leeds" || matches.HomeTeam == "Middlesbrough" || matches.HomeTeam == "Burton" || matches.HomeTeam == "Ascoli"|| matches.HomeTeam == "Metz" || matches.HomeTeam == "Oxford" )
+        {
+                
         }
         
-        return MakePredictionBasedOnProbabilities(expectedHomeProbability, expectedAwayProbability);
+        var nextMatch = Execute(matches);
+
+        var homeNoGoalProbability = nextMatch.HomeCurrentAverage.TeamNoGoalProbabilityHigh(nextMatch.HomeOverAllAverage);
+        var awayNoGoalProbability = nextMatch.AwayCurrentAverage.TeamNoGoalProbabilityHigh(nextMatch.AwayOverAllAverage);
+        var homeTwoToThreeProbability = nextMatch.HomeCurrentAverage.TeamTwoToThreeProbabilityHigh(nextMatch.HomeOverAllAverage);
+        var awayTwoToThreeProbability = nextMatch.AwayCurrentAverage.TeamTwoToThreeProbabilityHigh(nextMatch.AwayOverAllAverage);
+        
+        var homeOneGoalProbability = nextMatch.HomeCurrentAverage.TeamOneGoalProbabilityHigh(nextMatch.HomeOverAllAverage);
+        var awayOneGoalProbability = nextMatch.AwayCurrentAverage.TeamOneGoalProbabilityHigh(nextMatch.AwayOverAllAverage);
+        var homeMoreThenTwoProbability = nextMatch.HomeCurrentAverage.TeamThenTwoGoalsProbabilityHigh(nextMatch.HomeOverAllAverage);
+        var awayMoreThenTwoProbability = nextMatch.AwayCurrentAverage.TeamThenTwoGoalsProbabilityHigh(nextMatch.AwayOverAllAverage);
+
+        var homeWin = nextMatch.HomeCurrentAverage.Win.ProbabilityBy(nextMatch.HomeOverAllAverage.Win);
+        var awayWin = nextMatch.AwayCurrentAverage.Win.ProbabilityBy(nextMatch.AwayOverAllAverage.Win);
+        
+        var head2HeadBothTeamScoreProbability =
+            nextMatch.CurrentHeadToHeadAverage.BothTeamScore.ProbabilityBy(nextMatch.HeadToHeadAverage.BothTeamScore);
+        
+        var head2HeadMoreThenTwoScoreProbability =
+            nextMatch.CurrentHeadToHeadAverage.MoreThanTwoGoals.ProbabilityBy(nextMatch.HeadToHeadAverage.MoreThanTwoGoals);
+        
+        var head2HeadTwoToThreeProbability =
+            nextMatch.CurrentHeadToHeadAverage.TwoToThree.ProbabilityBy(nextMatch.HeadToHeadAverage.TwoToThree);
+
+        if (homeNoGoalProbability.Qualified || awayNoGoalProbability.Qualified)
+        {
+            return prediction with { Match = match, Type = BetType.UnderThreeGoals, Qualified = true, Msg = "could be under three goals 0:0 or 0:1 or 1:0" };
+        }
+        
+        if (homeTwoToThreeProbability.Qualified && awayTwoToThreeProbability.Qualified && head2HeadTwoToThreeProbability.Qualified)
+        {
+            return prediction with { Type = BetType.TwoToThreeGoals, Qualified = true, Match = match };
+        }
+
+        if (homeMoreThenTwoProbability.Qualified && awayMoreThenTwoProbability.Qualified && head2HeadMoreThenTwoScoreProbability.Qualified &&
+            (homeMoreThenTwoProbability is { Qualified: true, Probability: > 60 } ||
+             awayMoreThenTwoProbability is { Qualified: true, Probability: > 60 }) && 
+            head2HeadMoreThenTwoScoreProbability is { Qualified: true, Probability: > 75 })
+        {
+            return prediction with { Type = BetType.OverTwoGoals, Qualified = true, Match = match };
+        }
+        
+        if (homeOneGoalProbability.Qualified && awayOneGoalProbability.Qualified && head2HeadBothTeamScoreProbability.Qualified &&
+            (homeOneGoalProbability is { Qualified: true, Probability: > 60 } ||
+             awayOneGoalProbability is { Qualified: true, Probability: > 60 }) && 
+            head2HeadBothTeamScoreProbability is { Qualified: true, Probability: > 75 })
+        {
+            return prediction with
+            {
+                Type = BetType.GoalGoal, Qualified = true, Match = match
+            };
+        }
+        
+        if (homeOneGoalProbability.Probability > awayOneGoalProbability.Probability &&
+            homeOneGoalProbability.Probability - awayOneGoalProbability.Probability > 8 &&
+            nextMatch.HomeCurrentAverage.PoissonProbability > nextMatch.AwayCurrentAverage.PoissonProbability &&
+            homeWin.Probability > awayWin.Probability && homeWin.Probability > 50)
+        {
+            return prediction with { Match = match, Type = BetType.HomeWin, Qualified = true };
+        }
+        
+        if (awayOneGoalProbability.Probability > homeOneGoalProbability.Probability &&
+            awayOneGoalProbability.Probability - homeOneGoalProbability.Probability > 8 &&
+            nextMatch.AwayCurrentAverage.PoissonProbability > nextMatch.HomeCurrentAverage.PoissonProbability &&
+            awayWin.Probability > homeWin.Probability && awayWin.Probability > 50)
+        {
+            return prediction with { Match = match, Type = BetType.AwayWin, Qualified = true };
+        }
+        
+        return prediction;
     }
     
     private Prediction MakePredictionBasedOnProbabilities(double expectedHomeProbability, double expectedAwayProbability)
@@ -156,7 +258,39 @@ public class MatchPredictor: IMatchPredictor
         return 1 - probability;
     }
 
+    private Match Execute(Matches match)
+    {
+        var currentSeasonMatches = _historicalMatches
+            .GetCurrentLeagueBy(2023, match.Div)
+            .ToList();
+        
+        var homeCurrentAverage = currentSeasonMatches.TeamPerformance(match.HomeTeam, true);
+        var awayCurrentAverage = currentSeasonMatches.TeamPerformance(match.AwayTeam, false);
+        var homeOverAllAverage = _historicalMatches.TeamPerformance(match.HomeTeam, true);
+        var awayOverAllAverage = _historicalMatches.TeamPerformance(match.AwayTeam, false);
+        var currentHeadToHeadAverage = currentSeasonMatches.HeadToHeadPerformance(match.HomeTeam, match.AwayTeam);
+        var headToHeadAverage = _historicalMatches.HeadToHeadPerformance(match.HomeTeam, match.AwayTeam);
 
+        var result = new Match
+        {
+            Date = match.Date.Parse(),
+            AwayTeam = match.AwayTeam,
+            AwayCurrentAverage = awayCurrentAverage,
+            AwayOverAllAverage = awayOverAllAverage,
+            
+            HomeTeam = match.HomeTeam,
+            HomeCurrentAverage = homeCurrentAverage,
+            HomeOverAllAverage = homeOverAllAverage,
+            
+            HeadToHeadAverage = headToHeadAverage,
+            CurrentHeadToHeadAverage = currentHeadToHeadAverage,
+            
+        };
+
+        return result;
+    }
+
+    
     private Prediction IsQualifiedForGoalGoal(bool riskyOverTwoGoals)
     {
         if (riskyOverTwoGoals)
