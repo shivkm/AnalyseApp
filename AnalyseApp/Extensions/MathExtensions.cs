@@ -21,4 +21,25 @@ public static class MathExtensions
 
         return parsedValue;
     }
+    
+    internal static double Percent<T>(this IEnumerable<T> source, Func<T, bool> predicate)
+    {
+        var total = 0;
+        var count = 0;
+
+        var enumerable = source.ToList();
+        if (!enumerable.Any())
+            return 0;
+
+        foreach (var item in enumerable)
+        {
+            ++count;
+            if (predicate(item))
+            {
+                total += 1;
+            }
+        }
+        
+        return 100.0 * total / count;
+    }
 }
