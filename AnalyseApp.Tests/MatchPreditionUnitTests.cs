@@ -13,6 +13,7 @@ public class PremierLeagueUnitTests
 {
     private readonly IFileProcessor _fileProcessor;
     private readonly IMatchPredictor _matchPredictor;
+    private readonly IMachineLearning _machineLearning;
     private readonly ITestOutputHelper _testOutputHelper;
 
     private const int passingPercentage = 80;
@@ -30,8 +31,7 @@ public class PremierLeagueUnitTests
 
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         _fileProcessor = new FileProcessor(optionsWrapper);
-        
-        _matchPredictor = new MatchPredictor(_fileProcessor, new DataService(_fileProcessor));
+        _matchPredictor = new MatchPredictor(_fileProcessor, new DataService(_fileProcessor), new MachineLearning());
         _testOutputHelper = testOutputHelper;
     }
 

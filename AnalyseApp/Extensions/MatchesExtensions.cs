@@ -213,7 +213,7 @@ internal static class MatchesExtensions
         var overallScoringChance = (homeOverallAverage.PoissonProbability + awayOverallAverage.PoissonProbability) / 2;
         var matchPrediction = new MatchPrediction(false, probability);
         
-        if (probability > SixthFivePercentage && overallScoringChance > 0.75 &&
+        if (probability > SixthEightPercentage && overallScoringChance > 0.80 &&
             (head2Head is { Count: > 3, BothTeamScore: > 50 } || head2Head.BothTeamScore > 50))
         {
             return matchPrediction with
