@@ -6,6 +6,9 @@ namespace AnalyseApp.Extensions;
 
 internal static class MatchesExtensions
 {
+
+    private const double SixthEightPercentage = 68;
+    private const double SixthFivePercentage = 65;
     internal static IEnumerable<Matches> OrderMatchesBy(this List<Matches> matches, DateTime playDate)
     {
         matches = matches.Where(i =>
@@ -35,24 +38,6 @@ internal static class MatchesExtensions
         return foundMatches;
     } 
 
-    internal static IEnumerable<Matches> GetHeadToHeadMatchesBy(this List<Matches> premierLeagueGames, string homeTeam, string awayTeam, DateTime playedOn)
-    {
-        var homeMatches = premierLeagueGames
-            .Where(i =>
-            {
-                var matchDate = i.Date.Parse();
-                return matchDate < playedOn;
-            })
-            .Where(i => i.HomeTeam == homeTeam && i.AwayTeam == awayTeam ||
-                        i.AwayTeam == homeTeam && i.HomeTeam == awayTeam)
-            .ToList();
-        
-        return homeMatches;
-    }
-    
-    internal static double GetGameAvgBy(this IEnumerable<Matches> matches, int count, Func<Matches, bool> predictor) =>
-        matches.Count(predictor) / (double)count;
-    
     public static HighestProbability GetHighestProbabilityBy(this TeamResult homeTeam, TeamResult awayTeam, HeadToHeadData headToHeadData)
     {
         var goalGoalProbability =  homeTeam.AtLeastOneGoalGameAvg.GetProbabilityBy(
@@ -128,59 +113,8 @@ internal static class MatchesExtensions
         };
     }
     
-    internal static MatchAverage TeamPerformance(
-        this IList<Matches> matches,
-        string team,
-        bool isHome
-    )
-    {
-        var matchAverage = new MatchAverage();
-        var teamHistoricalMatches = matches.GetMatchesBy(a => isHome ? a.HomeTeam == team : a.AwayTeam == team);
-        
-        matchAverage.AtLeastOneGoal = teamHistoricalMatches.GetExpectedGoalPercentageBy(isHome, 1);
-        matchAverage.ZeroZero = teamHistoricalMatches.ZeroZeroGoal();
-        matchAverage.MoreThanTwoGoals = teamHistoricalMatches.GetExpectedGoalPercentageBy(isHome, 2);
-        matchAverage.TwoToThree = teamHistoricalMatches.TwoToThreeGoals();
-        matchAverage.Win = teamHistoricalMatches.Win(team);
-        matchAverage.Loss = teamHistoricalMatches.Loss(team);
-        matchAverage.Draw = teamHistoricalMatches.Draw();
-        matchAverage.PoissonProbability = teamHistoricalMatches.GoalAverage(isHome).GetScoredGoalProbabilityBy();
-        matchAverage.ScoreGoalsProbability = 100.0 * teamHistoricalMatches.GoalAverage(isHome);
-        matchAverage.ScoreGoalsAverage = teamHistoricalMatches.GoalAverage(isHome);
-        
-        return matchAverage;
-    }
     
-    internal static Head2HeadAverage HeadToHeadPerformance(
-        this IList<Matches> matches, 
-        string homeTeam,
-        string awayTeam
-    )
-    {
-        var historicalMatches = matches
-            .GetMatchesBy(a => a.HomeTeam == homeTeam && a.AwayTeam == awayTeam ||
-                                       a.AwayTeam == homeTeam && a.HomeTeam == awayTeam);
-
-        var homeScoringPower = historicalMatches.GoalAverage(true).GetScoredGoalProbabilityBy();
-        var awayScoringPower = historicalMatches.GoalAverage().GetScoredGoalProbabilityBy();
-        var probability = homeScoringPower * 0.50 + awayScoringPower * 0.50;
-        
-        var result = new Head2HeadAverage
-        {
-            ZeroZero = historicalMatches.ZeroZeroGoal(),
-            BothTeamScore = historicalMatches.BothTeamMakeGoal(),
-            MoreThanTwoGoals = historicalMatches.MoreThanTwoGoals(),
-            TwoToThree = historicalMatches.TwoToThreeGoals(),
-            HomWin = historicalMatches.Win(homeTeam),
-            AwayWin = historicalMatches.Win(awayTeam),
-            Draw = historicalMatches.Draw(),
-            PoissonProbability = probability
-        };
-
-        return result;
-    }
-    
-    private static IList<Matches> GetMatchesBy(this IEnumerable<Matches> games, Func<Matches, bool> predicate)
+    internal static IList<Matches> GetMatchesBy(this IEnumerable<Matches> games, Func<Matches, bool> predicate)
     {
         var currentSession = games
             .Where(predicate)
@@ -189,40 +123,40 @@ internal static class MatchesExtensions
         return currentSession;
     }
     
-    private static double GetExpectedGoalPercentageBy(
+    public static double GetMoreThenGivenGoalPercentageBy(
         this IList<Matches> matches,
         bool isHome, 
         int expectedGoal
     )
     {
         var result = matches
-            .Percent(p => isHome ? p.FTHG >= expectedGoal : p.FTAG >= expectedGoal);
+            .Percent(p => isHome ? p.FTHG > expectedGoal : p.FTAG > expectedGoal);
 
         return result;
     }
     
-    private static double MoreThanTwoGoals(this IEnumerable<Matches> matches) => 
+    public static double MoreThanTwoGoals(this IEnumerable<Matches> matches) => 
         matches.Percent(a =>  a.FTHG + a.FTAG >= 3);
     
-    private static double TwoToThreeGoals(this IEnumerable<Matches> matches) =>
-        matches.Percent(a => a.FTHG + a.FTAG <= 3 && a.FTHG + a.FTAG > 1);
+    public static double TwoToThreeGoals(this IEnumerable<Matches> matches) =>
+        matches.Percent(a => a.FTHG + a.FTAG == 3 || a.FTHG + a.FTAG == 2);
     
-    private static double ZeroZeroGoal(this IEnumerable<Matches> matches) =>
+    public static double ZeroZeroGoal(this IEnumerable<Matches> matches) =>
         matches.Percent(p =>  p is { FTHG: 0, FTAG: 0 });
 
-    private static double BothTeamMakeGoal(this IEnumerable<Matches> matches) => 
+    public static double BothTeamMakeGoal(this IEnumerable<Matches> matches) => 
         matches.Percent(a => a is { FTHG: > 0, FTAG: > 0 });
     
-    private static double Win(this IEnumerable<Matches> matches, string teamName) =>
+    public static double Win(this IEnumerable<Matches> matches, string teamName) =>
         matches.Percent(a => a.FTHG > a.FTAG && a.HomeTeam == teamName ||
                                     a.FTAG > a.FTHG && a.AwayTeam == teamName);
     
-    private static double Loss(this IEnumerable<Matches> matches, string teamName) =>
+    public static double Loss(this IEnumerable<Matches> matches, string teamName) =>
         matches.Percent(a => a.FTHG < a.FTAG && a.HomeTeam == teamName || a.FTAG < a.FTHG && a.AwayTeam == teamName);
     
-    private static double Draw(this IEnumerable<Matches> matches) => matches.Percent(a => a.FTHG == a.FTAG);
+    public static double Draw(this IEnumerable<Matches> matches) => matches.Percent(a => a.FTHG == a.FTAG);
     
-    private static double GoalAverage(this IEnumerable<Matches> matches, bool isHome = false)
+    public static double GoalAverage(this IEnumerable<Matches> matches, bool isHome = false)
     {
         var average = matches.Average(i => isHome ? i.FTHG : i.FTAG).GetValueOrDefault();
         return average;
@@ -260,5 +194,259 @@ internal static class MatchesExtensions
         var probability = (currentAverage.GetValueOrDefault() + overallAverage.GetValueOrDefault())/ dividingValue;
         
         return (probability > passingProbability, probability);
+    }
+
+    public static MatchPrediction GoalGoalAnalysisBy(this Match home, Match away, Head2HeadAverage head2Head)
+    {
+        var homeAverage = home.HomeAverage;
+        var homeOverallAverage = home.HomeOverallAverage;
+        var awayAverage = away.AwayAverage;
+        var awayOverallAverage = away.AwayOverallAverage;
+
+        var matchPrediction = new MatchPrediction(false, 0.0);
+        var probability = CalculateAveragePercentage(
+            homeAverage.AtLeastOneGoal,
+            awayAverage.AtLeastOneGoal,
+            homeOverallAverage.AtLeastOneGoal,
+            awayOverallAverage.AtLeastOneGoal
+        );
+        
+        if (probability > SixthEightPercentage &&
+            homeAverage.PoissonProbability > 0.65 &&
+            awayAverage.PoissonProbability > 0.65 &&
+            head2Head.BothTeamScore > 50)
+        {
+            return matchPrediction with
+            {
+                Probability = probability,
+                Qualified = true
+            };
+        }
+        
+        if (probability > SixthEightPercentage - 10 &&
+            (homeAverage.PoissonProbability >= 0.70 ||
+             awayAverage.PoissonProbability >= 0.55) &&
+            head2Head.BothTeamScore >= 60)
+        {
+            return matchPrediction with
+            {
+                Probability = probability,
+                Qualified = true
+            };
+        }
+
+        return matchPrediction;
+    }
+    
+    public static MatchPrediction TwoToThreeAnalysisBy(this Match home, Match away, Head2HeadAverage head2Head)
+    {
+        var homeAverage = home.HomeAverage;
+        var homeOverallAverage = home.HomeOverallAverage;
+        var awayAverage = away.AwayAverage;
+        var awayOverallAverage = away.AwayOverallAverage;
+
+        var matchPrediction = new MatchPrediction(false, 0.0);
+        var probability = CalculateAveragePercentage(
+            homeAverage.TwoToThree,
+            awayAverage.TwoToThree,
+            homeOverallAverage.TwoToThree,
+            awayOverallAverage.TwoToThree
+        );
+        
+        if (probability > 55 &&
+            homeAverage.PoissonProbability > 0.60 &&
+            awayAverage.PoissonProbability > 0.60 &&
+            homeOverallAverage.AtLeastOneGoal < 70 &&
+            awayOverallAverage.AtLeastOneGoal < 70)
+        {
+            return matchPrediction with
+            {
+                Probability = probability,
+                Qualified = true
+            };
+        }
+        
+        if (probability > 55 &&
+            (homeAverage.PoissonProbability is <= 0.80 and > 0.50 ||
+             awayAverage.PoissonProbability is <= 0.80 and > 0.50 ) &&
+            head2Head.TwoToThree >= 60 &&
+            homeOverallAverage.AtLeastOneGoal < 70 &&
+            awayOverallAverage.AtLeastOneGoal < 70)
+        {
+            return matchPrediction with
+            {
+                Probability = probability,
+                Qualified = true
+            };
+        }
+
+        return matchPrediction;
+    }
+    
+    public static MatchPrediction MoreThenTwoGoalsAnalysisBy(this Match home, Match away, Head2HeadAverage head2Head)
+    {
+        var homeAverage = home.HomeAverage;
+        var homeOverallAverage = home.HomeOverallAverage;
+        var awayAverage = away.AwayAverage;
+        var awayOverallAverage = away.AwayOverallAverage;
+
+        var matchPrediction = new MatchPrediction(false, 0.0);
+        var probability = CalculateAveragePercentage(
+            homeAverage.MoreThanTwoGoals,
+            awayAverage.MoreThanTwoGoals,
+            homeOverallAverage.MoreThanTwoGoals,
+            awayOverallAverage.MoreThanTwoGoals
+        );
+        
+        if (probability > SixthEightPercentage &&
+            (homeAverage.PoissonProbability > 0.65 && awayAverage.PoissonProbability > 0.65 ||
+             homeAverage.PoissonProbability > 0.74 || awayAverage.PoissonProbability > 0.74))
+        {
+            return matchPrediction with
+            {
+                Probability = probability,
+                Qualified = true
+            };
+        }
+        
+        if (probability > SixthEightPercentage - 15 &&
+            (homeAverage.PoissonProbability > 0.64 && awayAverage.PoissonProbability > 0.64 ||
+             homeAverage.PoissonProbability > 0.74 || awayAverage.PoissonProbability > 0.74) &&
+            head2Head.MoreThanTwoGoals > SixthEightPercentage - 9)
+        {
+            return matchPrediction with
+            {
+                Probability = probability,
+                Qualified = true
+            };
+        }
+
+        return matchPrediction;
+    }
+    
+    public static MatchPrediction NoGoalAnalysisBy(this Match home, Match away, Head2HeadAverage head2Head)
+    {
+        var homeAverage = home.HomeAverage;
+        var homeOverallAverage = home.HomeOverallAverage;
+        var awayAverage = away.AwayAverage;
+        var awayOverallAverage = away.AwayOverallAverage;
+
+        var zeroZeroProbability = CalculateAveragePercentage(
+            homeAverage.ZeroZero,
+            awayAverage.ZeroZero,
+            homeOverallAverage.ZeroZero,
+            awayOverallAverage.ZeroZero
+        );
+        
+        var overTwoGoalsProbability = CalculateAveragePercentage(
+            homeAverage.MoreThanTwoGoals,
+            awayAverage.MoreThanTwoGoals,
+            homeOverallAverage.MoreThanTwoGoals,
+            awayOverallAverage.MoreThanTwoGoals
+        );
+        
+        var goalGoalProbability = CalculateAveragePercentage(
+            homeAverage.AtLeastOneGoal,
+            awayAverage.AtLeastOneGoal,
+            homeOverallAverage.AtLeastOneGoal,
+            awayOverallAverage.AtLeastOneGoal
+        );
+        
+        var matchPrediction = new MatchPrediction(false, zeroZeroProbability);
+        
+        if (homeAverage.ZeroZero + homeOverallAverage.ZeroZero > 15 &&
+            awayAverage.ZeroZero + awayOverallAverage.ZeroZero > 15 &&
+            head2Head.ZeroZero > SixthFivePercentage)
+        {
+            return matchPrediction with
+            {
+                Probability = zeroZeroProbability,
+                Qualified = true
+            };
+        }
+        if (homeAverage.PoissonProbability > 0.76 &&
+            awayAverage.PoissonProbability > 0.76 &&
+            head2Head.Count < 2)
+        {
+            return matchPrediction with
+            {
+                Probability = zeroZeroProbability,
+                Qualified = true
+            };
+        }
+
+        return matchPrediction;
+    }
+    
+    public static MatchPrediction HomeWin(this Match home, Match away, Head2HeadAverage head2Head)
+    {
+        var homeAverage = home.HomeAverage;
+        var homeOverallAverage = home.HomeOverallAverage;
+        var awayAverage = away.AwayAverage;
+        var awayOverallAverage = away.AwayOverallAverage;
+
+        var probability = CalculateAveragePercentage(
+            homeAverage.Win,
+            homeOverallAverage.Win,
+            homeAverage.PoissonProbability * 100,
+            head2Head.HomWin
+        );
+        var matchPrediction = new MatchPrediction(false, probability);
+
+        
+        if ((probability > 60 && homeAverage.Win > 60 || homeOverallAverage.PoissonProbability > 0.70 && awayOverallAverage.PoissonProbability < 0.60 && homeOverallAverage.AtLeastOneGoal > 70) &&
+            homeAverage.Win > awayAverage.Win &&
+            (head2Head.Count > 2 && head2Head.HomWin > head2Head.AwayWin || true) &&
+            homeAverage.PoissonProbability > awayAverage.PoissonProbability)
+        {
+            return matchPrediction with
+            {
+                Probability = probability,
+                Qualified = true
+            };
+        }
+        return matchPrediction;
+    }
+    
+    public static MatchPrediction AwayWin(this Match home, Match away, Head2HeadAverage head2Head)
+    {
+        var homeAverage = home.HomeAverage;
+        var homeOverallAverage = home.HomeOverallAverage;
+        var awayAverage = away.AwayAverage;
+        var awayOverallAverage = away.AwayOverallAverage;
+
+        var probability = CalculateAveragePercentage(
+            awayAverage.Win,
+            awayOverallAverage.Win,
+            awayAverage.PoissonProbability * 100,
+            head2Head.AwayWin
+        );
+        var matchPrediction = new MatchPrediction(false, probability);
+        
+        if ((probability > 60 && awayAverage.Win > 60 || awayOverallAverage.PoissonProbability > 0.70 && homeOverallAverage.PoissonProbability < 0.60 && awayOverallAverage.AtLeastOneGoal > 70) &&
+            awayAverage.Win > homeAverage.Win &&
+            (head2Head.Count > 2 && head2Head.AwayWin > head2Head.HomWin || true) &&
+            awayAverage.PoissonProbability > homeAverage.PoissonProbability)
+        {
+            return matchPrediction with
+            {
+                Probability = probability,
+                Qualified = true
+            };
+        }
+        return matchPrediction;
+    }
+    
+    public static double CalculateAveragePercentage(this double? value1, double? value2, double? value3, double? value4)
+    {
+        var values = new List<double?> { value1, value2, value3, value4 };
+        var nonNullValues = values.Where(v => v.HasValue).Select(v => v.Value);
+
+        if (!nonNullValues.Any())
+        {
+            return 0.0;
+        }
+
+        return nonNullValues.Average();
     }
 }

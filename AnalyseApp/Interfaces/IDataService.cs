@@ -5,9 +5,7 @@ namespace AnalyseApp.Interfaces;
 
 public interface IDataService
 {
-    HeadToHeadData GetHeadToHeadDataBy(string homeTeam, string awayTeam, DateTime playedOn);
+    Match GetTeamMatchAverageBy(List<Matches> historicalMatches, string team);
 
-    TeamData GetTeamDataBy(string teamName, IList<Matches> data);
-    TeamGoalAverage CalculateTeamGoalAverageBy(string teamName, IList<Matches> data, bool isHome = false);
-    HeadToHeadGoalAverage CalculateHeadToHeadAverageBy(string homeTeam, string awayTeam, DateTime playedOn);
+    Head2HeadAverage HeadToHeadAverageBy(List<Matches> historicalMatches, string homeTeam, string awayTeam);
 }

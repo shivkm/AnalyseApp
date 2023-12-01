@@ -59,8 +59,8 @@ public class MatchPredictor: IMatchPredictor
         var tickets = new List<Ticket>();
         foreach (var selectedPrediction in selectedPredictions)
         {
-            var msg = $"{selectedPrediction.Match} {selectedPrediction.Type}";
-            finalPredictions.Add(selectedPrediction with { Match = msg });
+            var msg = $"{selectedPrediction.Msg} {selectedPrediction.Type}";
+            finalPredictions.Add(selectedPrediction with { Msg = msg });
         }
         tickets.Add(new Ticket(finalPredictions));
         return tickets;
@@ -86,88 +86,159 @@ public class MatchPredictor: IMatchPredictor
     {
         var playedOnDateTime = matches.Date.Parse();
         var historicalData = _historicalMatches.OrderMatchesBy(playedOnDateTime).ToList();
-        var match = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam}";
+        
+        var homeTeamAverage = _dataService.GetTeamMatchAverageBy(historicalData, matches.HomeTeam);
+        var awayTeamAverage = _dataService.GetTeamMatchAverageBy(historicalData, matches.AwayTeam);
+        var head2HeadAverage = _dataService.HeadToHeadAverageBy(historicalData, matches.HomeTeam, matches.AwayTeam);
+        
         var prediction = new Prediction(BetType.Unknown)
         {
             HomeScore = matches.FTHG,
-            AwayScore = matches.FTAG
+            AwayScore = matches.FTAG,
+            Msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam}"
         };
 
         
-        if (matches.HomeTeam == "Leeds" || matches.HomeTeam == "Middlesbrough" || matches.HomeTeam == "Burton" || matches.HomeTeam == "Ascoli"|| matches.HomeTeam == "Metz" || matches.HomeTeam == "Oxford" )
+        if (matches.HomeTeam == "Montpellier" || matches.HomeTeam == "Clermont" || matches.HomeTeam == "Burton" || matches.HomeTeam == "Ascoli"|| matches.HomeTeam == "Metz" || matches.HomeTeam == "Oxford" )
         {
                 
         }
-        
-        var nextMatch = Execute(matches);
 
-        var homeNoGoalProbability = nextMatch.HomeCurrentAverage.TeamNoGoalProbabilityHigh(nextMatch.HomeOverAllAverage);
-        var awayNoGoalProbability = nextMatch.AwayCurrentAverage.TeamNoGoalProbabilityHigh(nextMatch.AwayOverAllAverage);
-        var homeTwoToThreeProbability = nextMatch.HomeCurrentAverage.TeamTwoToThreeProbabilityHigh(nextMatch.HomeOverAllAverage);
-        var awayTwoToThreeProbability = nextMatch.AwayCurrentAverage.TeamTwoToThreeProbabilityHigh(nextMatch.AwayOverAllAverage);
-        
-        var homeOneGoalProbability = nextMatch.HomeCurrentAverage.TeamOneGoalProbabilityHigh(nextMatch.HomeOverAllAverage);
-        var awayOneGoalProbability = nextMatch.AwayCurrentAverage.TeamOneGoalProbabilityHigh(nextMatch.AwayOverAllAverage);
-        var homeMoreThenTwoProbability = nextMatch.HomeCurrentAverage.TeamThenTwoGoalsProbabilityHigh(nextMatch.HomeOverAllAverage);
-        var awayMoreThenTwoProbability = nextMatch.AwayCurrentAverage.TeamThenTwoGoalsProbabilityHigh(nextMatch.AwayOverAllAverage);
-
-        var homeWin = nextMatch.HomeCurrentAverage.Win.ProbabilityBy(nextMatch.HomeOverAllAverage.Win);
-        var awayWin = nextMatch.AwayCurrentAverage.Win.ProbabilityBy(nextMatch.AwayOverAllAverage.Win);
-        
-        var head2HeadBothTeamScoreProbability =
-            nextMatch.CurrentHeadToHeadAverage.BothTeamScore.ProbabilityBy(nextMatch.HeadToHeadAverage.BothTeamScore);
-        
-        var head2HeadMoreThenTwoScoreProbability =
-            nextMatch.CurrentHeadToHeadAverage.MoreThanTwoGoals.ProbabilityBy(nextMatch.HeadToHeadAverage.MoreThanTwoGoals);
-        
-        var head2HeadTwoToThreeProbability =
-            nextMatch.CurrentHeadToHeadAverage.TwoToThree.ProbabilityBy(nextMatch.HeadToHeadAverage.TwoToThree);
-
-        if (homeNoGoalProbability.Qualified || awayNoGoalProbability.Qualified)
-        {
-            return prediction with { Match = match, Type = BetType.UnderThreeGoals, Qualified = true, Msg = "could be under three goals 0:0 or 0:1 or 1:0" };
-        }
-        
-        if (homeTwoToThreeProbability.Qualified && awayTwoToThreeProbability.Qualified && head2HeadTwoToThreeProbability.Qualified)
-        {
-            return prediction with { Type = BetType.TwoToThreeGoals, Qualified = true, Match = match };
-        }
-
-        if (homeMoreThenTwoProbability.Qualified && awayMoreThenTwoProbability.Qualified && head2HeadMoreThenTwoScoreProbability.Qualified &&
-            (homeMoreThenTwoProbability is { Qualified: true, Probability: > 60 } ||
-             awayMoreThenTwoProbability is { Qualified: true, Probability: > 60 }) && 
-            head2HeadMoreThenTwoScoreProbability is { Qualified: true, Probability: > 75 })
-        {
-            return prediction with { Type = BetType.OverTwoGoals, Qualified = true, Match = match };
-        }
-        
-        if (homeOneGoalProbability.Qualified && awayOneGoalProbability.Qualified && head2HeadBothTeamScoreProbability.Qualified &&
-            (homeOneGoalProbability is { Qualified: true, Probability: > 60 } ||
-             awayOneGoalProbability is { Qualified: true, Probability: > 60 }) && 
-            head2HeadBothTeamScoreProbability is { Qualified: true, Probability: > 75 })
+        var noGoalAnalysis = homeTeamAverage.NoGoalAnalysisBy(awayTeamAverage, head2HeadAverage);
+        if (noGoalAnalysis is { Qualified: true })
         {
             return prediction with
             {
-                Type = BetType.GoalGoal, Qualified = true, Match = match
+                Qualified = true,
+                Type = BetType.UnderThreeGoals,
+                Percentage = noGoalAnalysis.Probability
             };
         }
         
-        if (homeOneGoalProbability.Probability > awayOneGoalProbability.Probability &&
-            homeOneGoalProbability.Probability - awayOneGoalProbability.Probability > 8 &&
-            nextMatch.HomeCurrentAverage.PoissonProbability > nextMatch.AwayCurrentAverage.PoissonProbability &&
-            homeWin.Probability > awayWin.Probability && homeWin.Probability > 50)
+        var homeWinAnalysis = homeTeamAverage.HomeWin(awayTeamAverage, head2HeadAverage);
+        if (homeWinAnalysis is { Qualified: true })
         {
-            return prediction with { Match = match, Type = BetType.HomeWin, Qualified = true };
+            return prediction with
+            {
+                Qualified = true,
+                Type = BetType.HomeWin,
+                Percentage = homeWinAnalysis.Probability
+            };
         }
         
-        if (awayOneGoalProbability.Probability > homeOneGoalProbability.Probability &&
-            awayOneGoalProbability.Probability - homeOneGoalProbability.Probability > 8 &&
-            nextMatch.AwayCurrentAverage.PoissonProbability > nextMatch.HomeCurrentAverage.PoissonProbability &&
-            awayWin.Probability > homeWin.Probability && awayWin.Probability > 50)
+        var awayWinAnalysis = homeTeamAverage.AwayWin(awayTeamAverage, head2HeadAverage);
+        if (awayWinAnalysis is { Qualified: true })
         {
-            return prediction with { Match = match, Type = BetType.AwayWin, Qualified = true };
+            return prediction with
+            {
+                Qualified = true,
+                Type = BetType.AwayWin,
+                Percentage = awayWinAnalysis.Probability
+            };
+        }
+                
+        var twoToThreeGoalsAnalysis = homeTeamAverage.TwoToThreeAnalysisBy(awayTeamAverage, head2HeadAverage);
+        if (twoToThreeGoalsAnalysis is { Qualified: true, Probability: > 50 })
+        {
+            return prediction with
+            {
+                Qualified = true,
+                Type = BetType.TwoToThreeGoals,
+                Percentage = twoToThreeGoalsAnalysis.Probability
+            };
         }
         
+        var goalGoalAnalysis = homeTeamAverage.GoalGoalAnalysisBy(awayTeamAverage, head2HeadAverage);
+        if (goalGoalAnalysis is { Qualified: true, Probability: > 60 })
+        {
+            return prediction with
+            {
+                Qualified = true,
+                Type = BetType.GoalGoal,
+                Percentage = goalGoalAnalysis.Probability
+            };
+        }
+        
+        var moreThenTwoGoalsAnalysis = homeTeamAverage.MoreThenTwoGoalsAnalysisBy(awayTeamAverage, head2HeadAverage);
+        if (moreThenTwoGoalsAnalysis is { Qualified: true, Probability: > 50 })
+        {
+            return prediction with
+            {
+                Qualified = true,
+                Type = BetType.OverTwoGoals,
+                Percentage = moreThenTwoGoalsAnalysis.Probability
+            };
+        }
+        
+        // var nextMatch = Execute(historicalData, matches);
+        //
+        // var homeNoGoalProbability = nextMatch.HomeAverage.TeamNoGoalProbabilityHigh(nextMatch.HomeOverallAverage);
+        // var awayNoGoalProbability = nextMatch.AwayAverage.TeamNoGoalProbabilityHigh(nextMatch.AwayOverallAverage);
+        // var homeTwoToThreeProbability = nextMatch.HomeAverage.TeamTwoToThreeProbabilityHigh(nextMatch.HomeOverallAverage);
+        // var awayTwoToThreeProbability = nextMatch.AwayAverage.TeamTwoToThreeProbabilityHigh(nextMatch.AwayOverallAverage);
+        //
+        // var homeOneGoalProbability = nextMatch.HomeAverage.TeamOneGoalProbabilityHigh(nextMatch.HomeOverallAverage);
+        // var awayOneGoalProbability = nextMatch.AwayAverage.TeamOneGoalProbabilityHigh(nextMatch.AwayOverallAverage);
+        // var homeMoreThenTwoProbability = nextMatch.HomeAverage.TeamThenTwoGoalsProbabilityHigh(nextMatch.HomeOverallAverage);
+        // var awayMoreThenTwoProbability = nextMatch.AwayAverage.TeamThenTwoGoalsProbabilityHigh(nextMatch.AwayOverallAverage);
+        //
+        // var homeWin = nextMatch.HomeAverage.Win.ProbabilityBy(nextMatch.HomeOverallAverage.Win);
+        // var awayWin = nextMatch.AwayAverage.Win.ProbabilityBy(nextMatch.AwayOverallAverage.Win);
+        //
+        // var head2HeadBothTeamScoreProbability =
+        //     nextMatch.CurrentHeadToHeadAverage.BothTeamScore.ProbabilityBy(nextMatch.HeadToHeadAverage.BothTeamScore);
+        //
+        // var head2HeadMoreThenTwoScoreProbability =
+        //     nextMatch.CurrentHeadToHeadAverage.MoreThanTwoGoals.ProbabilityBy(nextMatch.HeadToHeadAverage.MoreThanTwoGoals);
+        //
+        // var head2HeadTwoToThreeProbability =
+        //     nextMatch.CurrentHeadToHeadAverage.TwoToThree.ProbabilityBy(nextMatch.HeadToHeadAverage.TwoToThree);
+        //
+        // if (homeNoGoalProbability.Qualified || awayNoGoalProbability.Qualified)
+        // {
+        //     return prediction with { Match = match, Type = BetType.UnderThreeGoals, Qualified = true, Msg = "could be under three goals 0:0 or 0:1 or 1:0" };
+        // }
+        //
+        // if (homeTwoToThreeProbability.Qualified && awayTwoToThreeProbability.Qualified && head2HeadTwoToThreeProbability.Qualified)
+        // {
+        //     return prediction with { Type = BetType.TwoToThreeGoals, Qualified = true, Match = match };
+        // }
+        //
+        // if (homeMoreThenTwoProbability.Qualified && awayMoreThenTwoProbability.Qualified && head2HeadMoreThenTwoScoreProbability.Qualified &&
+        //     (homeMoreThenTwoProbability is { Qualified: true, Probability: > 60 } ||
+        //      awayMoreThenTwoProbability is { Qualified: true, Probability: > 60 }) && 
+        //     head2HeadMoreThenTwoScoreProbability is { Qualified: true, Probability: > 75 })
+        // {
+        //     return prediction with { Type = BetType.OverTwoGoals, Qualified = true, Match = match };
+        // }
+        //
+        // if (homeOneGoalProbability.Qualified && awayOneGoalProbability.Qualified && head2HeadBothTeamScoreProbability.Qualified &&
+        //     (homeOneGoalProbability is { Qualified: true, Probability: > 60 } ||
+        //      awayOneGoalProbability is { Qualified: true, Probability: > 60 }) && 
+        //     head2HeadBothTeamScoreProbability is { Qualified: true, Probability: > 75 })
+        // {
+        //     return prediction with
+        //     {
+        //         Type = BetType.GoalGoal, Qualified = true, Match = match
+        //     };
+        // }
+        //
+        // if (homeOneGoalProbability.Probability > awayOneGoalProbability.Probability &&
+        //     homeOneGoalProbability.Probability - awayOneGoalProbability.Probability > 8 &&
+        //     nextMatch.HomeAverage.PoissonProbability > nextMatch.AwayAverage.PoissonProbability &&
+        //     homeWin.Probability > awayWin.Probability && homeWin.Probability > 50)
+        // {
+        //     return prediction with { Match = match, Type = BetType.HomeWin, Qualified = true };
+        // }
+        //
+        // if (awayOneGoalProbability.Probability > homeOneGoalProbability.Probability &&
+        //     awayOneGoalProbability.Probability - homeOneGoalProbability.Probability > 8 &&
+        //     nextMatch.AwayAverage.PoissonProbability > nextMatch.HomeAverage.PoissonProbability &&
+        //     awayWin.Probability > homeWin.Probability && awayWin.Probability > 50)
+        // {
+        //     return prediction with { Match = match, Type = BetType.AwayWin, Qualified = true };
+        // }
+        //
         return prediction;
     }
     
@@ -258,38 +329,7 @@ public class MatchPredictor: IMatchPredictor
         return 1 - probability;
     }
 
-    private Match Execute(Matches match)
-    {
-        var currentSeasonMatches = _historicalMatches
-            .GetCurrentLeagueBy(2023, match.Div)
-            .ToList();
-        
-        var homeCurrentAverage = currentSeasonMatches.TeamPerformance(match.HomeTeam, true);
-        var awayCurrentAverage = currentSeasonMatches.TeamPerformance(match.AwayTeam, false);
-        var homeOverAllAverage = _historicalMatches.TeamPerformance(match.HomeTeam, true);
-        var awayOverAllAverage = _historicalMatches.TeamPerformance(match.AwayTeam, false);
-        var currentHeadToHeadAverage = currentSeasonMatches.HeadToHeadPerformance(match.HomeTeam, match.AwayTeam);
-        var headToHeadAverage = _historicalMatches.HeadToHeadPerformance(match.HomeTeam, match.AwayTeam);
-
-        var result = new Match
-        {
-            Date = match.Date.Parse(),
-            AwayTeam = match.AwayTeam,
-            AwayCurrentAverage = awayCurrentAverage,
-            AwayOverAllAverage = awayOverAllAverage,
-            
-            HomeTeam = match.HomeTeam,
-            HomeCurrentAverage = homeCurrentAverage,
-            HomeOverAllAverage = homeOverAllAverage,
-            
-            HeadToHeadAverage = headToHeadAverage,
-            CurrentHeadToHeadAverage = currentHeadToHeadAverage,
-            
-        };
-
-        return result;
-    }
-
+    
     
     private Prediction IsQualifiedForGoalGoal(bool riskyOverTwoGoals)
     {

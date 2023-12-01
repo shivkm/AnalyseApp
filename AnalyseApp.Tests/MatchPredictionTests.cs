@@ -65,12 +65,12 @@ public class MatchPredictionTests
                 if (isCorrect)
                 {
                     _correctCount++;
-                    _testOutputHelper.WriteLine($"{prediction.Match} - ✅ -  {prediction.HomeScore}:{prediction.AwayScore}");
+                    _testOutputHelper.WriteLine($"{prediction.Msg} - ✅ -  {prediction.HomeScore}:{prediction.AwayScore}");
                 }
                 else
                 {
                     _wrongCount++;
-                    _testOutputHelper.WriteLine($"{prediction.Match} - ❌ -  {prediction.HomeScore}:{prediction.AwayScore}");
+                    _testOutputHelper.WriteLine($"{prediction.Msg} - ❌ -  {prediction.HomeScore}:{prediction.AwayScore}");
                 }
                 _totalCount++;
             }

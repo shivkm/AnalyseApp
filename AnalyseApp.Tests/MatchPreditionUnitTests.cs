@@ -124,18 +124,18 @@ public class PremierLeagueUnitTests
             var actual = _matchPredictor.Execute(matches);
             var isCorrect = GetTheCorrectResult(matches, actual.Type);
             
-            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type} ";
+            var msg = $"{matches.Date} - {matches.HomeTeam}:{matches.AwayTeam} {actual.Type}, {actual.Percentage:F} ";
             if (!actual.Qualified) continue;
             
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ -");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {matches.FTHG}:{matches.FTAG}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ -");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {matches.FTHG}:{matches.FTAG}");
             }
             _totalCount++;
         }
@@ -410,12 +410,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.HomeScore}:{actual.AwayScore}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.HomeScore}:{actual.AwayScore}");
             }
             _totalCount++;
         }
@@ -630,12 +630,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.HomeScore}:{actual.AwayScore}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.HomeScore}:{actual.AwayScore}");
             }
             _totalCount++;
         }
