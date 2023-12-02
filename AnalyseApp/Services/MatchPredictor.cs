@@ -102,7 +102,7 @@ public class MatchPredictor: IMatchPredictor
         };
 
         
-        if (matches.HomeTeam == "Liverpool" || matches.HomeTeam == "Chelsea" || 
+        if (matches.HomeTeam == "Fulham" || matches.HomeTeam == "Tottenham" || 
             matches.HomeTeam == "Crystal Palace" || matches.HomeTeam == "Brescia"|| 
             matches.HomeTeam == "Metz" || matches.HomeTeam == "Oxford" )
         {
@@ -121,7 +121,7 @@ public class MatchPredictor: IMatchPredictor
         }
         
         var homeWinAnalysis = homeTeamAverage.HomeWin(awayTeamAverage, head2HeadAverage);
-        if (homeWinAnalysis is { Qualified: true })
+        if (homeWinAnalysis is { Qualified: true, Probability: > 100 })
         {
             return prediction with
             {
@@ -132,7 +132,7 @@ public class MatchPredictor: IMatchPredictor
         }
         
         var awayWinAnalysis = homeTeamAverage.AwayWin(awayTeamAverage, head2HeadAverage);
-        if (awayWinAnalysis is { Qualified: true })
+        if (awayWinAnalysis is { Qualified: true, Probability: > 100 })
         {
             return prediction with
             {
@@ -153,16 +153,6 @@ public class MatchPredictor: IMatchPredictor
             };
         }
         
-        var goalGoalAnalysis = homeTeamAverage.GoalGoalAnalysisBy(awayTeamAverage, head2HeadAverage);
-        if (goalGoalAnalysis is { Qualified: true, Probability: > 60 })
-        {
-            return prediction with
-            {
-                Qualified = true,
-                Type = BetType.GoalGoal,
-                Percentage = goalGoalAnalysis.Probability
-            };
-        }
         
         var moreThenTwoGoalsAnalysis = homeTeamAverage.MoreThenTwoGoalsAnalysisBy(awayTeamAverage, head2HeadAverage);
         if (moreThenTwoGoalsAnalysis is { Qualified: true, Probability: > 50 })
@@ -172,6 +162,17 @@ public class MatchPredictor: IMatchPredictor
                 Qualified = true,
                 Type = BetType.OverTwoGoals,
                 Percentage = moreThenTwoGoalsAnalysis.Probability
+            };
+        }
+        
+        var goalGoalAnalysis = homeTeamAverage.GoalGoalAnalysisBy(awayTeamAverage, head2HeadAverage);
+        if (goalGoalAnalysis is { Qualified: true, Probability: > 50 })
+        {
+            return prediction with
+            {
+                Qualified = true,
+                Type = BetType.GoalGoal,
+                Percentage = goalGoalAnalysis.Probability
             };
         }
         return prediction;

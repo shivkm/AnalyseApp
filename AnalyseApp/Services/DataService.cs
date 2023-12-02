@@ -19,11 +19,11 @@ public class DataService(IFileProcessor fileProcessor) : IDataService
     /// <returns></returns>
     public Match GetTeamMatchAverageBy(List<Matches> historicalMatches, string team)
     {
-        var teamHistoricalMatches = _historicalMatches
+        var teamHistoricalMatches = historicalMatches
             .GetMatchesBy(match => match.HomeTeam == team || match.AwayTeam == team);
         
         var league = teamHistoricalMatches[0].Div;
-        var currentSeasonMatches = _historicalMatches.GetCurrentLeagueBy(2023, league).ToList();
+        var currentSeasonMatches = historicalMatches.GetCurrentLeagueBy(2023, league).ToList();
         var teamHomeMatches = teamHistoricalMatches.GetMatchesBy(match => match.HomeTeam == team);
         var teamAwayMatches = teamHistoricalMatches.GetMatchesBy(match => match.AwayTeam == team);
         
@@ -51,7 +51,7 @@ public class DataService(IFileProcessor fileProcessor) : IDataService
     /// <returns></returns>
     public Head2HeadAverage HeadToHeadAverageBy(List<Matches> historicalMatches, string homeTeam, string awayTeam)
     {
-        var h2hMatches = _historicalMatches
+        var h2hMatches = historicalMatches
             .GetMatchesBy(a => a.HomeTeam == homeTeam && a.AwayTeam == awayTeam ||
                                         a.AwayTeam == homeTeam && a.HomeTeam == awayTeam);
 
