@@ -202,31 +202,19 @@ internal static class MatchesExtensions
         var homeOverallAverage = home.HomeOverallAverage;
         var awayAverage = away.AwayAverage;
         var awayOverallAverage = away.AwayOverallAverage;
-
-        var matchPrediction = new MatchPrediction(false, 0.0);
+        
         var probability = CalculateAveragePercentage(
             homeAverage.AtLeastOneGoal,
             awayAverage.AtLeastOneGoal,
             homeOverallAverage.AtLeastOneGoal,
             awayOverallAverage.AtLeastOneGoal
         );
-        
-        if (probability > SixthEightPercentage &&
-            homeAverage.PoissonProbability > 0.65 &&
-            awayAverage.PoissonProbability > 0.65 &&
+
+        var currentScoringPower = (homeAverage.PoissonProbability + awayAverage.PoissonProbability) / 2;
+        var overallScoringChance = (homeOverallAverage.PoissonProbability + awayOverallAverage.PoissonProbability) / 2;
+        var matchPrediction = new MatchPrediction(false, probability);
+        if (probability > SixthFivePercentage &&
             head2Head.BothTeamScore > 50)
-        {
-            return matchPrediction with
-            {
-                Probability = probability,
-                Qualified = true
-            };
-        }
-        
-        if (probability > SixthEightPercentage - 10 &&
-            (homeAverage.PoissonProbability >= 0.70 ||
-             awayAverage.PoissonProbability >= 0.55) &&
-            head2Head.BothTeamScore >= 60)
         {
             return matchPrediction with
             {
@@ -245,7 +233,6 @@ internal static class MatchesExtensions
         var awayAverage = away.AwayAverage;
         var awayOverallAverage = away.AwayOverallAverage;
 
-        var matchPrediction = new MatchPrediction(false, 0.0);
         var probability = CalculateAveragePercentage(
             homeAverage.TwoToThree,
             awayAverage.TwoToThree,
@@ -253,11 +240,10 @@ internal static class MatchesExtensions
             awayOverallAverage.TwoToThree
         );
         
-        if (probability > 55 &&
-            homeAverage.PoissonProbability > 0.60 &&
-            awayAverage.PoissonProbability > 0.60 &&
-            homeOverallAverage.AtLeastOneGoal < 70 &&
-            awayOverallAverage.AtLeastOneGoal < 70)
+        var matchPrediction = new MatchPrediction(false, probability);
+        
+        if ((probability > 51 || homeOverallAverage.TwoToThree + awayOverallAverage.TwoToThree > 80) &&
+            (head2Head is { Count: <= 3, TwoToThree: >= 33 } || head2Head.TwoToThree > 50))
         {
             return matchPrediction with
             {
@@ -266,12 +252,8 @@ internal static class MatchesExtensions
             };
         }
         
-        if (probability > 55 &&
-            (homeAverage.PoissonProbability is <= 0.80 and > 0.50 ||
-             awayAverage.PoissonProbability is <= 0.80 and > 0.50 ) &&
-            head2Head.TwoToThree >= 60 &&
-            homeOverallAverage.AtLeastOneGoal < 70 &&
-            awayOverallAverage.AtLeastOneGoal < 70)
+        if ((probability > 51 || homeOverallAverage.TwoToThree + awayOverallAverage.TwoToThree > 80) &&
+            (head2Head is { Count: <= 3, TwoToThree: >= 33 } || head2Head.TwoToThree > 50) )
         {
             return matchPrediction with
             {
@@ -290,29 +272,20 @@ internal static class MatchesExtensions
         var awayAverage = away.AwayAverage;
         var awayOverallAverage = away.AwayOverallAverage;
 
-        var matchPrediction = new MatchPrediction(false, 0.0);
         var probability = CalculateAveragePercentage(
-            homeAverage.MoreThanTwoGoals,
-            awayAverage.MoreThanTwoGoals,
+            homeAverage.PoissonProbability * 100,
+            awayAverage.PoissonProbability * 100,
             homeOverallAverage.MoreThanTwoGoals,
             awayOverallAverage.MoreThanTwoGoals
         );
+        var currentScoringPower = (homeAverage.PoissonProbability + awayAverage.PoissonProbability) / 2;
+        var overallScoringChance = (homeOverallAverage.PoissonProbability + awayOverallAverage.PoissonProbability) / 2;
+
+        var matchPrediction = new MatchPrediction(false, probability);
         
-        if (probability > SixthEightPercentage &&
-            (homeAverage.PoissonProbability > 0.65 && awayAverage.PoissonProbability > 0.65 ||
-             homeAverage.PoissonProbability > 0.74 || awayAverage.PoissonProbability > 0.74))
-        {
-            return matchPrediction with
-            {
-                Probability = probability,
-                Qualified = true
-            };
-        }
-        
-        if (probability > SixthEightPercentage - 15 &&
-            (homeAverage.PoissonProbability > 0.64 && awayAverage.PoissonProbability > 0.64 ||
-             homeAverage.PoissonProbability > 0.74 || awayAverage.PoissonProbability > 0.74) &&
-            head2Head.MoreThanTwoGoals > SixthEightPercentage - 9)
+        if (probability > SixthFivePercentage &&
+            (currentScoringPower > 0.65 || overallScoringChance > 0.74)  &&
+            (head2Head is { Count: <= 3, MoreThanTwoGoals: >= 33 } || head2Head.MoreThanTwoGoals > 50))
         {
             return matchPrediction with
             {
@@ -331,50 +304,34 @@ internal static class MatchesExtensions
         var awayAverage = away.AwayAverage;
         var awayOverallAverage = away.AwayOverallAverage;
 
-        var zeroZeroProbability = CalculateAveragePercentage(
-            homeAverage.ZeroZero,
-            awayAverage.ZeroZero,
-            homeOverallAverage.ZeroZero,
-            awayOverallAverage.ZeroZero
-        );
+        var zeroZeroProbability = 
+            homeOverallAverage.ZeroZero + 
+            awayOverallAverage.ZeroZero +
+            homeAverage.ZeroZero +
+            awayAverage.ZeroZero +
+            head2Head.ZeroZero;
         
-        var overTwoGoalsProbability = CalculateAveragePercentage(
+        var overTwoGoals = CalculateAveragePercentage(
             homeAverage.MoreThanTwoGoals,
             awayAverage.MoreThanTwoGoals,
             homeOverallAverage.MoreThanTwoGoals,
             awayOverallAverage.MoreThanTwoGoals
         );
-        
-        var goalGoalProbability = CalculateAveragePercentage(
-            homeAverage.AtLeastOneGoal,
-            awayAverage.AtLeastOneGoal,
-            homeOverallAverage.AtLeastOneGoal,
-            awayOverallAverage.AtLeastOneGoal
-        );
-        
-        var matchPrediction = new MatchPrediction(false, zeroZeroProbability);
-        
-        if (homeAverage.ZeroZero + homeOverallAverage.ZeroZero > 15 &&
-            awayAverage.ZeroZero + awayOverallAverage.ZeroZero > 15 &&
-            head2Head.ZeroZero > SixthFivePercentage)
-        {
-            return matchPrediction with
-            {
-                Probability = zeroZeroProbability,
-                Qualified = true
-            };
-        }
-        if (homeAverage.PoissonProbability > 0.76 &&
-            awayAverage.PoissonProbability > 0.76 &&
-            head2Head.Count < 2)
-        {
-            return matchPrediction with
-            {
-                Probability = zeroZeroProbability,
-                Qualified = true
-            };
-        }
 
+        var scoreProbability = homeAverage.PoissonProbability * awayOverallAverage.PoissonProbability;
+        
+        var matchPrediction = new MatchPrediction(false, zeroZeroProbability.Value);
+        
+        if (zeroZeroProbability.Value > 60 &&
+            head2Head is { Count: > 2, ZeroZero: > 50 })
+        {
+            return matchPrediction with
+            {
+                Probability = zeroZeroProbability.Value,
+                Qualified = true
+            };
+        }
+        
         return matchPrediction;
     }
     
@@ -394,9 +351,9 @@ internal static class MatchesExtensions
         var matchPrediction = new MatchPrediction(false, probability);
 
         
-        if ((probability > 60 && homeAverage.Win > 60 || homeOverallAverage.PoissonProbability > 0.70 && awayOverallAverage.PoissonProbability < 0.60 && homeOverallAverage.AtLeastOneGoal > 70) &&
-            homeAverage.Win > awayAverage.Win &&
-            (head2Head.Count > 2 && head2Head.HomWin > head2Head.AwayWin || true) &&
+        if (homeAverage.Win > awayAverage.Win &&
+            awayAverage is { Win: < 20, Loss: > 50, PoissonProbability: < 0.60 } &&
+            (head2Head.Count > 2 && head2Head.HomWin > head2Head.AwayWin || head2Head.Count < 2) &&
             homeAverage.PoissonProbability > awayAverage.PoissonProbability)
         {
             return matchPrediction with
@@ -423,9 +380,9 @@ internal static class MatchesExtensions
         );
         var matchPrediction = new MatchPrediction(false, probability);
         
-        if ((probability > 60 && awayAverage.Win > 60 || awayOverallAverage.PoissonProbability > 0.70 && homeOverallAverage.PoissonProbability < 0.60 && awayOverallAverage.AtLeastOneGoal > 70) &&
-            awayAverage.Win > homeAverage.Win &&
-            (head2Head.Count > 2 && head2Head.AwayWin > head2Head.HomWin || true) &&
+        if (awayAverage.Win > homeAverage.Win &&
+            homeAverage is { Win: < 20, Loss: > 50, PoissonProbability: < 0.60 } &&
+            (head2Head.Count > 2 && head2Head.AwayWin > head2Head.HomWin || head2Head.Count < 2) &&
             awayAverage.PoissonProbability > homeAverage.PoissonProbability)
         {
             return matchPrediction with

@@ -465,12 +465,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.HomeScore}:{actual.AwayScore}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.HomeScore}:{actual.AwayScore}");
             }
             _totalCount++;
         }

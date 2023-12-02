@@ -56,7 +56,7 @@ public class MatchPredictionTests
     ]
     public void GivenSomePredictions_WhenGenerateTicketExecuted_ThenTheTicketShouldHaveAllPredictionsCorrect(string fixture)
     {
-        var tickets = _matchPredictor.GenerateTicketBy(4, 1, BetType.GoalGoal, fixture);
+        var tickets = _matchPredictor.GenerateTicketBy(4, 3, BetType.GoalGoal, fixture);
         foreach (var ticket in tickets)
         {
             foreach (var prediction in ticket.Predictions)
