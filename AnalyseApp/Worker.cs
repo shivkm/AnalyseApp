@@ -1,4 +1,5 @@
-﻿using AnalyseApp.Interfaces;
+﻿using AnalyseApp.Enums;
+using AnalyseApp.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -21,7 +22,8 @@ public class Worker: BackgroundService
             {
                 using var scope = _scopeFactory.CreateScope();
                 var predictService = scope.ServiceProvider.GetRequiredService<IMatchPredictor>();
-                predictService.GenerateFixtureFiles("");
+                //predictService.GenerateFixtureFiles("");
+                predictService.GenerateTicketBy(3, 1, BetType.OverTwoGoals, "fixtures.csv");
             }
             catch (HttpRequestException ex)
             {

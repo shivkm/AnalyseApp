@@ -9,11 +9,26 @@ public record SoccerGameData(
     float AwayScored, 
     float HomeHalfScored, 
     float AwayHalfScored, 
-    bool IsOverTwoGoals
+    bool IsOverTwoGoals,
+    bool BothTeamGoals,
+    bool HomeTeamWin,
+    bool AwayTeamWin
 );
 
-public class SoccerGamePrediction
+public class SoccerGamePredictionOverTwoGoals
 {
     [ColumnName("PredictedLabel")]
     public bool IsOverTwoGoals { get; set; }
+    
+    [ColumnName("Probability")]
+    public float ProbabilityOverTwoGoals { get; set; }
+}
+
+public class SoccerGamePredictionBothTeamsScore
+{
+    [ColumnName("PredictedLabel")]
+    public bool BothTeamGoals { get; set; }
+    
+    [ColumnName("Probability")]
+    public float ProbabilityBothTeamsScore { get; set; }
 }

@@ -1,9 +1,8 @@
-﻿using AnalyseApp.Enums;
-using CsvHelper.Configuration.Attributes;
+﻿using CsvHelper.Configuration.Attributes;
 
 namespace AnalyseApp.models;
 
-public record Matches
+public record Match
 {
     public string Div { get; set; }
     public string Date { get; set; }
@@ -15,9 +14,6 @@ public record Matches
     public int? FTAG { get; set; }
     public int? HTHG { get; set; }
     public int? HTAG { get; set; }
-    
-    [Ignore]
-    public Season? Season { get; set; }
     
     [Ignore]
     public bool AfterSummerBreak { get; set; }

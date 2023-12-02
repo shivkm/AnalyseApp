@@ -14,7 +14,6 @@ public class MatchPredictionTests
 {
     private readonly IFileProcessor _fileProcessor;
     private readonly IMatchPredictor _matchPredictor;
-    private readonly IMachineLearning _machineLearning;
     private readonly ITestOutputHelper _testOutputHelper;
     
     
@@ -23,7 +22,7 @@ public class MatchPredictionTests
     private int _correctCount;
     private int _wrongCount;
     
-    public MatchPredictionTests(ITestOutputHelper testOutputHelper, IMachineLearning machineLearning)
+    public MatchPredictionTests(ITestOutputHelper testOutputHelper)
     {
         var fileProcessorOptions = new FileProcessorOptions
         {
@@ -33,8 +32,7 @@ public class MatchPredictionTests
 
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         _fileProcessor = new FileProcessor(optionsWrapper);
-        _machineLearning = machineLearning;
-        _matchPredictor = new MatchPredictor(_fileProcessor, new DataService(_fileProcessor), _machineLearning);
+        _matchPredictor = new MatchPredictor(_fileProcessor, new MachineLearning());
         _testOutputHelper = testOutputHelper;
     }
 

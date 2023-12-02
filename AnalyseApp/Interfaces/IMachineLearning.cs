@@ -6,8 +6,8 @@ namespace AnalyseApp.Interfaces;
 
 public interface IMachineLearning
 {
-    IDataView PrepareDataBy(List<Matches> matches);
+    IDataView PrepareDataBy(List<Match> matches);
     (ITransformer transformer, DataOperationsCatalog.TrainTestData trainTestData ) TrainModel(IDataView dataView);
-    double EvaluateModel(ITransformer model, IDataView testData);
-    bool PredictOutcome(SoccerGameData gameData, ITransformer model);
+    double EvaluateModel(ITransformer model, IDataView testData, string type);
+    bool PredictOutcome(SoccerGameData gameData, ITransformer model, string type);
 }

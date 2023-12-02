@@ -4,7 +4,7 @@ namespace AnalyseApp.Interfaces;
 
 public interface IFileProcessor
 {
-    List<Matches> GetHistoricalMatchesBy();
-    List<Matches> GetUpcomingGamesBy(string fixtureFileName);
+    List<Match> GetHistoricalMatchesBy();
+    List<Match> GetUpcomingGamesBy(string fixtureFileName);
     void CreateFixtureBy(string startDate, string endDate);
 }

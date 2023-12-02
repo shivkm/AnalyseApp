@@ -31,7 +31,7 @@ public class PremierLeagueUnitTests
 
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         _fileProcessor = new FileProcessor(optionsWrapper);
-        _matchPredictor = new MatchPredictor(_fileProcessor, new DataService(_fileProcessor), new MachineLearning());
+        _matchPredictor = new MatchPredictor(_fileProcessor, new MachineLearning());
         _testOutputHelper = testOutputHelper;
     }
 
@@ -186,12 +186,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.HomeScore}:{actual.AwayScore}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.HomeScore}:{actual.AwayScore}");
             }
             _totalCount++;
         }
@@ -242,12 +242,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.HomeScore}:{actual.AwayScore}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.HomeScore}:{actual.AwayScore}");
             }
             _totalCount++;
         }
@@ -299,12 +299,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.HomeScore}:{actual.AwayScore}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.HomeScore}:{actual.AwayScore}");
             }
             _totalCount++;
         }
@@ -355,12 +355,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.HomeScore}:{actual.AwayScore}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.HomeScore}:{actual.AwayScore}");
             }
             _totalCount++;
         }
@@ -520,12 +520,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.HomeScore}:{actual.AwayScore}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.HomeScore}:{actual.AwayScore}");
             }
             _totalCount++;
         }
@@ -575,12 +575,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {actual.HomeScore}:{actual.AwayScore}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.Msg}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {actual.HomeScore}:{actual.AwayScore}");
             }
             _totalCount++;
         }
@@ -647,7 +647,7 @@ public class PremierLeagueUnitTests
         accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
     }
 
-    private static bool GetTheCorrectResult(Matches match, BetType betType)
+    private static bool GetTheCorrectResult(Match match, BetType betType)
     {
         return betType switch
         {
