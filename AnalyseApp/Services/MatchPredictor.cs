@@ -1,281 +1,257 @@
 ﻿using AnalyseApp.Enums;
+using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
-using AnalyseApp.Models;
+using AnalyseApp.Options;
+using Microsoft.Extensions.Options;
 using Microsoft.ML;
 
 namespace AnalyseApp.Services;
 
-public class MatchPredictor: IMatchPredictor
-{   
-    private readonly List<Match> _historicalMatches;
-    private readonly IMachineLearning _machineLearning;
-    private readonly IFileProcessor _fileProcessor;
-    private ITransformer transformer;
-    private DataOperationsCatalog.TrainTestData trainTestData;
-    
-    public MatchPredictor(IFileProcessor fileProcessor, IMachineLearning machineLearning)
-    {
-        _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
-        _fileProcessor = fileProcessor;
-        _machineLearning = machineLearning;
-    }
+public class MatchPredictor(
+        IFileProcessor fileProcessor,
+        IMachineLearning machineLearning, 
+        IOptions<FileProcessorOptions> options): IMatchPredictor
+{
+    private readonly List<Match> _historicalMatches = fileProcessor.GetHistoricalMatchesBy();
+    private readonly string mlModelPath = options.Value.MachineLearningModel;
+    private readonly Dictionary<string, ITransformer> _transformers = new();
 
-    public List<Ticket>? GenerateTicketBy(int gameCount, int ticketCount, BetType type, string fixture = "fixtures.csv")
-    {
-        var fixtures = _fileProcessor.GetUpcomingGamesBy(fixture);
-        var predictions = new List<Prediction>();
+    private IDataView _dataView;
+    private IDataView _testSet;
+    private IDataView _trainSet;
+    private static readonly string[] sourceArray = { "E0", "E1", "E2", "F1", "F2", "D1", "D2", "SP1", "SP2", "I1", "I2" };
 
-        fixtures = fixtures.Where(i =>
-            i.Div == "E0" || 
-            i.Div == "E1" || 
-            i.Div == "E2" || 
-            i.Div == "F1" || 
-            i.Div == "F2" || 
-            i.Div == "D1" || 
-            i.Div == "D2" || 
-            i.Div == "SP1" || 
-            i.Div == "SP2" || 
-            i.Div == "I1" || 
-            i.Div == "I2" 
-            ).ToList();
-        foreach (var nextMatch in fixtures)
-        {
-            var prediction = Execute(nextMatch);
-            predictions.Add(prediction);
-        }
-        
-        // Ensure there are enough games for the random selection
-        if (predictions.Count < gameCount)
+    public List<Prediction> GenerateRandomPredictionsBy(int gameCount, string fixture = "fixtures.csv")
+    {
+        var fixtures = fileProcessor.GetUpcomingGamesBy(fixture)
+            .Where(i => sourceArray.Contains(i.League))
+            .ToList();
+
+        if (fixtures.Count < gameCount)
         {
             Console.WriteLine("Not enough games to generate ticket.");
             return null;
         }
 
-        var finalPredictions = GenerateTicketWithRandomMatches(gameCount, predictions);
-        finalPredictions.ForEach(ii => { Console.WriteLine($"{ii.Msg}"); });
-        Console.WriteLine("------------------------------------\\n");
-        // var tickets = new List<Ticket>();
-        // for (var i = 0; i < ticketCount; i++)
-        // {
-        //     var finalPredictions = GenerateTicketWithRandomMatches(gameCount, predictions);
-        //     tickets.Add(new Ticket(finalPredictions));
-        // }
-        //
-        // tickets.ForEach(i => { i.Predictions.ForEach(ii => { Console.WriteLine($"{ii.Msg}\n"); }); });
-        return null;
+        PrepareDataAndTrainModels();
+
+        var predictions = fixtures.Select(ExecutePrediction).ToList();
+        var selectedPredictions = SelectRandomPredictions(gameCount, predictions);
+
+        selectedPredictions.ForEach(ii => Console.WriteLine($"{ii.Msg} {ii.Type}"));
+        Console.WriteLine("------------------------------------\n");
+
+        return selectedPredictions;
     }
     
-
-    private static List<Prediction> GenerateTicketWithRandomMatches(int gameCount, List<Prediction> predictions)
-    {
-        // Randomly select games based on gameCount
-        var random = new Random();
-
-        var selectedPredictions = predictions
-            .Where(i => i.Qualified)
-            .OrderBy(_ => random.Next())
-            .Take(gameCount)
-            .ToList();
-
-        // Output prediction messages
-        var finalPredictions = new List<Prediction>();
-        foreach (var selectedPrediction in selectedPredictions)
-        {
-            var msg = $"{selectedPrediction.Msg} {selectedPrediction.Type}";
-            finalPredictions.Add(selectedPrediction with { Msg = msg });
-        }
-
-        return finalPredictions;
-    }
-    
-
     public void GenerateFixtureFiles(string fixtureName)
     {
-        _fileProcessor.CreateFixtureBy("18/08/23", "21/08/23");
-        _fileProcessor.CreateFixtureBy("25/08/23", "28/08/23");
-        _fileProcessor.CreateFixtureBy("01/09/23", "04/09/23");
-        _fileProcessor.CreateFixtureBy("15/09/23", "18/09/23");
-        _fileProcessor.CreateFixtureBy("22/09/23", "25/09/23");
-        _fileProcessor.CreateFixtureBy("29/09/23", "02/10/23");
-        _fileProcessor.CreateFixtureBy("06/10/23", "09/10/23");
-        _fileProcessor.CreateFixtureBy("20/10/23", "23/10/23");
-        _fileProcessor.CreateFixtureBy("27/10/23", "30/10/23");
-        _fileProcessor.CreateFixtureBy("03/11/23", "06/11/23");
-        _fileProcessor.CreateFixtureBy("10/11/23", "13/11/23");
-        _fileProcessor.CreateFixtureBy("24/11/23", "27/11/23");
+        // Example date ranges for fixture file generation
+        var dateRanges = new List<(string startDate, string endDate)>
+        {
+            ("18/08/23", "21/08/23"),
+            ("25/08/23", "28/08/23"),
+            ("01/09/23", "04/09/23"),
+            ("15/09/23", "18/09/23"),
+            ("22/09/23", "25/09/23"),
+            ("29/09/23", "02/10/23"),
+            ("06/10/23", "09/10/23"),
+            ("20/10/23", "23/10/23"),
+            ("27/10/23", "30/10/23"),
+            ("03/11/23", "06/11/23"),
+        };
+
+        foreach (var (startDate, endDate) in dateRanges)
+        {
+            fileProcessor.CreateFixtureBy(startDate, endDate);
+        }
     }
 
     public Prediction Execute(Match nextMatch)
     {
-        var soccerGameData = GenerateRandomSoccerGameData(nextMatch);
+        var newMatch = GenerateRandomSoccerGameData(nextMatch);
+        var prediction = InitializePrediction(newMatch);
+
+        // Load or train models only once at the beginning of the class lifecycle or on demand
+        if (_transformers == null)
+        {
+            PrepareDataAndTrainModels(); // Ensures all models are ready
+        }
+
+        prediction = MakePredictions(newMatch, prediction);
+
+        return prediction;
+    }
+
+    private static Prediction InitializePrediction(Match match)
+    {
+        return new Prediction(BetType.Unknown)
+        {
+            Date = match.Date.Parse(),
+            HomeScore = match.FullTimeHomeGoals,
+            AwayScore = match.FullTimeAwayGoals,
+            Msg = $"{match.Date} {match.Time} - {match.HomeTeam}:{match.AwayTeam}"
+        };
+    }
+
+    private Prediction MakePredictions(Match match, Prediction currentPrediction)
+    {
+        // First, try predicting "Over Two Goals"
+        currentPrediction = MakeSinglePrediction(match, currentPrediction, nameof(Match.IsOverTwoGoals), BetType.OverTwoGoals);
+
+        // If "Over Two Goals" is not qualified, then try other predictions
+        if (!currentPrediction.Qualified)
+        {
+            currentPrediction = MakeSinglePrediction(match, currentPrediction, nameof(Match.HomeTeamWin), BetType.HomeWin);
+            if (currentPrediction.Qualified) return currentPrediction;
+
+            currentPrediction = MakeSinglePrediction(match, currentPrediction, nameof(Match.AwayTeamWin), BetType.AwayWin);
+        }
+
+        return currentPrediction;
+    }
+
+
+    private Prediction MakeSinglePrediction(Match match, Prediction prediction, string predictionType, BetType betType)
+    {
+        // Load or create the model specific to the prediction type
+        LoadOrCreateModel(predictionType, _testSet);
+        
+        var transformer = _transformers[predictionType];
+        var probability = machineLearning.EvaluateModel(transformer, _testSet, predictionType);
+        var outcome = machineLearning.PredictOutcome(match, transformer, predictionType);
+
+        if (outcome)
+        {
+            return prediction with
+            {
+                Qualified = true,
+                Type = betType,
+                Percentage = probability,
+                Msg = prediction.Msg + betType
+            };
+        }
+
+        return prediction;
+    }
+
+    private void PrepareDataAndTrainModels()
+    {
+        _dataView = machineLearning.PrepareDataBy(_historicalMatches);
+        var splitData = machineLearning.SplitData(_dataView);
+        _testSet = splitData.testSet;
+        _trainSet = splitData.trainSet;
+        
+        foreach (var type in new[]
+                 {
+                     nameof(Match.IsOverTwoGoals),
+                     nameof(Match.GoalGoal),
+                     nameof(Match.TwoToThreeGoals),
+                     nameof(Match.HomeTeamWin),
+                     nameof(Match.AwayTeamWin)
+                 })
+        {
+            LoadOrCreateModel(type, splitData.trainSet);
+        }
+    }
+
+    private void LoadOrCreateModel(string type, IDataView trainSet)
+    {
+        var modelFileName = $"{mlModelPath}/{type}.zip";
+
+        if (!File.Exists(modelFileName))
+        {
+            var model = machineLearning.TrainModel(trainSet, type);
+            machineLearning.SaveModel(model, trainSet, modelFileName);
+            _transformers[type] = model;
+        }
+        else
+        {
+            _transformers[type] = machineLearning.LoadModel(modelFileName);
+        }
+    }
+    
+    private Prediction ExecutePrediction(Match match)
+    {
         var prediction = new Prediction(BetType.Unknown)
         {
-            HomeScore = nextMatch.FTHG,
-            AwayScore = nextMatch.FTAG,
-            Msg = $"{nextMatch.Date} {nextMatch.Time} - {nextMatch.HomeTeam}:{nextMatch.AwayTeam}"
+            Date = match.Date.Parse(),
+            HomeScore = match.FullTimeHomeGoals,
+            AwayScore = match.FullTimeAwayGoals,
+            Msg = $"{match.Date} {match.Time} - {match.HomeTeam}:{match.AwayTeam}"
         };
 
-        // Prepare data
-        var dataView = _machineLearning.PrepareDataBy(_historicalMatches);
+        prediction = MakePrediction(match, prediction, nameof(Match.IsOverTwoGoals), BetType.OverTwoGoals);
+        if (prediction.Qualified) return prediction;
         
-        // Train the model and Split the data into training and testing datasets
-        var model = _machineLearning.TrainModel(dataView);
-        transformer = model.transformer;
-        trainTestData = model.trainTestData;
+        prediction = MakePrediction(match, prediction, nameof(Match.GoalGoal), BetType.GoalGoal);
+        if (prediction.Qualified) return prediction;
         
-        prediction = PredictionGoalGoal(soccerGameData, prediction);
+        prediction = MakePrediction(match, prediction, nameof(Match.TwoToThreeGoals), BetType.TwoToThreeGoals);
         if (prediction.Qualified) return prediction;
 
-        prediction = PredictionOverTwoGoal(soccerGameData, prediction);
+        prediction = MakePrediction(match, prediction, nameof(Match.HomeTeamWin), BetType.HomeWin);
         if (prediction.Qualified) return prediction;
 
-        prediction = PredictionHomeWin(soccerGameData, prediction);
-        if (prediction.Qualified) return prediction;
-
-        prediction = PredictionAwayWin(soccerGameData, prediction);
-        if (prediction.Qualified) return prediction;
-
+        prediction = MakePrediction(match, prediction, nameof(Match.AwayTeamWin), BetType.AwayWin);
         return prediction;
     }
     
-    private Prediction PredictionGoalGoal(SoccerGameData newGameData, Prediction prediction)
+    private Prediction MakePrediction(Match match, Prediction currentPrediction, string predictionType, BetType betType)
     {
-        // Evaluate the model
-        var goalGoalProbability = _machineLearning.EvaluateModel(
-            transformer,
-            trainTestData.TestSet,
-            nameof(SoccerGameData.BothTeamGoals)
-        );
+        var transformer = _transformers[predictionType];
+        var probability = machineLearning.EvaluateModel(transformer, _dataView, predictionType);
+        var outcome = machineLearning.PredictOutcome(match, transformer, predictionType);
 
-        var goalGoal = _machineLearning.PredictOutcome(newGameData, transformer, nameof(SoccerGameData.BothTeamGoals));
-        if (goalGoal)
+        if (outcome)
         {
-            return prediction with
+            return currentPrediction with
             {
                 Qualified = true,
-                Type = BetType.GoalGoal,
-                Percentage = goalGoalProbability
+                Type = betType,
+                Percentage = probability
             };
         }
 
-        return prediction;
-    }
-
-    private Prediction PredictionOverTwoGoal(SoccerGameData newGameData, Prediction prediction)
-    {
-        // Evaluate the model
-        var overTwoGoalProbability = _machineLearning.EvaluateModel(
-            transformer,
-            trainTestData.TestSet,
-            nameof(SoccerGameData.IsOverTwoGoals)
-        );
-
-        var overTwoGoals = _machineLearning.PredictOutcome(newGameData, transformer, nameof(SoccerGameData.IsOverTwoGoals));
-        return overTwoGoals switch
-        {
-            true => prediction with
-            {
-                Qualified = true, Type = BetType.OverTwoGoals, Percentage = overTwoGoalProbability
-            },
-            false => prediction with
-            {
-                Qualified = true, Type = BetType.UnderThreeGoals, Percentage = overTwoGoalProbability
-            }
-        };
-    }
-
-    private Prediction PredictionHomeWin(SoccerGameData newGameData, Prediction prediction)
-    {
-        // Evaluate the model
-        var homeWinProbability = _machineLearning.EvaluateModel(
-            transformer,
-            trainTestData.TestSet,
-            nameof(SoccerGameData.HomeTeamWin)
-        );
-
-        var homeWin = _machineLearning.PredictOutcome(newGameData, transformer, nameof(SoccerGameData.HomeTeamWin));
-        if (homeWin)
-        {
-            return prediction with
-            {
-                Qualified = true,
-                Type = BetType.HomeWin,
-                Percentage = homeWinProbability
-            };
-        }
-
-        return prediction;
+        return currentPrediction;
     }
     
-    private Prediction PredictionAwayWin(SoccerGameData newGameData, Prediction prediction)
-    {
-        // Evaluate the model
-        var awayWinProbability = _machineLearning.EvaluateModel(
-            transformer,
-            trainTestData.TestSet,
-            nameof(SoccerGameData.AwayTeamWin)
-        );
-
-        var awayWin = _machineLearning.PredictOutcome(newGameData, transformer, nameof(SoccerGameData.AwayTeamWin));
-        if (awayWin)
-        {
-            return prediction with
-            {
-                Qualified = true,
-                Type = BetType.AwayWin,
-                Percentage = awayWinProbability
-            };
-        }
-
-        return prediction;
-    }
-    
-    private static SoccerGameData GenerateRandomSoccerGameData(Match match)
+    private static List<Prediction> SelectRandomPredictions(int gameCount, List<Prediction> predictions)
     {
         var random = new Random();
-        var randomFullTimeHome = 0;
-        var randomFullTimeAway = 0;
-        var randomHomeHalfScored = random.Next(0, 2);
-        var randomAwayHalfScored = random.Next(0, 2);
+        return predictions
+            .Where(i => i.Qualified)
+            .OrderBy(_ => random.Next())
+            .Take(gameCount)
+            .ToList();
+    }
+    
+    private static Match GenerateRandomSoccerGameData(Match match)
+    {
+        var random = new Random();
+    
+        if (match.FullTimeHomeGoals != 0 || match.FullTimeAwayGoals != 0)
+            return match; // Return the match as-is if goals are already set
 
-        // Generating random numbers for FullTimeHome and FullTimeAway such that their sum is always more than 2
+        int randomFullTimeHome, randomFullTimeAway;
+    
         do
         {
             randomFullTimeHome = random.Next(1, 4); // Random number between 1 and 3
             randomFullTimeAway = random.Next(1, 4); // Random number between 1 and 3
-        }
-        while (randomFullTimeHome + randomFullTimeAway > 2);
-        
-        var newGameData = new SoccerGameData(
-            match.HomeTeam, 
-            match.AwayTeam, 
-            randomFullTimeHome, 
-            randomFullTimeAway, 
-            randomHomeHalfScored, 
-            randomAwayHalfScored, 
-            randomFullTimeHome + randomFullTimeAway > 2, 
-            randomFullTimeHome > 0 && randomFullTimeAway > 0,
-            randomFullTimeHome > randomFullTimeAway,
-            randomFullTimeHome < randomFullTimeAway
-        );
-        
-        if (match is { FTHG: not null, FTAG: not null })
+        } 
+        while (randomFullTimeHome + randomFullTimeAway < 3);
+
+        return match with 
         {
-            newGameData = new SoccerGameData(
-                match.HomeTeam, 
-                match.AwayTeam, 
-                match.FTHG.Value, 
-                match.FTAG.Value, 
-                match.HTHG.Value,
-                match.HTAG.Value, 
-                match.FTHG.Value + match.FTAG.Value > 2,
-                match.FTHG.Value > 0 && match.FTAG.Value > 0,
-                match.FTHG > match.FTAG,
-                match.FTAG > match.FTHG);
-        }
-        
-        return newGameData;
+            FullTimeHomeGoals = randomFullTimeHome,
+            FullTimeAwayGoals = randomFullTimeAway,
+            HalfTimeHomeGoals = random.Next(0, 2),
+            HalfTimeAwayGoals = random.Next(0, 2)
+        };
     }
+
+ 
 }
 

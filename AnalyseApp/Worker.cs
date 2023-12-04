@@ -1,29 +1,21 @@
-﻿using AnalyseApp.Enums;
-using AnalyseApp.Interfaces;
+﻿using AnalyseApp.Interfaces;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 namespace AnalyseApp;
 
-public class Worker: BackgroundService
+public class Worker(IServiceScopeFactory scopeFactory) : BackgroundService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-
-    public Worker(IServiceScopeFactory scopeFactory)
-    {
-        _scopeFactory = scopeFactory;
-    }
-    
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                using var scope = _scopeFactory.CreateScope();
+                using var scope = scopeFactory.CreateScope();
                 var predictService = scope.ServiceProvider.GetRequiredService<IMatchPredictor>();
                 //predictService.GenerateFixtureFiles("");
-                predictService.GenerateTicketBy(3, 1, BetType.OverTwoGoals, "fixtures.csv");
+                predictService.GenerateRandomPredictionsBy(3);
             }
             catch (HttpRequestException ex)
             {

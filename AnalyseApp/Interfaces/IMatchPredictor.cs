@@ -1,12 +1,10 @@
-﻿using AnalyseApp.Enums;
-using AnalyseApp.models;
-using AnalyseApp.Models;
+﻿using AnalyseApp.models;
 
 namespace AnalyseApp.Interfaces;
 
 public interface IMatchPredictor
 {
-    List<Ticket>? GenerateTicketBy(int gameCount, int ticketCount, BetType type, string fixture);
+    List<Prediction> GenerateRandomPredictionsBy(int gameCount, string fixture = "fixtures.csv");
     void GenerateFixtureFiles(string fixtureName);
     Prediction Execute(Match match);
 }

@@ -9,15 +9,10 @@ using Microsoft.Extensions.Options;
 
 namespace AnalyseApp.Services;
 
-public class FileProcessor: IFileProcessor
+public class FileProcessor(IOptions<FileProcessorOptions> options) : IFileProcessor
 {
-    private readonly FileProcessorOptions _options;
-    
-    public FileProcessor(IOptions<FileProcessorOptions> options)
-    {
-        _options = options.Value;
-    }
-    
+    private readonly FileProcessorOptions _options = options.Value;
+
     public List<Match> GetHistoricalMatchesBy()
     {
         var files = Directory.GetFiles(_options.RawCsvDir, "*.csv");

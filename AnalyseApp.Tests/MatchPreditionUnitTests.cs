@@ -1,11 +1,11 @@
 using AnalyseApp.Enums;
 using AnalyseApp.Interfaces;
-using AnalyseApp.models;
 using AnalyseApp.Options;
 using AnalyseApp.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Options;
 using Xunit.Abstractions;
+using Match = AnalyseApp.models.Match;
 
 namespace AnalyseApp.Tests;
 
@@ -13,10 +13,9 @@ public class PremierLeagueUnitTests
 {
     private readonly IFileProcessor _fileProcessor;
     private readonly IMatchPredictor _matchPredictor;
-    private readonly IMachineLearning _machineLearning;
     private readonly ITestOutputHelper _testOutputHelper;
 
-    private const int passingPercentage = 80;
+    private const int PassingPercentage = 80;
     private int _totalCount;
     private int _correctCount;
     private int _wrongCount;
@@ -26,13 +25,19 @@ public class PremierLeagueUnitTests
         var fileProcessorOptions = new FileProcessorOptions
         {
             RawCsvDir = "/Users/shivm/Workspace/AnalyseApp/data/raw_csv",
-            Upcoming = "/Users/shivm/Workspace/AnalyseApp/data/upcoming"
+            Upcoming = "/Users/shivm/Workspace/AnalyseApp/data/upcoming",
+            MachineLearningModel = "/Users/shivm/Workspace/AnalyseApp/data/ml_model",
         };
 
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         _fileProcessor = new FileProcessor(optionsWrapper);
-        _matchPredictor = new MatchPredictor(_fileProcessor, new MachineLearning());
+        _matchPredictor = new MatchPredictor(_fileProcessor, new MachineLearning(), optionsWrapper);
         _testOutputHelper = testOutputHelper;
+    }
+
+    public PremierLeagueUnitTests(IFileProcessor fileProcessor)
+    {
+        _fileProcessor = fileProcessor;
     }
 
     [
@@ -57,7 +62,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var premierLeagueMatches = fixture
-            .Where(i => i.Div == "E0")
+            .Where(i => i.League == "E0")
             .ToList();
 
         if (premierLeagueMatches.Count is 0) return;
@@ -74,12 +79,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ -  {matches.FTHG}:{matches.FTAG}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ -  {matches.FullTimeHomeGoals}:{matches.FullTimeAwayGoals}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ -  {matches.FTHG}:{matches.FTAG}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ -  {matches.FullTimeHomeGoals}:{matches.FullTimeAwayGoals}");
             }
             _totalCount++;
         }
@@ -88,7 +93,7 @@ public class PremierLeagueUnitTests
         _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
-        accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
+        accuracyRate.Should().BeGreaterOrEqualTo(PassingPercentage);
     }
     
     [
@@ -113,7 +118,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var premierLeagueMatches = fixture
-            .Where(i => i.Div == "E1")
+            .Where(i => i.League == "E1")
             .ToList();
 
         if (premierLeagueMatches.Count is 0) return;
@@ -130,12 +135,12 @@ public class PremierLeagueUnitTests
             if (isCorrect)
             {
                 _correctCount++;
-                _testOutputHelper.WriteLine($"{msg} - ✅ - {matches.FTHG}:{matches.FTAG}");
+                _testOutputHelper.WriteLine($"{msg} - ✅ - {matches.FullTimeHomeGoals}:{matches.FullTimeAwayGoals}");
             }
             else
             {
                 _wrongCount++;
-                _testOutputHelper.WriteLine($"{msg} - ❌ - {matches.FTHG}:{matches.FTAG}");
+                _testOutputHelper.WriteLine($"{msg} - ❌ - {matches.FullTimeHomeGoals}:{matches.FullTimeAwayGoals}");
             }
             _totalCount++;
         }
@@ -144,7 +149,7 @@ public class PremierLeagueUnitTests
         _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
-        accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
+        accuracyRate.Should().BeGreaterOrEqualTo(PassingPercentage);
     }
     
     [
@@ -169,7 +174,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var premierLeagueMatches = fixture
-            .Where(i => i.Div == "E2")
+            .Where(i => i.League == "E2")
             .ToList();
 
         if (premierLeagueMatches.Count is 0) return;
@@ -225,7 +230,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var premierLeagueMatches = fixture
-            .Where(i => i.Div == "D1")
+            .Where(i => i.League == "D1")
             .ToList();
 
         if (premierLeagueMatches.Count is 0) return;
@@ -282,7 +287,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var premierLeagueMatches = fixture
-            .Where(i => i.Div == "D2")
+            .Where(i => i.League == "D2")
             .ToList();
 
         if (premierLeagueMatches.Count is 0) return;
@@ -338,7 +343,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var spanishLeagueMatches = fixture
-            .Where(i => i.Div == "SP1")
+            .Where(i => i.League == "SP1")
             .ToList();
 
         if (spanishLeagueMatches.Count is 0) return;
@@ -369,7 +374,7 @@ public class PremierLeagueUnitTests
         _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
-        accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
+        accuracyRate.Should().BeGreaterOrEqualTo(PassingPercentage);
     }
     
     [
@@ -393,7 +398,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var spanishLeagueMatches = fixture
-            .Where(i => i.Div == "I1")
+            .Where(i => i.League == "I1")
             .ToList();
 
         if (spanishLeagueMatches.Count is 0) return;
@@ -424,7 +429,7 @@ public class PremierLeagueUnitTests
         _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
-        accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
+        accuracyRate.Should().BeGreaterOrEqualTo(PassingPercentage);
     }
     
     [
@@ -448,7 +453,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var frenchGames = fixture
-            .Where(i => i.Div == "F1")
+            .Where(i => i.League == "F1")
             .ToList();
 
         if (frenchGames.Count is 0) return;
@@ -479,7 +484,7 @@ public class PremierLeagueUnitTests
         _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
-        accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
+        accuracyRate.Should().BeGreaterOrEqualTo(PassingPercentage);
     }
 
     [
@@ -503,7 +508,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var spanishLeagueMatches = fixture
-            .Where(i => i.Div == "SP2")
+            .Where(i => i.League == "SP2")
             .ToList();
 
         if (spanishLeagueMatches.Count is 0) return;
@@ -534,7 +539,7 @@ public class PremierLeagueUnitTests
         _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
-        accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
+        accuracyRate.Should().BeGreaterOrEqualTo(PassingPercentage);
     }
 
     [
@@ -558,7 +563,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var spanishLeagueMatches = fixture
-            .Where(i => i.Div == "I2")
+            .Where(i => i.League == "I2")
             .ToList();
 
         if (spanishLeagueMatches.Count is 0) return;
@@ -589,7 +594,7 @@ public class PremierLeagueUnitTests
         _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
-        accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
+        accuracyRate.Should().BeGreaterOrEqualTo(PassingPercentage);
     }
     
     [
@@ -613,7 +618,7 @@ public class PremierLeagueUnitTests
         // ARRANGE
         var fixture = _fileProcessor.GetUpcomingGamesBy(fixtureName);
         var frenchGames = fixture
-            .Where(i => i.Div == "F2")
+            .Where(i => i.League == "F2")
             .ToList();
 
         if (frenchGames.Count is 0) return;
@@ -644,19 +649,19 @@ public class PremierLeagueUnitTests
         _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
 
         // ASSERT
-        accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
+        accuracyRate.Should().BeGreaterOrEqualTo(PassingPercentage);
     }
 
     private static bool GetTheCorrectResult(Match match, BetType betType)
     {
         return betType switch
         {
-            BetType.OverTwoGoals when match.FTAG + match.FTHG > 2 => true,
-            BetType.GoalGoal when match is { FTHG: > 0, FTAG: > 0 } => true,
-            BetType.UnderThreeGoals when match.FTAG + match.FTHG < 3 => true,
-            BetType.TwoToThreeGoals when match.FTAG + match.FTHG is 2 or 3 => true,
-            BetType.HomeWin when match.FTHG > match.FTAG => true,
-            BetType.AwayWin when match.FTHG < match.FTAG => true,
+            BetType.OverTwoGoals when match.FullTimeHomeGoals + match.FullTimeAwayGoals > 2 => true,
+            BetType.GoalGoal when match is { FullTimeHomeGoals: > 0, FullTimeAwayGoals: > 0 } => true,
+            BetType.UnderThreeGoals when match.FullTimeAwayGoals + match.FullTimeHomeGoals < 3 => true,
+            BetType.TwoToThreeGoals when match.FullTimeAwayGoals + match.FullTimeHomeGoals is 2 or 3 => true,
+            BetType.HomeWin when match.FullTimeHomeGoals > match.FullTimeAwayGoals => true,
+            BetType.AwayWin when match.FullTimeHomeGoals < match.FullTimeAwayGoals => true,
             _ => false
         };
     }

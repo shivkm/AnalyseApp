@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
 using AnalyseApp.Models;
@@ -8,54 +7,32 @@ namespace AnalyseApp.Services;
 
 public class MachineLearning: IMachineLearning
 {
-    private readonly MLContext _mlContext = new MLContext();
-
-    public MachineLearning()
+    private readonly MLContext _mlContext = new();
+    
+    public IDataView PrepareDataBy(IEnumerable<Match> historicalMatches)
     {
-        
-    }
-    public IDataView PrepareDataBy(List<Match> matches)
-    {
-        // Load your data
-        var soccerData = matches
-            .Select(m => new SoccerGameData(
-                HomeTeam: m.HomeTeam,
-                AwayTeam: m.AwayTeam,
-                HomeScored: m.FTHG ?? 0,
-                AwayScored: m.FTAG ?? 0,
-                HomeHalfScored: m.HTHG ?? 0,
-                AwayHalfScored: m.HTAG ?? 0,
-                IsOverTwoGoals: (m.FTHG ?? 0) + (m.FTAG ?? 0) > 2,
-                BothTeamGoals: (m.FTHG ?? 0) > 0 && (m.FTAG ?? 0) > 0,
-                // TwoToThreeGoals: ((m.FTHG ?? 0) + (m.FTAG ?? 0) >= 2) && ((m.FTHG ?? 0) + (m.FTAG ?? 0) <= 3),
-                HomeTeamWin: (m.FTHG ?? 0) > (m.FTAG ?? 0),
-                AwayTeamWin: (m.FTHG ?? 0) < (m.FTAG ?? 0)
-                ))
-            .ToList();
-        
         // Load data into IDataView
-        var dataView = _mlContext.Data.LoadFromEnumerable(soccerData);
-
+        var dataView = _mlContext.Data.LoadFromEnumerable(historicalMatches);
         return dataView; 
     }
     
-    
-    [SuppressMessage("ReSharper.DPA", "DPA0002: Excessive memory allocations in SOH", MessageId = "type: System.Double; size: 16405MB")]
-    public (ITransformer transformer, DataOperationsCatalog.TrainTestData trainTestData ) TrainModel(IDataView dataView)
+    public (IDataView trainSet, IDataView testSet) SplitData(IDataView dataView)
+    {
+        var splitData = _mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2);
+        return (splitData.TrainSet, splitData.TestSet);
+    }
+
+    public ITransformer TrainModel(IDataView dataView, string type)
     {
         // Define the training pipeline
         var pipeline = _mlContext.Transforms.Categorical.OneHotEncoding("HomeTeamEncoded", "HomeTeam")
             .Append(_mlContext.Transforms.Categorical.OneHotEncoding("AwayTeamEncoded", "AwayTeam"))
-            .Append(_mlContext.Transforms.Concatenate("Features", "HomeTeamEncoded", "AwayTeamEncoded", "HomeScored", "AwayScored", "HomeHalfScored", "AwayHalfScored"))
-            .Append(_mlContext.BinaryClassification.Trainers.FastTree(labelColumnName: "IsOverTwoGoals"));
+            .Append(_mlContext.Transforms.Concatenate("Features", "HomeTeamEncoded", "AwayTeamEncoded", "FullTimeHomeGoals", "FullTimeAwayGoals", "HalfTimeHomeGoals", "HalfTimeAwayGoals"))
+            .Append(_mlContext.BinaryClassification.Trainers.SdcaLogisticRegression(labelColumnName: type));
 
-        // Split the data into training and testing datasets
-        var splitData = _mlContext.Data.TrainTestSplit(dataView, testFraction: 0.2);
-
-        // Train the model on the training dataset
         var model = pipeline.Fit(dataView);
 
-        return (model, splitData);
+        return model;
     }
     
     public double EvaluateModel(ITransformer model, IDataView testData, string type)
@@ -66,31 +43,21 @@ public class MachineLearning: IMachineLearning
         return metrics.Accuracy;
     }
     
-    public bool PredictOutcome(SoccerGameData gameData, ITransformer model, string type)
+    public void SaveModel(ITransformer model, IDataView trainingDataView, string modelPath)
     {
-        if (type == nameof(SoccerGameData.IsOverTwoGoals))
-        {
-            var predictionFunction = _mlContext.Model
-                .CreatePredictionEngine<SoccerGameData, SoccerGamePredictionOverTwoGoals>(model);
-            
-            var prediction = predictionFunction.Predict(gameData);
-
-
-            return prediction.IsOverTwoGoals;
-        }
-       
-        if (type == nameof(SoccerGameData.BothTeamGoals))
-        {
-            var predictionFunction = _mlContext.Model
-                .CreatePredictionEngine<SoccerGameData, SoccerGamePredictionBothTeamsScore>(model);
-
-            var prediction = predictionFunction.Predict(gameData);
-
-        
-            return prediction.BothTeamGoals;
-        }
-
-        return false;
+        _mlContext.Model.Save(model, trainingDataView.Schema, modelPath);
     }
 
+
+    public ITransformer LoadModel(string modelPath) =>  _mlContext.Model.Load(modelPath, out _);
+    
+    
+    public bool PredictOutcome(Match newMatch, ITransformer model, string type)
+    {
+        var predictionFunction = _mlContext.Model
+                .CreatePredictionEngine<Match, MatchPrediction>(model);
+            
+        var prediction = predictionFunction.Predict(newMatch);
+        return prediction.Prediction;
+    }
 }

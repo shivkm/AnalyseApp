@@ -4,27 +4,27 @@ namespace AnalyseApp.models;
 
 public record Match
 {
-    public string Div { get; set; }
+    [Name("Div")]
+    public string League { get; set; }
+    [Name("Date")]
     public string Date { get; set; }
-    [Optional]
+    [Optional, Name("Time")]
     public string Time { get; set; }
+    [Name("HomeTeam")]
     public string HomeTeam { get; set; }
-    public string AwayTeam { get; set; }
-    public int? FTHG { get; set; }
-    public int? FTAG { get; set; }
-    public int? HTHG { get; set; }
-    public int? HTAG { get; set; }
-    
-    [Ignore]
-    public bool AfterSummerBreak { get; set; }
-    
-    [Ignore]
-    public bool AfterWinterBreak { get; set; }
-}
-
-public class TeamAnalysis
-{
-    public string TeamName { get; set; }
-    public double AvgGoalsScored { get; set; }
-    public double AvgGoalsConceded { get; set; }
+    [Name("AwayTeam")]
+    public string AwayTeam { get; set;  }
+    [Default(0), Name("FTHG")]
+    public float FullTimeHomeGoals { get; set; }
+    [Default(0), Name("FTAG")]
+    public float FullTimeAwayGoals { get; set; }
+    [Default(0), Name("HTHG")]
+    public float HalfTimeHomeGoals { get; set; }
+    [Default(0), Name("HTAG")]
+    public float HalfTimeAwayGoals { get; set; }
+    [Ignore] public bool IsOverTwoGoals => FullTimeHomeGoals + FullTimeAwayGoals > 2;
+    [Ignore] public bool GoalGoal => FullTimeHomeGoals > 0 && FullTimeAwayGoals > 0;
+    [Ignore] public bool TwoToThreeGoals => FullTimeHomeGoals + FullTimeAwayGoals is 2 or 3;
+    [Ignore] public bool HomeTeamWin => FullTimeHomeGoals > FullTimeAwayGoals;
+    [Ignore] public bool AwayTeamWin => FullTimeAwayGoals > FullTimeHomeGoals;
 }

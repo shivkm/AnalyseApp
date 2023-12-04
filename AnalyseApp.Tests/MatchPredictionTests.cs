@@ -1,7 +1,6 @@
 using AnalyseApp.Enums;
 using AnalyseApp.Interfaces;
 using AnalyseApp.models;
-using AnalyseApp.Models;
 using AnalyseApp.Options;
 using AnalyseApp.Services;
 using FluentAssertions;
@@ -27,12 +26,13 @@ public class MatchPredictionTests
         var fileProcessorOptions = new FileProcessorOptions
         {
             RawCsvDir = "/Users/shivm/Workspace/AnalyseApp/data/raw_csv",
-            Upcoming = "/Users/shivm/Workspace/AnalyseApp/data/upcoming"
+            Upcoming = "/Users/shivm/Workspace/AnalyseApp/data/upcoming",
+            MachineLearningModel = "/Users/shivm/Workspace/AnalyseApp/data/ml_model",
         };
 
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         _fileProcessor = new FileProcessor(optionsWrapper);
-        _matchPredictor = new MatchPredictor(_fileProcessor, new MachineLearning());
+        _matchPredictor = new MatchPredictor(_fileProcessor, new MachineLearning(), optionsWrapper);
         _testOutputHelper = testOutputHelper;
     }
 
@@ -55,31 +55,28 @@ public class MatchPredictionTests
     ]
     public void GivenSomePredictions_WhenGenerateTicketExecuted_ThenTheTicketShouldHaveAllPredictionsCorrect(string fixture)
     {
-        var tickets = _matchPredictor.GenerateTicketBy(4, 3, BetType.GoalGoal, fixture);
-        foreach (var ticket in tickets)
+        var predictions = _matchPredictor.GenerateRandomPredictionsBy(10, fixture);
+        foreach (var prediction in predictions)
         {
-            foreach (var prediction in ticket.Predictions)
+            var isCorrect = GetTheCorrectResult(prediction, prediction.Type);
+            if (isCorrect)
             {
-                var isCorrect = GetTheCorrectResult(prediction, prediction.Type);
-                if (isCorrect)
-                {
-                    _correctCount++;
-                    _testOutputHelper.WriteLine($"{prediction.Msg} - ✅ -  {prediction.HomeScore}:{prediction.AwayScore}");
-                }
-                else
-                {
-                    _wrongCount++;
-                    _testOutputHelper.WriteLine($"{prediction.Msg} - ❌ -  {prediction.HomeScore}:{prediction.AwayScore}");
-                }
-                _totalCount++;
+                _correctCount++;
+                _testOutputHelper.WriteLine($"{prediction.Msg}  {prediction.Type} - ✅ -  {prediction.HomeScore}:{prediction.AwayScore}");
             }
-           
-            var accuracyRate = _correctCount / (double)_totalCount * 100;
-            _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
-            
-            // ASSERT
-            accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
+            else
+            {
+                _wrongCount++;
+                _testOutputHelper.WriteLine($"{prediction.Msg}  {prediction.Type} - ❌ -  {prediction.HomeScore}:{prediction.AwayScore}");
+            }
+            _totalCount++;
         }
+            
+        var accuracyRate = _correctCount / (double)_totalCount * 100;
+        _testOutputHelper.WriteLine($"Count: {_totalCount}, correct count: {_correctCount}, wrong count: {_wrongCount}  ");
+            
+        // ASSERT
+        accuracyRate.Should().BeGreaterOrEqualTo(passingPercentage);
     }
     
     private static bool GetTheCorrectResult(Prediction match, BetType betType)
