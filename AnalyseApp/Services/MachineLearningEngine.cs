@@ -5,7 +5,7 @@ using Microsoft.ML;
 
 namespace AnalyseApp.Services;
 
-public class MachineLearning: IMachineLearning
+public class MachineLearningEngine: IMachineLearningEngine
 {
     private readonly MLContext _mlContext = new();
     

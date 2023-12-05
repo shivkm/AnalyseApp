@@ -13,9 +13,9 @@ public class Worker(IServiceScopeFactory scopeFactory) : BackgroundService
             try
             {
                 using var scope = scopeFactory.CreateScope();
-                var predictService = scope.ServiceProvider.GetRequiredService<IMatchPredictor>();
+                var predictService = scope.ServiceProvider.GetRequiredService<IPredictionService>();
                 //predictService.GenerateFixtureFiles("");
-                predictService.GenerateRandomPredictionsBy(3);
+                predictService.GenerateRandomPredictionsBy(10);
             }
             catch (HttpRequestException ex)
             {
