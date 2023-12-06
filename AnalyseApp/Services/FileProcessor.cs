@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
-using AnalyseApp.models;
+using AnalyseApp.Models;
 using AnalyseApp.Options;
 using CsvHelper;
 using CsvHelper.Configuration;

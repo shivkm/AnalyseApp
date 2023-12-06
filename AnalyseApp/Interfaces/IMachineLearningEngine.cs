@@ -1,4 +1,4 @@
-using AnalyseApp.models;
+using AnalyseApp.Models;
 using Microsoft.ML;
 
 namespace AnalyseApp.Interfaces;
@@ -13,26 +13,17 @@ public interface IMachineLearningEngine
     /// </summary>
     /// <param name="historicalMatches"></param>
     /// <returns></returns>
-    IDataView PrepareDataBy(IEnumerable<Match> historicalMatches);
+    void PrepareDataBy(IEnumerable<Match> teamsAverageData);
     
     /// <summary>
     /// Create set of train and test data
     /// </summary>
-    /// <param name="dataView"></param>
     /// <param name="type"></param>
     /// <returns></returns>
-    ITransformer TrainModel(IDataView dataView, string type);
+    ITransformer TrainModel(string? type);
     
-    /// <summary>
-    /// Split the DataView into training and testing set
-    /// </summary>
-    /// <param name="dataView"></param>
-    /// <returns></returns>
-    (IDataView trainSet, IDataView testSet) SplitData(IDataView dataView);
-    
-    
-    void SaveModel(ITransformer model, IDataView trainingDataView, string modelPath);
+    void SaveModel(ITransformer model, string modelPath);
     ITransformer LoadModel(string modelPath);
-    double EvaluateModel(ITransformer model, IDataView testData, string type);
-    bool PredictOutcome(Match newMatch, ITransformer model, string type);
+    double EvaluateModel(ITransformer model, string? type);
+    string PredictOutcome(Match match, ITransformer model, string? type);
 }

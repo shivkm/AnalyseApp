@@ -29,6 +29,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddScoped<IFileProcessor, FileProcessor>();
         services.AddScoped<IPredictionService, PredictionService>();
         services.AddScoped<IMachineLearningEngine, MachineLearningEngine>();
+        services.AddScoped<IDataProcessor, DataProcessor>();
         services.AddHostedService<Worker>();
     })
     .Build();

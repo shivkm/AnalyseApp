@@ -1,4 +1,4 @@
-using AnalyseApp.models;
+using AnalyseApp.Models;
 
 namespace AnalyseApp.Extensions;
 

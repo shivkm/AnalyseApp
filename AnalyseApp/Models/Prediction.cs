@@ -1,6 +1,6 @@
 ﻿using AnalyseApp.Enums;
 
-namespace AnalyseApp.models;
+namespace AnalyseApp.Models;
 
 public record Prediction
 {

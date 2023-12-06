@@ -1,6 +1,6 @@
 using AnalyseApp.Enums;
 using AnalyseApp.Interfaces;
-using AnalyseApp.models;
+using AnalyseApp.Models;
 using AnalyseApp.Options;
 using AnalyseApp.Services;
 using FluentAssertions;
@@ -31,7 +31,7 @@ public class PredictionServiceTests
 
         var optionsWrapper = new OptionsWrapper<FileProcessorOptions>(fileProcessorOptions);
         _fileProcessor = new FileProcessor(optionsWrapper);
-        _predictionService = new PredictionService(_fileProcessor, new MachineLearningEngine(), optionsWrapper);
+        _predictionService = new PredictionService(_fileProcessor, new MachineLearningEngine(), new DataProcessor(), optionsWrapper);
         _testOutputHelper = testOutputHelper;
     }
 
