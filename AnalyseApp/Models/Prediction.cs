@@ -8,6 +8,7 @@ public record Prediction
     public float HomeScore { get; set; }
     public float AwayScore { get; set; }
     public string Msg { get; init; } = default!;
-    public BetType Type { get; set; }
+    public PredictionType Type { get; set; }
+    public double Accuracy { get; set; }
     public bool Qualified { get; init; }
 }

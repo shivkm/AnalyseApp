@@ -25,4 +25,7 @@ public record Match
     [Ignore] public float AverageAwayGoals { get; set; }
     [Ignore] public float AverageHomeGoals { get; set; }
     [Ignore] public string Outcome { get; set; }
+    [Ignore] public string OverTwoGoals { get; set; }
+    [Ignore] public string GoalGoals { get; set; }
+    [Ignore] public string TwoToThreeGoals { get; set; }
 }

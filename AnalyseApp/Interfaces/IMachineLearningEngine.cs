@@ -1,3 +1,4 @@
+using AnalyseApp.Enums;
 using AnalyseApp.Models;
 using Microsoft.ML;
 
@@ -20,10 +21,10 @@ public interface IMachineLearningEngine
     /// </summary>
     /// <param name="type"></param>
     /// <returns></returns>
-    ITransformer TrainModel(string? type);
+    ITransformer TrainModel(PredictionType type);
     
     void SaveModel(ITransformer model, string modelPath);
     ITransformer LoadModel(string modelPath);
-    double EvaluateModel(ITransformer model, string? type);
-    string PredictOutcome(Match match, ITransformer model, string? type);
+    double EvaluateModel(ITransformer model, PredictionType type);
+    PredictionType PredictOutcome(Match match, ITransformer model, PredictionType type);
 }

@@ -43,7 +43,7 @@ public class PredictionService(
         }
     }
     
-    public List<Prediction> GenerateRandomPredictionsBy(int gameCount, string fixture = "fixtures.csv")
+    public List<Prediction> GenerateRandomPredictionsBy(int gameCount, PredictionType type = PredictionType.GoalGoals, string fixture = "fixtures.csv")
     {
         var fixtures = fileProcessor.GetUpcomingGamesBy(fixture)
             .Where(i => LeagueArray.Contains(i.League))
@@ -55,8 +55,8 @@ public class PredictionService(
             Console.WriteLine("Not enough games to generate ticket.");
         }
         
-        var predictions = fixtures.Select(ExecutePrediction).ToList();
-        var selectedPredictions = SelectRandomPredictions(gameCount, predictions);
+        var predictions = fixtures.Select(i => ExecutePrediction(i, type)).ToList();
+        var selectedPredictions = SelectRandomPredictions(gameCount, type, predictions);
 
         selectedPredictions.ForEach(ii => Console.WriteLine($"{ii.Msg} {ii.Type}"));
         Console.WriteLine("------------------------------------\n");
@@ -75,97 +75,75 @@ public class PredictionService(
         
         var preparedHistoricalData = dataProcessor.CalculateMatchAveragesDataBy(historicalMatches, upcomingMatch);
         machineLearningEngine.PrepareDataBy(preparedHistoricalData);
-
-        foreach (var type in new[] { "Odds", "Goals" }) LoadOrCreateModel(type);
+        TrainAndEvaluateModels();
     }
-
-    private void LoadOrCreateModel(string? type)
+    
+    private void TrainAndEvaluateModels()
     {
-        var modelFileName = $"{_mlModelPath}/{type}.zip";
-
-        ITransformer bestModel = null;
-        var bestAccuracy = 0.0;
-
-        // Load or train and select the best model based on accuracy
-        if (File.Exists(modelFileName))
+        foreach (var type in Enum.GetValues(typeof(PredictionType)).Cast<PredictionType>())
         {
-            var loadedModel = machineLearningEngine.LoadModel(modelFileName);
-            var accuracy = machineLearningEngine.EvaluateModel(loadedModel, type);
+            if (type is PredictionType.Unknown or PredictionType.UnderTwoGoals or PredictionType.Draw or PredictionType.AwayWin)
+                continue;
 
-            if (accuracy > bestAccuracy)
+            var modelFileName = $"{_mlModelPath}/{type}.zip";
+            ITransformer model;
+
+            if (!File.Exists(modelFileName))
             {
-                bestModel = loadedModel;
+                model = machineLearningEngine.TrainModel(type);
+                machineLearningEngine.SaveModel(model, modelFileName);
             }
-        }
-        else
-        {
-            var trainedModel = machineLearningEngine.TrainModel(type);
-            var accuracy = machineLearningEngine.EvaluateModel(trainedModel, type);
-
-            if (accuracy > bestAccuracy)
+            else
             {
-                bestModel = trainedModel;
-
-                // Save the best model
-                machineLearningEngine.SaveModel(bestModel, modelFileName);
+                model = machineLearningEngine.LoadModel(modelFileName);
             }
-        }
 
-        // Set the transformer to the best model
-        if (type != null)
-        {
-            _transformers[type] = bestModel;
+            var accuracy = machineLearningEngine.EvaluateModel(model, type);
+            Console.WriteLine($"Model for {type}: Accuracy = {accuracy}");
+
+            _transformers[type.ToString()] = model;
         }
     }
 
-
-    private Prediction ExecutePrediction(Match match)
+    private Prediction ExecutePrediction(Match match, PredictionType ticketType)
     {
         PrepareDataAndTrainModels(match);
-        var allPredictions = new List<(BetType Type, float Probability)>();
-
-        foreach (var type in Enum.GetValues(typeof(BetType)).Cast<BetType>())
+        var allPredictions = new List<(PredictionType Prediction, double Probability)>();
+        var msg = $"{match.Date} {match.Time} - {match.HomeTeam}:{match.AwayTeam}";
+        foreach (var type in Enum.GetValues<PredictionType>())
         {
-            var predictionTypeName = GetPredictionTypeName(type);
-            if (string.IsNullOrEmpty(predictionTypeName)) continue;
+            if (type is PredictionType.Unknown or PredictionType.UnderTwoGoals or PredictionType.Draw or PredictionType.AwayWin)
+                continue;
             
-            var transformer = _transformers[predictionTypeName];
-            var probability = machineLearningEngine.EvaluateModel(transformer, predictionTypeName);
-            var prediction = machineLearningEngine.PredictOutcome(match, transformer, predictionTypeName);
-
+            var transformer = _transformers[type.ToString()];
+            var probability = machineLearningEngine.EvaluateModel(transformer, type);
+            var prediction = machineLearningEngine.PredictOutcome(match, transformer, type);
             
-            allPredictions.Add((type, Convert.ToSingle(probability)));
+            msg =  $"{msg} {prediction}, {probability:F}\n";
+            allPredictions.Add((prediction, probability));
         }
-
-        // Select the prediction with the highest probability
-        var bestPrediction = allPredictions.OrderByDescending(p => p.Probability).FirstOrDefault();
+        
+        var bestPrediction = allPredictions
+            .FirstOrDefault(item => item.Prediction == ticketType);
 
         return new Prediction
         {
             Date = match.Date.Parse(),
             HomeScore = match.FullTimeHomeGoals,
             AwayScore = match.FullTimeAwayGoals,
-            Msg = $"{match.Date} {match.Time} - {match.HomeTeam}:{match.AwayTeam}",
-            Type = bestPrediction.Type,
-            Qualified = bestPrediction.Probability > 0
+            Msg = msg,
+            Type = bestPrediction.Prediction,
+            Accuracy = bestPrediction.Probability,
+            Qualified = true
         };
     }
     
-    private static string? GetPredictionTypeName(BetType betType)
-    {
-        return betType switch
-        {
-            BetType.OverTwoGoals or BetType.GoalGoal => "Goals",
-            BetType.HomeWin or BetType.AwayWin => "Odds",
-            _ => null
-        };
-    }
     
-    private static List<Prediction> SelectRandomPredictions(int gameCount, List<Prediction> predictions)
+    private static List<Prediction> SelectRandomPredictions(int gameCount, PredictionType type, List<Prediction> predictions)
     {
         var random = new Random();
         return predictions
-            .Where(i => i.Qualified)
+            .Where(i => i.Qualified && i.Type == type)
             .OrderBy(_ => random.Next())
             .Take(gameCount)
             .ToList();

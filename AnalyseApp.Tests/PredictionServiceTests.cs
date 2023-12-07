@@ -57,22 +57,13 @@ public class PredictionServiceTests
     public void GivenSomePredictions_WhenGenerateTicketExecuted_ThenTheTicketShouldHaveAllPredictionsCorrect(string fixture)
     {
         // Arrange
-        const int gameCount = 22;
+        const int gameCount = 4;
         const double expectedAccuracy = 90.0; 
         
         // Act
-        var predictions = _predictionService.GenerateRandomPredictionsBy(gameCount, fixture);
-    
-        if (predictions.Count == 0)
-        {
-            _testOutputHelper.WriteLine($"No predictions generated for {fixture}");
-            return;
-        }
-
+        var predictions = _predictionService.GenerateRandomPredictionsBy(gameCount, PredictionType.GoalGoals, fixture);
         foreach (var prediction in predictions) UpdatePredictionCountsAndLogResult(prediction);
-            
-        _testOutputHelper.WriteLine(
-            $"Count: {_totalCount},  correct count: {_correctCount}, wrong count: {_wrongCount}");
+        _testOutputHelper.WriteLine($"Count: {_totalCount},  correct count: {_correctCount}, wrong count: {_wrongCount}");
            
         var actualAccuracy = CalculateAccuracyRate();
         // Assert
@@ -111,16 +102,17 @@ public class PredictionServiceTests
             $" {prediction.Msg} {prediction.Type} - {resultIcon} - {prediction.HomeScore}:{prediction.AwayScore} ");
     }
     
-    private static bool IsPredictionCorrect(Prediction prediction, BetType betType)
+    private static bool IsPredictionCorrect(Prediction prediction, PredictionType betType)
     {
         return betType switch
         {
-            BetType.OverTwoGoals => prediction.HomeScore + prediction.AwayScore > 2,
-            BetType.GoalGoal => prediction is { HomeScore: > 0, AwayScore: > 0 },
-            BetType.UnderThreeGoals => prediction.HomeScore + prediction.AwayScore < 3,
-            BetType.TwoToThreeGoals => prediction.HomeScore + prediction.AwayScore is 2 or 3,
-            BetType.HomeWin => prediction.HomeScore > prediction.AwayScore,
-            BetType.AwayWin => prediction.HomeScore < prediction.AwayScore,
+            PredictionType.OverTwoGoals => prediction.HomeScore + prediction.AwayScore > 2,
+            PredictionType.GoalGoals => prediction is { HomeScore: > 0, AwayScore: > 0 },
+            PredictionType.UnderTwoGoals => prediction.HomeScore + prediction.AwayScore < 3,
+            PredictionType.TwoToThreeGoals => prediction.HomeScore + prediction.AwayScore is 2 or 3,
+            PredictionType.HomeWin => prediction.HomeScore > prediction.AwayScore,
+            PredictionType.AwayWin => prediction.HomeScore < prediction.AwayScore,
+            PredictionType.Draw => prediction.HomeScore == prediction.AwayScore,
             _ => false,
         };
     }

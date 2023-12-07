@@ -1,13 +1,13 @@
 ﻿namespace AnalyseApp.Enums;
 
-public enum BetType
+public enum PredictionType
 {
-    OverTwoGoals,
-    OverThreeGoals,
-    UnderThreeGoals,
     TwoToThreeGoals,
-    GoalGoal,
+    OverTwoGoals,
+    UnderTwoGoals,
+    GoalGoals,
     HomeWin,
     AwayWin,
+    Draw,
     Unknown
 }
