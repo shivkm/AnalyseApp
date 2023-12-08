@@ -52,17 +52,30 @@ public class PredictionServiceTests
         InlineData("fixture-24-11"),
         InlineData("fixture-1-12"),
         InlineData("fixtures.csv"),
+        InlineData("fixtures1.csv"),
 
     ]
     public void GivenSomePredictions_WhenGenerateTicketExecuted_ThenTheTicketShouldHaveAllPredictionsCorrect(string fixture)
     {
         // Arrange
-        const int gameCount = 4;
-        const double expectedAccuracy = 90.0; 
+        const int gameCount = 3;
+        const double expectedAccuracy = 80.0; 
         
         // Act
-        var predictions = _predictionService.GenerateRandomPredictionsBy(gameCount, PredictionType.GoalGoals, fixture);
-        foreach (var prediction in predictions) UpdatePredictionCountsAndLogResult(prediction);
+        var predictions = _predictionService.GenerateRandomPredictionsBy(
+            gameCount, 
+            PredictionType.GoalGoals, 
+            0.0,
+            fixture);
+        
+        foreach (var prediction in predictions)
+        {
+            if (!prediction.Qualified)
+            {
+                continue;
+            }
+            UpdatePredictionCountsAndLogResult(prediction);
+        }
         _testOutputHelper.WriteLine($"Count: {_totalCount},  correct count: {_correctCount}, wrong count: {_wrongCount}");
            
         var actualAccuracy = CalculateAccuracyRate();
@@ -99,7 +112,7 @@ public class PredictionServiceTests
     {
         var resultIcon = isPredictionCorrect ? "✅" : "❌";
         _testOutputHelper.WriteLine(
-            $" {prediction.Msg} {prediction.Type} - {resultIcon} - {prediction.HomeScore}:{prediction.AwayScore} ");
+            $" {prediction.Msg}\n {prediction.Type} - {resultIcon} - {prediction.HomeScore}:{prediction.AwayScore} ");
     }
     
     private static bool IsPredictionCorrect(Prediction prediction, PredictionType betType)

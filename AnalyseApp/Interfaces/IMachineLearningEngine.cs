@@ -14,7 +14,7 @@ public interface IMachineLearningEngine
     /// </summary>
     /// <param name="historicalMatches"></param>
     /// <returns></returns>
-    void PrepareDataBy(IEnumerable<Match> teamsAverageData);
+    void PrepareDataBy(IEnumerable<MatchData> teamsAverageData);
     
     /// <summary>
     /// Create set of train and test data
@@ -26,5 +26,5 @@ public interface IMachineLearningEngine
     void SaveModel(ITransformer model, string modelPath);
     ITransformer LoadModel(string modelPath);
     double EvaluateModel(ITransformer model, PredictionType type);
-    PredictionType PredictOutcome(Match match, ITransformer model, PredictionType type);
+    PredictionType PredictOutcome(MatchData matchData, ITransformer model, PredictionType type);
 }

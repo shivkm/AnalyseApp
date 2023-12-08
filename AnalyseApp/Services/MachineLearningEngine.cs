@@ -1,3 +1,4 @@
+using Accord.Statistics.Models.Regression.Fitting;
 using AnalyseApp.Enums;
 using AnalyseApp.Interfaces;
 using AnalyseApp.Models;
@@ -8,42 +9,14 @@ namespace AnalyseApp.Services;
 public class MachineLearningEngine: IMachineLearningEngine
 {
     private IDataView _dataView = default!;
+    private List<MatchData> _matchData = new();
     private readonly MLContext _mlContext = new();
-    private List<Match> _historicalData = default!;
     private DataOperationsCatalog.TrainTestData _trainTestData;
     
-    public void PrepareDataBy(IEnumerable<Match> historicalData)
+    public void PrepareDataBy(IEnumerable<MatchData> matchData)
     {
-        historicalData = historicalData.Select(item =>
-        {
-            var outcome = item.FullTimeHomeGoals > item.FullTimeAwayGoals 
-                ? PredictionType.HomeWin.ToString() 
-                : item.FullTimeHomeGoals < item.FullTimeAwayGoals 
-                    ? PredictionType.AwayWin.ToString() 
-                    : PredictionType.Draw.ToString();
-            
-            var goalGoals = item is { FullTimeHomeGoals: > 0, FullTimeAwayGoals: > 0 } 
-                ? "yes" 
-                : "no";
-            
-            var overTwoGoals = item.FullTimeHomeGoals + item.FullTimeAwayGoals > 2 
-                ? "yes" 
-                : "no";
-            
-            var twoToThreeGoals = (item.FullTimeHomeGoals + item.FullTimeAwayGoals) == 2 ||
-                                        (item.FullTimeHomeGoals + item.FullTimeAwayGoals) ==  3 
-                ? "yes" 
-                : "no";
-            
-            return item with
-            {
-                Outcome = outcome, GoalGoals = goalGoals, OverTwoGoals = overTwoGoals, TwoToThreeGoals = twoToThreeGoals,
-                FullTimeHomeGoals = 0, FullTimeAwayGoals = 0, HalfTimeHomeGoals = 0, HalfTimeAwayGoals = 0
-            };
-            
-        }).ToList();
-        
-        _dataView = _mlContext.Data.LoadFromEnumerable(historicalData);
+        _matchData = matchData.ToList();
+        _dataView = _mlContext.Data.LoadFromEnumerable(_matchData);
         _trainTestData = _mlContext.Data.TrainTestSplit(_dataView, testFraction: 0.2);
     }
     
@@ -55,14 +28,11 @@ public class MachineLearningEngine: IMachineLearningEngine
         var pipeline = _mlContext.Transforms.Conversion
             .MapValueToKey(inputColumnName: labelColumns, outputColumnName: "Label")        
             .Append(_mlContext.Transforms.Categorical
-                .OneHotEncoding("HomeTeamEncoded", nameof(Match.HomeTeam)))
+                .OneHotEncoding("HomeEncoded", nameof(MatchData.Home)))
             .Append(_mlContext.Transforms.Categorical
-                .OneHotEncoding("AwayTeamEncoded", nameof(Match.AwayTeam)))
-            .Append(_mlContext.Transforms.Categorical
-                .OneHotEncoding("LeagueEncoded", nameof(Match.League)))
+                .OneHotEncoding("AwayEncoded", nameof(MatchData.Away)))
             .Append(_mlContext.Transforms.Concatenate("Features", featureColumns) )
-            .Append(_mlContext.MulticlassClassification.Trainers.LightGbm())
-            .Append(_mlContext.Transforms.Conversion.MapKeyToValue("PredictedLabel"));
+            .Append(_mlContext.BinaryClassification.Trainers.LightGbm(labelColumnName: labelColumns));
         
         var model = pipeline.Fit(_trainTestData.TrainSet);
 
@@ -80,57 +50,31 @@ public class MachineLearningEngine: IMachineLearningEngine
     
     public double EvaluateModel(ITransformer model, PredictionType type)
     {
+        var labelColumns = DetermineLabelColumnName(type);
+
         var predictions = model.Transform(_trainTestData.TestSet);
-        var metrics = _mlContext.MulticlassClassification.Evaluate(predictions);
+        var metrics = _mlContext.BinaryClassification.Evaluate(predictions, labelColumnName: labelColumns);
         
-        return metrics.MicroAccuracy;
+        return metrics.Accuracy;
     }
     
-    public PredictionType PredictOutcome(Match match, ITransformer model, PredictionType type)
+    public PredictionType PredictOutcome(MatchData matchData, ITransformer model, PredictionType type)
     {
-        if (type is PredictionType.OverTwoGoals or PredictionType.UnderTwoGoals)
-        {
-            var overTwoGoalsPredictionFunction = _mlContext.Model
-                .CreatePredictionEngine<Match, OverUnderPrediction>(model);
+        var overTwoGoalsPredictionFunction = _mlContext.Model
+                .CreatePredictionEngine<MatchData, MLPrediction>(model);
             
-            var overTwoGoalsPrediction = overTwoGoalsPredictionFunction.Predict(match);
-            return overTwoGoalsPrediction.OverUnderGoals == "yes" 
-                ? PredictionType.OverTwoGoals 
-                : PredictionType.UnderTwoGoals;
-        }
+        var overTwoGoalsPrediction = overTwoGoalsPredictionFunction.Predict(matchData);
+
+        if (type == PredictionType.GoalGoals && overTwoGoalsPrediction.Prediction)
+            return PredictionType.GoalGoals;
         
-        if (type is PredictionType.Draw or PredictionType.HomeWin or PredictionType.AwayWin)
-        {
-            var predictionFunction = _mlContext.Model
-                .CreatePredictionEngine<Match, OddPrediction>(model);
-            
-            var prediction = predictionFunction.Predict(match);
-            
-            return prediction.Outcome == PredictionType.HomeWin.ToString()
-                ? PredictionType.HomeWin 
-                : prediction.Outcome == PredictionType.AwayWin.ToString()
-                    ? PredictionType.AwayWin 
-                    :  PredictionType.Draw;
-        }
+        if (type == PredictionType.OverTwoGoals && overTwoGoalsPrediction.Prediction)
+            return PredictionType.OverTwoGoals;
         
-        if (type is PredictionType.GoalGoals)
-        {
-            var goalGoalPredictionFunction = _mlContext.Model
-                .CreatePredictionEngine<Match, GoalGoalsPrediction>(model);
-            
-            var goalGoalPrediction = goalGoalPredictionFunction.Predict(match);
-            return goalGoalPrediction.GoalGoals == "yes"
-                ? PredictionType.GoalGoals 
-                : PredictionType.Unknown;
-        }
-        
-        var twoToThreePredictionFunction = _mlContext.Model
-            .CreatePredictionEngine<Match, TwoToThreeGoalsPrediction>(model);
-            
-        var twoToThreePrediction = twoToThreePredictionFunction.Predict(match);
-        return twoToThreePrediction.TwoToThreeGoals == "yes" 
-            ? PredictionType.TwoToThreeGoals 
-            : PredictionType.Unknown;
+        if (type == PredictionType.TwoToThreeGoals && overTwoGoalsPrediction.Prediction)
+            return PredictionType.TwoToThreeGoals;
+
+        return PredictionType.NotQualified;
     }
     
     private static string[] DetermineFeatureColumns(PredictionType type)
@@ -144,7 +88,26 @@ public class MachineLearningEngine: IMachineLearningEngine
             case PredictionType.Draw:
             case PredictionType.GoalGoals:
             case PredictionType.TwoToThreeGoals:
-                return new[] { "HomeTeamEncoded", "AwayTeamEncoded", "LeagueEncoded", "AverageAwayGoals", "AverageHomeGoals"};
+                return new[] { 
+                    "HomeEncoded", "AwayEncoded", 
+                    nameof(MatchData.HomeScoredGoalsAverage),
+                    nameof(MatchData.HomeConcededGoalsAverage),
+                    nameof(MatchData.HomeHalfTimeScoredGoalsAverage),
+                    nameof(MatchData.HomeHalfTimeConcededGoalsAverage),
+                    // nameof(MatchData.HomeScoredShotsAverage),
+                    // nameof(MatchData.HomeConcededShotsAverage),
+                    nameof(MatchData.HomeScoredTargetShotsAverage),
+                    nameof(MatchData.HomeConcededTargetShotsAverage),
+                    
+                    nameof(MatchData.AwayScoredGoalsAverage),
+                    nameof(MatchData.AwayConcededGoalsAverage),
+                    nameof(MatchData.AwayHalfTimeScoredGoalsAverage),
+                    nameof(MatchData.AwayHalfTimeConcededGoalsAverage),
+                    // nameof(MatchData.AwayScoredShotsAverage),
+                    // nameof(MatchData.AwayConcededShotsAverage),
+                    nameof(MatchData.AwayScoredTargetShotsAverage),
+                    nameof(MatchData.AwayConcededTargetShotsAverage)
+                };
             default:
                 throw new ArgumentException("Invalid prediction type");
         }
@@ -155,13 +118,9 @@ public class MachineLearningEngine: IMachineLearningEngine
     {
         return type switch
         {
-            PredictionType.HomeWin => nameof(Match.Outcome),
-            PredictionType.AwayWin => nameof(Match.Outcome),
-            PredictionType.Draw => nameof(Match.Outcome),
-            PredictionType.OverTwoGoals => nameof(Match.OverTwoGoals),
-            PredictionType.UnderTwoGoals => nameof(Match.OverTwoGoals),
-            PredictionType.GoalGoals => nameof(Match.GoalGoals),
-            PredictionType.TwoToThreeGoals => nameof(Match.TwoToThreeGoals),
+            PredictionType.OverTwoGoals => nameof(MatchData.OverUnderTwoGoals),
+            PredictionType.GoalGoals => nameof(MatchData.BothTeamsScored),
+            PredictionType.TwoToThreeGoals => nameof(MatchData.TwoToThreeGoals),
             _ => throw new ArgumentException("Invalid prediction type")
         };
     }

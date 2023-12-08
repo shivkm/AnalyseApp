@@ -4,5 +4,6 @@ namespace AnalyseApp.Interfaces;
 
 public interface IDataProcessor
 {
-    List<Match> CalculateMatchAveragesDataBy(List<Match> historicalMatches, Match upcomingMatch);
+    TeamData CalculateTeamData(IEnumerable<Match> matches, string teamName);
+    List<MatchData> CalculateMatchAveragesDataBy(IEnumerable<Match> historicalData, DateTime upcomingMatchDate);
 }

@@ -2,16 +2,19 @@ using Microsoft.ML.Data;
 
 namespace AnalyseApp.Models;
 
-public record OddPrediction
+public record MLPrediction
 {
     [ColumnName("PredictedLabel")]
-    public string Outcome { get; set; }
+    public bool Prediction { get; set; }
+    
+    [ColumnName("Probability")]
+    public float Probability { get; set; }
 }
 
 public record OverUnderPrediction
 {
     [ColumnName("PredictedLabel")]
-    public string OverUnderGoals { get; set; }
+    public bool OverUnderGoals { get; set; }
 }
 
 public record GoalGoalsPrediction
