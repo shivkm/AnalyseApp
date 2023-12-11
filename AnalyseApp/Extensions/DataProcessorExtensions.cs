@@ -13,14 +13,13 @@ public static class DataProcessorExtensions
         return currentSession;
     } 
     
-    internal static IEnumerable<Match> GetCurrentLeagueBy(this List<Match> matches, int currentSeasonYear)
+    internal static IEnumerable<Match> GetHistoricalMatchesOlderThen(this List<Match> matches, DateTime playedOn)
     {
-        var formatStartDate = $"20/07/{currentSeasonYear}";
         var foundMatches = matches
             .Where(i =>
             {
                 var matchDate = i.Date.Parse();
-                return matchDate > formatStartDate.Parse();
+                return matchDate > playedOn;
             })
             .OrderByDescending(i => i.Date.Parse())
             .ToList();

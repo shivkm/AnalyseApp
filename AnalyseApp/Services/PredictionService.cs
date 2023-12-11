@@ -18,8 +18,8 @@ public class PredictionService(
     private readonly Dictionary<string, ITransformer> _transformers = new();
     private List<MatchData> _mataData = new ();
     private List<Match> _historicalData = new ();
-    private static readonly string[] LeagueArray = { "E0", "E1", "E2", "SP1", };
-
+    private static readonly string[] LeagueArray = { "E0", "E1", "E2", "F1", "F2", "D1", "D2", "SP1", "SP2", "I1", "I2" };
+    
     public void GenerateFixtureFiles(string fixtureName)
     {
         // Example date ranges for fixture file generation
@@ -38,6 +38,8 @@ public class PredictionService(
             ("10/11/23", "13/11/23"),
             ("24/11/23", "27/11/23"),
             ("01/12/23", "04/12/23"),
+            ("05/12/23", "07/12/23"),
+            ("08/12/23", "11/12/23"),
         };
 
         foreach (var (startDate, endDate) in dateRanges)
@@ -55,7 +57,6 @@ public class PredictionService(
         var fixtures = fileProcessor.GetUpcomingGamesBy(fixture)
             .Where(i => LeagueArray.Contains(i.League))
             .OrderByDescending(o => o.Date.Parse())
-            .Take(20)
             .ToList();
 
         if (fixtures.Count < gameCount)
@@ -76,6 +77,7 @@ public class PredictionService(
     {
         _historicalData = fileProcessor
             .GetHistoricalMatchesBy()
+            .GetHistoricalMatchesOlderThen(dateTime)
             .ToList();
         
         _mataData = dataProcessor.CalculateMatchAveragesDataBy(_historicalData, dateTime);
@@ -130,36 +132,24 @@ public class PredictionService(
         {
             
         }
-        // Iterate through relevant prediction types
+        
         foreach (var type in new[] { PredictionType.OverTwoGoals, PredictionType.GoalGoals, PredictionType.TwoToThreeGoals })
         {
             var transformer = _transformers[type.ToString()];
-            var probability = machineLearningEngine.EvaluateModel(transformer, type);
             var prediction = machineLearningEngine.PredictOutcome(predictMatch, transformer, type);
             
-            if (prediction == PredictionType.NotQualified || probability < 0.58)
+            if (prediction.Prediction is false || prediction.Probability < 0.60)
                 continue;
-
-            var expectedHomeGoal = type == PredictionType.OverTwoGoals ? 2 : 1;
-            var expectedAwayGoal = type == PredictionType.OverTwoGoals ? 2 : 1;
             
-            var homeGoalExpectation = Convert.ToDouble(homeTeamData.ScoredGoalsAverage) * 
-                                            Convert.ToDouble(awayTeamData.ConcededGoalsAverage);
-            var awayGoalExpectation = Convert.ToDouble(awayTeamData.ScoredGoalsAverage) *
-                                            Convert.ToDouble(homeTeamData.ConcededGoalsAverage);
-
-            var homeTeamProbability = homeGoalExpectation.PoissonProbability(expectedHomeGoal);
-            var awayTeamProbability = awayGoalExpectation.PoissonProbability(expectedAwayGoal);
-
-            var Poissonprobability = (homeTeamProbability + awayTeamProbability);
-
-            msg = $"{msg}\n {type}: {prediction} probability:{probability} Poisson Score Probability: {Poissonprobability}";
-            allPredictions[type] = probability;
+            var qualified = prediction.Prediction ? "Qualified" : "Unqualified";
+            
+            msg = $"{msg}\n {type}: {qualified} probability:{prediction.Probability}";
+            allPredictions[type] = prediction.Probability;
         }
 
         // Determine the highest probability prediction among qualified types
         var bestPrediction = allPredictions
-            .OrderByDescending(i => i.Value)
+            .OrderByDescending(i => random.Next())
             .FirstOrDefault();
         
         return new Prediction
@@ -172,7 +162,7 @@ public class PredictionService(
             OverTwoGoalsAccuracy = allPredictions.TryGetValue(PredictionType.OverTwoGoals, out double overTwoProb) ? overTwoProb : 0,
             GoalGoalAccuracy = allPredictions.TryGetValue(PredictionType.GoalGoals, out double goalGoalProb) ? goalGoalProb : 0,
             TwoToThreeGoalsAccuracy = allPredictions.TryGetValue(PredictionType.TwoToThreeGoals, out double twoThreeProb) ? twoThreeProb : 0,
-            Qualified = bestPrediction.Value > 0.58
+            Qualified = true
         };
     }
 

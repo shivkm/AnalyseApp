@@ -1,4 +1,3 @@
-using Accord.Statistics.Models.Regression.Fitting;
 using AnalyseApp.Enums;
 using AnalyseApp.Interfaces;
 using AnalyseApp.Models;
@@ -32,7 +31,7 @@ public class MachineLearningEngine: IMachineLearningEngine
             .Append(_mlContext.Transforms.Categorical
                 .OneHotEncoding("AwayEncoded", nameof(MatchData.Away)))
             .Append(_mlContext.Transforms.Concatenate("Features", featureColumns) )
-            .Append(_mlContext.BinaryClassification.Trainers.LightGbm(labelColumnName: labelColumns));
+            .Append(_mlContext.BinaryClassification.Trainers.FastTree(labelColumnName: labelColumns));
         
         var model = pipeline.Fit(_trainTestData.TrainSet);
 
@@ -58,23 +57,14 @@ public class MachineLearningEngine: IMachineLearningEngine
         return metrics.Accuracy;
     }
     
-    public PredictionType PredictOutcome(MatchData matchData, ITransformer model, PredictionType type)
+    public MLPrediction PredictOutcome(MatchData matchData, ITransformer model, PredictionType type)
     {
         var overTwoGoalsPredictionFunction = _mlContext.Model
                 .CreatePredictionEngine<MatchData, MLPrediction>(model);
             
         var overTwoGoalsPrediction = overTwoGoalsPredictionFunction.Predict(matchData);
 
-        if (type == PredictionType.GoalGoals && overTwoGoalsPrediction.Prediction)
-            return PredictionType.GoalGoals;
-        
-        if (type == PredictionType.OverTwoGoals && overTwoGoalsPrediction.Prediction)
-            return PredictionType.OverTwoGoals;
-        
-        if (type == PredictionType.TwoToThreeGoals && overTwoGoalsPrediction.Prediction)
-            return PredictionType.TwoToThreeGoals;
-
-        return PredictionType.NotQualified;
+        return overTwoGoalsPrediction;
     }
     
     private static string[] DetermineFeatureColumns(PredictionType type)
@@ -96,8 +86,8 @@ public class MachineLearningEngine: IMachineLearningEngine
                     nameof(MatchData.HomeHalfTimeConcededGoalsAverage),
                     // nameof(MatchData.HomeScoredShotsAverage),
                     // nameof(MatchData.HomeConcededShotsAverage),
-                    nameof(MatchData.HomeScoredTargetShotsAverage),
-                    nameof(MatchData.HomeConcededTargetShotsAverage),
+                    // nameof(MatchData.HomeScoredTargetShotsAverage),
+                    // nameof(MatchData.HomeConcededTargetShotsAverage),
                     
                     nameof(MatchData.AwayScoredGoalsAverage),
                     nameof(MatchData.AwayConcededGoalsAverage),
@@ -105,8 +95,8 @@ public class MachineLearningEngine: IMachineLearningEngine
                     nameof(MatchData.AwayHalfTimeConcededGoalsAverage),
                     // nameof(MatchData.AwayScoredShotsAverage),
                     // nameof(MatchData.AwayConcededShotsAverage),
-                    nameof(MatchData.AwayScoredTargetShotsAverage),
-                    nameof(MatchData.AwayConcededTargetShotsAverage)
+                    // nameof(MatchData.AwayScoredTargetShotsAverage),
+                    // nameof(MatchData.AwayConcededTargetShotsAverage)
                 };
             default:
                 throw new ArgumentException("Invalid prediction type");

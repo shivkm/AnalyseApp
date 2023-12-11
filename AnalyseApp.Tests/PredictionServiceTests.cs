@@ -51,20 +51,20 @@ public class PredictionServiceTests
         InlineData("fixture-10-11"),
         InlineData("fixture-24-11"),
         InlineData("fixture-1-12"),
-        InlineData("fixtures.csv"),
-        InlineData("fixtures1.csv"),
+        InlineData("fixture-5-12"),
+        InlineData("fixture-8-12"),
 
     ]
     public void GivenSomePredictions_WhenGenerateTicketExecuted_ThenTheTicketShouldHaveAllPredictionsCorrect(string fixture)
     {
         // Arrange
-        const int gameCount = 3;
+        const int gameCount = 8;
         const double expectedAccuracy = 80.0; 
         
         // Act
         var predictions = _predictionService.GenerateRandomPredictionsBy(
             gameCount, 
-            PredictionType.GoalGoals, 
+            PredictionType.Any, 
             0.0,
             fixture);
         

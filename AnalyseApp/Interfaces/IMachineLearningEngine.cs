@@ -26,5 +26,5 @@ public interface IMachineLearningEngine
     void SaveModel(ITransformer model, string modelPath);
     ITransformer LoadModel(string modelPath);
     double EvaluateModel(ITransformer model, PredictionType type);
-    PredictionType PredictOutcome(MatchData matchData, ITransformer model, PredictionType type);
+    MLPrediction PredictOutcome(MatchData matchData, ITransformer model, PredictionType type);
 }

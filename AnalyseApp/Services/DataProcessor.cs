@@ -47,61 +47,69 @@ public class DataProcessor: IDataProcessor
     
     public TeamData CalculateTeamData(IEnumerable<Match> matches, string teamName)
     {
-        float homeGoalsAverage = 0;
-        float awayGoalsAverage = 0;
-        float homeHalfTimeGoalsAverage = 0;
-        float awayHalfTimeGoalsAverage = 0;
-        float homeShortAverage = 0;
-        float awayShortAverage = 0;
-        float homeTargetShotsAverage = 0;
-        float awayTargetShotsAverage = 0;
+        var teamMatches = matches.Where(m => m.HomeTeam == teamName || m.AwayTeam == teamName);
+        var homeMatches = teamMatches.Where(m => m.HomeTeam == teamName);
+        var awayMatches = teamMatches.Where(m => m.AwayTeam == teamName);
+
+        var homeScoredGoalsAverage = homeMatches.Average(m => m.FullTimeHomeGoals);
+        var homeConcededGoalsAverage = homeMatches.Average(m => m.FullTimeAwayGoals);
+        var awayScoredGoalsAverage = awayMatches.Average(m => m.FullTimeAwayGoals);
+        var awayConcededGoalsAverage = awayMatches.Average(m => m.FullTimeHomeGoals);
+        
+        var homeHalfTimeScoredGoalsAverage = homeMatches.Average(m => m.HalfTimeHomeGoals);
+        var homeHalfTimeConcededGoalsAverage = homeMatches.Average(m => m.HalfTimeAwayGoals);
+        var awayHalfTimeScoredGoalsAverage = awayMatches.Average(m => m.HalfTimeAwayGoals);
+        var awayHalfTimeConcededGoalsAverage = awayMatches.Average(m => m.HalfTimeHomeGoals);
+        
+        float  homeScoredGoalsWeighted = 0,
+               awayScoredGoalsWeighted = 0,
+               homeConcededGoalsWeighted = 0,
+               awayConcededGoalsWeighted = 0,
+               homeHalfTimeScoredGoalsWeighted = 0,
+               awayHalfTimeScoredGoalsWeighted = 0,
+               homeHalfTimeConcededGoalsWeighted = 0,
+               awayHalfTimeConcededGoalsWeighted = 0;
         
         float totalWeight = 0;
-        
-        foreach (var match in matches.Where(item => item.HomeTeam == teamName || item.AwayTeam == teamName))
+
+        foreach (var match in teamMatches)
         {
-            var homeTeam = match.HomeTeam;
-            var awayTeam = match.AwayTeam;
             var weight = CalculateTimeDecayWeight(match.Date.Parse());
             totalWeight += weight;
+
             if (match.HomeTeam == teamName)
             {
-                homeGoalsAverage += weight * match.FullTimeHomeGoals / matches.GetGoalAverageRate(teamName);
-                homeHalfTimeGoalsAverage += weight * match.HalfTimeHomeGoals / matches.GetGoalAverageRate(homeTeam, true);
-                homeShortAverage += weight * match.HalfTimeHomeGoals / matches.GetShotAverageRate(homeTeam);
-                homeTargetShotsAverage += weight * match.HalfTimeHomeGoals / matches.GetShotAverageRate(homeTeam, true);
+                homeScoredGoalsWeighted += weight * match.FullTimeHomeGoals;
+                homeConcededGoalsWeighted += weight * match.FullTimeAwayGoals;
+                homeHalfTimeScoredGoalsWeighted += weight * match.HalfTimeHomeGoals;
+                homeHalfTimeConcededGoalsWeighted += weight * match.HalfTimeAwayGoals;
             }
             if (match.AwayTeam == teamName)
             {
-                awayGoalsAverage += weight * match.FullTimeAwayGoals / matches.GetGoalAverageRate(teamName);
-                awayHalfTimeGoalsAverage += weight * match.HalfTimeAwayGoals / matches.GetGoalAverageRate(awayTeam, true);
-                awayShortAverage += weight * match.HalfTimeAwayGoals / matches.GetShotAverageRate(awayTeam);
-                awayTargetShotsAverage += weight * match.HalfTimeAwayGoals / matches.GetShotAverageRate(awayTeam, true);
+                awayScoredGoalsWeighted += weight * match.FullTimeAwayGoals;
+                awayConcededGoalsWeighted += weight * match.FullTimeHomeGoals;
+                awayHalfTimeScoredGoalsWeighted += weight * match.HalfTimeAwayGoals;
+                awayHalfTimeConcededGoalsWeighted += weight * match.HalfTimeHomeGoals;
             }
         }
         
-        homeGoalsAverage = totalWeight > 0 ? homeGoalsAverage / totalWeight : 0;
-        homeHalfTimeGoalsAverage = totalWeight > 0 ? homeHalfTimeGoalsAverage / totalWeight : 0;
-        homeShortAverage = totalWeight > 0 ? homeShortAverage / totalWeight : 0;
-        homeTargetShotsAverage = totalWeight > 0 ? homeTargetShotsAverage / totalWeight : 0;
-        
-        awayGoalsAverage = totalWeight > 0 ? awayGoalsAverage / totalWeight : 0;
-        awayHalfTimeGoalsAverage = totalWeight > 0 ? awayHalfTimeGoalsAverage / totalWeight : 0;
-        awayShortAverage = totalWeight > 0 ? awayShortAverage / totalWeight : 0;
-        awayTargetShotsAverage = totalWeight > 0 ? awayTargetShotsAverage / totalWeight : 0;
+        var weightedHomeGoals = totalWeight > 0 ? homeScoredGoalsWeighted / totalWeight : homeScoredGoalsAverage;
+        var weightedAwayGoals = totalWeight > 0 ? awayScoredGoalsWeighted / totalWeight : awayScoredGoalsAverage;
+        var weightedHomeConcededGoals = totalWeight > 0 ? homeConcededGoalsWeighted / totalWeight : homeConcededGoalsAverage;
+        var weightedAwayConcededGoals = totalWeight > 0 ? awayConcededGoalsWeighted / totalWeight : awayConcededGoalsAverage;
+        var weightedHomeHalfTimeGoals = totalWeight > 0 ? homeHalfTimeScoredGoalsWeighted / totalWeight : homeHalfTimeScoredGoalsAverage;
+        var weightedAwayHalfTimeGoals = totalWeight > 0 ? awayHalfTimeScoredGoalsWeighted / totalWeight : awayHalfTimeScoredGoalsAverage;
+        var weightedHomeHalfTimeConcededGoals = totalWeight > 0 ? homeHalfTimeConcededGoalsWeighted / totalWeight : homeHalfTimeConcededGoalsAverage;
+        var weightedAwayHalfTimeConcededGoals = totalWeight > 0 ? awayHalfTimeConcededGoalsWeighted / totalWeight : awayHalfTimeConcededGoalsAverage;
 
-        
+
         return new TeamData
         {
             TeamName = teamName,
-            ScoredGoalsAverage = homeGoalsAverage,
-            ConcededGoalsAverage = awayGoalsAverage,
-            HalfTimeScoredGoalAverage = homeHalfTimeGoalsAverage,
-            HalfTimeConcededGoalAverage = awayHalfTimeGoalsAverage,
-            ScoredShotsAverage = homeShortAverage,
-            ConcededShotsAverage = awayShortAverage,
-            ScoredTargetShotsAverage = homeTargetShotsAverage,
-            ConcededTargetShotsAverage = awayTargetShotsAverage
+            ScoredGoalsAverage = (weightedHomeGoals + weightedAwayGoals) / 2,
+            ConcededGoalsAverage = (weightedHomeConcededGoals + weightedAwayConcededGoals) / 2,
+            HalfTimeScoredGoalAverage = (weightedHomeHalfTimeGoals + weightedAwayHalfTimeGoals) / 2,
+            HalfTimeConcededGoalAverage = (weightedHomeHalfTimeConcededGoals + weightedAwayHalfTimeConcededGoals) / 2,
         };
     }
 
