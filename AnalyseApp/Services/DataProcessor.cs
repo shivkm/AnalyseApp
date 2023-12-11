@@ -40,6 +40,7 @@ public class DataProcessor: IDataProcessor
         }
         
         // Save the newly computed data to the database
+        CreateTableInTheDatabase(connectionString);
         SaveComputedDataToDatabase(matchDataList, connectionString);
         return matchDataList;
     }
@@ -67,20 +68,15 @@ public class DataProcessor: IDataProcessor
             {
                 homeGoalsAverage += weight * match.FullTimeHomeGoals / matches.GetGoalAverageRate(teamName);
                 homeHalfTimeGoalsAverage += weight * match.HalfTimeHomeGoals / matches.GetGoalAverageRate(homeTeam, true);
-                homeShortAverage +=
-                    weight * match.HalfTimeHomeGoals / matches.GetShotAverageRate(homeTeam);
-                homeTargetShotsAverage +=
-                    weight * match.HalfTimeHomeGoals / matches.GetShotAverageRate(homeTeam, true);
+                homeShortAverage += weight * match.HalfTimeHomeGoals / matches.GetShotAverageRate(homeTeam);
+                homeTargetShotsAverage += weight * match.HalfTimeHomeGoals / matches.GetShotAverageRate(homeTeam, true);
             }
             if (match.AwayTeam == teamName)
             {
                 awayGoalsAverage += weight * match.FullTimeAwayGoals / matches.GetGoalAverageRate(teamName);
                 awayHalfTimeGoalsAverage += weight * match.HalfTimeAwayGoals / matches.GetGoalAverageRate(awayTeam, true);
-                awayShortAverage +=
-                    weight * match.HalfTimeAwayGoals / matches.GetShotAverageRate(awayTeam);
-            
-                awayTargetShotsAverage +=
-                    weight * match.HalfTimeAwayGoals / matches.GetShotAverageRate(awayTeam, true);
+                awayShortAverage += weight * match.HalfTimeAwayGoals / matches.GetShotAverageRate(awayTeam);
+                awayTargetShotsAverage += weight * match.HalfTimeAwayGoals / matches.GetShotAverageRate(awayTeam, true);
             }
         }
         
@@ -180,5 +176,22 @@ public class DataProcessor: IDataProcessor
         command.Parameters.AddWithValue("@Data", jsonData);
         command.ExecuteNonQuery();
     }
+    
+    private static void CreateTableInTheDatabase(string connectionString)
+    {
+        using var connection = new SqliteConnection(connectionString);
+        connection.Open();
 
+        var command = connection.CreateCommand();
+        command.CommandText = 
+            """
+            
+                CREATE TABLE IF NOT EXISTS MatchDataJSON (
+                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    Data TEXT
+                );
+                
+            """;
+        command.ExecuteNonQuery();
+    }
 }
