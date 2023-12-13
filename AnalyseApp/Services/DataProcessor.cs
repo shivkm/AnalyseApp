@@ -29,6 +29,8 @@ public class DataProcessor: IDataProcessor
 
             matchData = matchData with
             {
+                HomeWin = historicalMatch.FullTimeHomeGoals > historicalMatch.FullTimeAwayGoals,
+                AwayWin = historicalMatch.FullTimeAwayGoals > historicalMatch.FullTimeHomeGoals,
                 OverUnderTwoGoals = historicalMatch.FullTimeHomeGoals + historicalMatch.FullTimeAwayGoals > 2.5,
                 BothTeamsScored = historicalMatch is { FullTimeHomeGoals: > 0, FullTimeAwayGoals: > 0 },
                 TwoToThreeGoals =
@@ -48,6 +50,11 @@ public class DataProcessor: IDataProcessor
     public TeamData CalculateTeamData(IEnumerable<Match> matches, string teamName)
     {
         var teamMatches = matches.Where(m => m.HomeTeam == teamName || m.AwayTeam == teamName);
+
+        if (teamMatches.Count() < 3)
+        {
+            return new TeamData();
+        }
         var homeMatches = teamMatches.Where(m => m.HomeTeam == teamName);
         var awayMatches = teamMatches.Where(m => m.AwayTeam == teamName);
 
@@ -60,7 +67,16 @@ public class DataProcessor: IDataProcessor
         var homeHalfTimeConcededGoalsAverage = homeMatches.Average(m => m.HalfTimeAwayGoals);
         var awayHalfTimeScoredGoalsAverage = awayMatches.Average(m => m.HalfTimeAwayGoals);
         var awayHalfTimeConcededGoalsAverage = awayMatches.Average(m => m.HalfTimeHomeGoals);
-        
+
+        var homeZeroZeroMatchAverage = homeMatches.GetAverageBy(zeroZeroGoals: true);
+        var awayZeroZeroMatchAverage = awayMatches.GetAverageBy(zeroZeroGoals: true);
+        var homeUnderThreeGoalsMatchAverage = homeMatches.GetAverageBy();
+        var awayUnderThreeGoalsMatchAverage = awayMatches.GetAverageBy();
+        var homeOverTwoGoalsMatchAverage = homeMatches.GetAverageBy(overTwoGoals: true);
+        var awayOverTwoGoalsMatchAverage = awayMatches.GetAverageBy(overTwoGoals: true);
+        var homeGoalGoalsMatchAverage = homeMatches.GetAverageBy(goalGoal: true);
+        var awayGoalGoalsMatchAverage = awayMatches.GetAverageBy(goalGoal: true);
+
         float  homeScoredGoalsWeighted = 0,
                awayScoredGoalsWeighted = 0,
                homeConcededGoalsWeighted = 0,
@@ -110,6 +126,10 @@ public class DataProcessor: IDataProcessor
             ConcededGoalsAverage = (weightedHomeConcededGoals + weightedAwayConcededGoals) / 2,
             HalfTimeScoredGoalAverage = (weightedHomeHalfTimeGoals + weightedAwayHalfTimeGoals) / 2,
             HalfTimeConcededGoalAverage = (weightedHomeHalfTimeConcededGoals + weightedAwayHalfTimeConcededGoals) / 2,
+            ZeroZeroMatchAverage = (homeZeroZeroMatchAverage + awayZeroZeroMatchAverage) / 2,
+            UnderThreeGoalsMatchAverage = (homeUnderThreeGoalsMatchAverage + awayUnderThreeGoalsMatchAverage) / 2,
+            OverTwoGoalsMatchAverage = (homeOverTwoGoalsMatchAverage + awayOverTwoGoalsMatchAverage) / 2,
+            GoalGoalsMatchAverage = (homeGoalGoalsMatchAverage + awayGoalGoalsMatchAverage) / 2
         };
     }
 

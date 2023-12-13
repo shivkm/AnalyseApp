@@ -5,7 +5,10 @@ namespace AnalyseApp.Interfaces;
 
 public interface IPredictionService
 {
-    List<Prediction> GenerateRandomPredictionsBy(int gameCount, PredictionType type = PredictionType.OverTwoGoals, 
-        double probability = 0.0, string fixture = "fixtures.csv");
+    List<Prediction> GenerateRandomPredictionsBy(int gameCount, 
+        DateTime playingOn,
+        bool dayPredictions,
+        PredictionType type = PredictionType.OverTwoGoals, 
+        string fixture = "fixtures.csv");
     void GenerateFixtureFiles(string fixtureName);
 }

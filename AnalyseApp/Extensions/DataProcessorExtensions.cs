@@ -19,7 +19,7 @@ public static class DataProcessorExtensions
             .Where(i =>
             {
                 var matchDate = i.Date.Parse();
-                return matchDate > playedOn;
+                return matchDate < playedOn;
             })
             .OrderByDescending(i => i.Date.Parse())
             .ToList();
@@ -37,30 +37,27 @@ public static class DataProcessorExtensions
         return winMatches / (float)matches.Count();
     }
     
-    public static float GetGoalAverageRate(this IEnumerable<Match> matches, string teamName, bool halfTime = false)
+    public static double GetAverageBy(
+        this IEnumerable<Match> matches, 
+        bool zeroZeroGoals = false, 
+        bool overTwoGoals = false, 
+        bool goalGoal = false
+    )
     {
-        var totalGoals = matches
-                             .Where(m => m.HomeTeam == teamName)
-                             .Sum(m => m.FullTimeHomeGoals) + 
-                         matches
-                             .Where(m => m.AwayTeam == teamName)
-                             .Sum(m => m.FullTimeAwayGoals);
+        var countMatches = matches.Count(m => m.FullTimeHomeGoals + m.FullTimeAwayGoals < 3);
 
-        if (halfTime)
-        {
-            totalGoals = matches
-                             .Where(m => m.HomeTeam == teamName)
-                             .Sum(m => m.HalfTimeHomeGoals) + 
-                         matches
-                             .Where(m => m.AwayTeam == teamName)
-                             .Sum(m => m.HalfTimeAwayGoals);
-        }
+        if (zeroZeroGoals)
+            countMatches = matches.Count(m => m is { FullTimeHomeGoals: 0, FullTimeAwayGoals: 0 });
         
-        var totalMatches = matches
-            .Count(m => m.HomeTeam == teamName || m.AwayTeam == teamName);
-
-        return totalMatches > 0 ? totalGoals / totalMatches : 0;
-    }
+        if (overTwoGoals)
+            countMatches = matches.Count(m => m.FullTimeHomeGoals + m.FullTimeAwayGoals > 2);
+        
+        if (goalGoal)
+            countMatches = matches.Count(m => m is { FullTimeHomeGoals: > 0, FullTimeAwayGoals: > 0 });
+        
+        var average = (double)countMatches / matches.Count();
+        return average;
+    }  
     
     public static float GetShotAverageRate(this IEnumerable<Match> matches, string teamName, bool targetShots = false)
     {
@@ -113,24 +110,24 @@ public static class DataProcessorExtensions
             HomeConcededGoalsAverage = homeTeamData.ConcededGoalsAverage,
             HomeHalfTimeScoredGoalsAverage = homeTeamData.HalfTimeScoredGoalAverage,
             HomeHalfTimeConcededGoalsAverage = homeTeamData.HalfTimeConcededGoalAverage,
-            HomeScoredShotsAverage = homeTeamData.ScoredShotsAverage,
-            HomeConcededShotsAverage = homeTeamData.ConcededShotsAverage,
-            HomeScoredTargetShotsAverage = homeTeamData.ScoredTargetShotsAverage,
-            HomeConcededTargetShotsAverage = homeTeamData.ConcededTargetShotsAverage,
-
+            HomeZeroZeroMatchAverage = homeTeamData.ZeroZeroMatchAverage,
+            HomeUnderThreeGoalsMatchAverage = homeTeamData.UnderThreeGoalsMatchAverage,
+            HomeOverTwoGoalsMatchAverage = homeTeamData.OverTwoGoalsMatchAverage,
+            HomeGoalGoalMatchAverage = homeTeamData.GoalGoalsMatchAverage,
+            
             Away = awayTeamData.TeamName,
             AwayScoredGoalsAverage = awayTeamData.ScoredGoalsAverage,
             AwayConcededGoalsAverage = awayTeamData.ConcededGoalsAverage,
             AwayHalfTimeScoredGoalsAverage = awayTeamData.HalfTimeScoredGoalAverage,
             AwayHalfTimeConcededGoalsAverage = awayTeamData.HalfTimeConcededGoalAverage,
-            AwayScoredShotsAverage = awayTeamData.ScoredShotsAverage,
-            AwayConcededShotsAverage = awayTeamData.ConcededShotsAverage,
-            AwayScoredTargetShotsAverage = awayTeamData.ScoredTargetShotsAverage,
-            AwayConcededTargetShotsAverage = awayTeamData.ConcededTargetShotsAverage,
-
-            OverUnderTwoGoals = true,
-            BothTeamsScored = true,
-            TwoToThreeGoals = false
+            AwayZeroZeroMatchAverage = awayTeamData.ZeroZeroMatchAverage,
+            AwayUnderThreeGoalsMatchAverage = awayTeamData.UnderThreeGoalsMatchAverage,
+            AwayOverTwoGoalsMatchAverage =awayTeamData.OverTwoGoalsMatchAverage,
+            AwayGoalGoalMatchAverage = awayTeamData.GoalGoalsMatchAverage,
+            
+            OverUnderTwoGoals = false,
+            BothTeamsScored = false,
+            TwoToThreeGoals = false, AwayWin = false, HomeWin = false
         };
 
 

@@ -58,14 +58,15 @@ public class PredictionServiceTests
     public void GivenSomePredictions_WhenGenerateTicketExecuted_ThenTheTicketShouldHaveAllPredictionsCorrect(string fixture)
     {
         // Arrange
-        const int gameCount = 8;
+        const int gameCount = 3;
         const double expectedAccuracy = 80.0; 
         
         // Act
         var predictions = _predictionService.GenerateRandomPredictionsBy(
             gameCount, 
-            PredictionType.Any, 
-            0.0,
+            DateTime.Now, 
+            false,
+            PredictionType.AwayWin,
             fixture);
         
         foreach (var prediction in predictions)
@@ -121,7 +122,7 @@ public class PredictionServiceTests
         {
             PredictionType.OverTwoGoals => prediction.HomeScore + prediction.AwayScore > 2,
             PredictionType.GoalGoals => prediction is { HomeScore: > 0, AwayScore: > 0 },
-            PredictionType.UnderTwoGoals => prediction.HomeScore + prediction.AwayScore < 3,
+            PredictionType.UnderThreeGoals => prediction.HomeScore + prediction.AwayScore < 3,
             PredictionType.TwoToThreeGoals => prediction.HomeScore + prediction.AwayScore is 2 or 3,
             PredictionType.HomeWin => prediction.HomeScore > prediction.AwayScore,
             PredictionType.AwayWin => prediction.HomeScore < prediction.AwayScore,

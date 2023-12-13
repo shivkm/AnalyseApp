@@ -4,7 +4,7 @@ public enum PredictionType
 {
     TwoToThreeGoals,
     OverTwoGoals,
-    UnderTwoGoals,
+    UnderThreeGoals,
     GoalGoals,
     HomeWin,
     AwayWin,
