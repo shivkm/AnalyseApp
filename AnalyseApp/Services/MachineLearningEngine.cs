@@ -31,7 +31,7 @@ public class MachineLearningEngine: IMachineLearningEngine
             .Append(_mlContext.Transforms.Categorical
                 .OneHotEncoding("AwayEncoded", nameof(MatchData.Away)))
             .Append(_mlContext.Transforms.Concatenate("Features", featureColumns) )
-            .Append(_mlContext.BinaryClassification.Trainers.FastForest(labelColumnName: labelColumns));
+            .Append(_mlContext.BinaryClassification.Trainers.FastTree(labelColumnName: labelColumns));
         
         var model = pipeline.Fit(_trainTestData.TrainSet);
 

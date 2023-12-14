@@ -58,7 +58,7 @@ public class PredictionServiceTests
     public void GivenSomePredictions_WhenGenerateTicketExecuted_ThenTheTicketShouldHaveAllPredictionsCorrect(string fixture)
     {
         // Arrange
-        const int gameCount = 3;
+        const int gameCount = 97;
         const double expectedAccuracy = 80.0; 
         
         // Act

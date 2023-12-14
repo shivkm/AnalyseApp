@@ -4,10 +4,17 @@ namespace AnalyseApp.Extensions;
 
 public static class DataProcessorExtensions
 {
-    public static IList<Match> GetMatchesBy(this IEnumerable<Match> games, Func<Match, bool> predicate)
+    public static IEnumerable<Match> GetCurrentLeagueBy(this IEnumerable<Match> games, string league, int year)
     {
+        var startDate = $"20/07/{year}";
         var currentSession = games
-            .Where(predicate)
+            .Where(i => i.League == league)
+            .Where(i =>
+            {
+                var matchDate = i.Date.Parse();
+                return matchDate >= startDate.Parse();
+            })
+            .OrderByDescending(i => i.Date.Parse())
             .ToList();
 
         return currentSession;
@@ -27,20 +34,13 @@ public static class DataProcessorExtensions
         return foundMatches;
     } 
     
-    public static float GetWinAverageRate(this IEnumerable<Match> matches, string teamName)
-    {
-        var winMatches = matches
-            .Count(m => m.HomeTeam == teamName && m.FullTimeHomeGoals > m.FullTimeAwayGoals || 
-                        m.AwayTeam == teamName && m.FullTimeAwayGoals > m.FullTimeHomeGoals)
-            ;
-
-        return winMatches / (float)matches.Count();
-    }
+    public static float GetAverageRate(int Goals, int matchCount) =>  Goals / matchCount;
     
     public static double GetAverageBy(
         this IEnumerable<Match> matches, 
         bool zeroZeroGoals = false, 
-        bool overTwoGoals = false, 
+        bool overTwoGoals = false,
+        bool twoToThreeGoals = false,
         bool goalGoal = false
     )
     {
@@ -114,6 +114,7 @@ public static class DataProcessorExtensions
             HomeUnderThreeGoalsMatchAverage = homeTeamData.UnderThreeGoalsMatchAverage,
             HomeOverTwoGoalsMatchAverage = homeTeamData.OverTwoGoalsMatchAverage,
             HomeGoalGoalMatchAverage = homeTeamData.GoalGoalsMatchAverage,
+            HomeTwoToThreeGoalsMatchAverage = homeTeamData.TwoToThreeMatchAverage,
             
             Away = awayTeamData.TeamName,
             AwayScoredGoalsAverage = awayTeamData.ScoredGoalsAverage,
@@ -124,6 +125,7 @@ public static class DataProcessorExtensions
             AwayUnderThreeGoalsMatchAverage = awayTeamData.UnderThreeGoalsMatchAverage,
             AwayOverTwoGoalsMatchAverage =awayTeamData.OverTwoGoalsMatchAverage,
             AwayGoalGoalMatchAverage = awayTeamData.GoalGoalsMatchAverage,
+            AwayTwoToThreeGoalsMatchAverage = awayTeamData.TwoToThreeMatchAverage,
             
             OverUnderTwoGoals = false,
             BothTeamsScored = false,

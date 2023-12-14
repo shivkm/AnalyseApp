@@ -5,6 +5,12 @@ public record MatchData
     public string Home { get; set; }
     public string Away { get; set; }
     public DateTime Date { get; set; }
+    public int HomeScoredGoals { get; set; }
+    public int AwayScoredGoals { get; set; }
+    public int HomeConcededGoals { get; set; }
+    public int AwayConcededGoals { get; set; }
+    public int TotalLeagueHomeGoals { get; set; }
+    public int TotalLeagueAwayGoals { get; set; }  
     public float HomeScoredGoalsAverage { get; set; }
     public float AwayScoredGoalsAverage { get; set; }
     public float HomeConcededGoalsAverage { get; set; }
@@ -18,6 +24,8 @@ public record MatchData
     public double HomeUnderThreeGoalsMatchAverage { get; set; }
     public double AwayUnderThreeGoalsMatchAverage { get; set; }
     public double HomeOverTwoGoalsMatchAverage { get; set; }
+    public double AwayTwoToThreeGoalsMatchAverage { get; set; }
+    public double HomeTwoToThreeGoalsMatchAverage { get; set; }
     public double AwayOverTwoGoalsMatchAverage { get; set; }
     public double HomeGoalGoalMatchAverage { get; set; }
     public double AwayGoalGoalMatchAverage { get; set; }
@@ -32,6 +40,10 @@ public record MatchData
 public record TeamData
 { 
     public string TeamName { get; set; }
+    public int ScoredGoals { get; set; }
+    public int ConcededGoals { get; set; }
+    public int TotalLeagueHomeGoals { get; set; }
+    public int TotalLeagueAwayGoals { get; set; }  
     public float ConcededGoalsAverage { get; set; }
     public float ScoredGoalsAverage { get; set; }
     public float HalfTimeScoredGoalAverage { get; set; }
@@ -41,7 +53,7 @@ public record TeamData
     public double UnderThreeGoalsMatchAverage { get; set; }
     public double OverTwoGoalsMatchAverage { get; set; }
     public double GoalGoalsMatchAverage { get; set; }
-    public float TwoToThreeMatchAverage { get; set; }
+    public double TwoToThreeMatchAverage { get; set; }
     public float ScoredShotsAverage { get; set; }
     public float ScoredTargetShotsAverage { get; set; }
     public float ConcededShotsAverage { get; set; }
