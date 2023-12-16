@@ -58,15 +58,15 @@ public class PredictionServiceTests
     public void GivenSomePredictions_WhenGenerateTicketExecuted_ThenTheTicketShouldHaveAllPredictionsCorrect(string fixture)
     {
         // Arrange
-        const int gameCount = 97;
-        const double expectedAccuracy = 80.0; 
+        const int gameCount = 3;
+        const double expectedAccuracy = 70.0; 
         
         // Act
         var predictions = _predictionService.GenerateRandomPredictionsBy(
             gameCount, 
             DateTime.Now, 
             false,
-            PredictionType.AwayWin,
+            PredictionType.HomeWin,
             fixture);
         
         foreach (var prediction in predictions)

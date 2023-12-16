@@ -11,7 +11,7 @@ public static class PoissonExtensions
     /// </summary>
     /// <param name="lambda"></param>
     /// <returns></returns>
-    public static double PoissonProbability(this double lambda, int k)
+    public static double PoissonProbability(this float lambda, int k)
     {
         return Math.Pow(lambda, k) * Math.Exp(-lambda) / Factorial(k);
     }

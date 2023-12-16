@@ -10,49 +10,44 @@ public class DataProcessor: IDataProcessor
 {
     private const string connectionString = "Data Source=matchdata.db";
 
-    public List<MatchData> CalculateMatchAveragesDataBy(IEnumerable<Match> historicalMatches, DateTime upcomingMatchDate)
+    public List<MatchAverage> CalculateMatchAveragesDataBy(IEnumerable<Match> historicalMatches, DateTime upcomingMatchDate)
     {
-        if (IsDataUpToDate(upcomingMatchDate, connectionString))
-        {
-            return LoadComputedDataFromDatabase(connectionString);
-        }
-        var precomputedTeamData = PrecomputeTeamData(historicalMatches);
-        var matchDataList = new List<MatchData>();
-
+        // if (IsDataUpToDate(upcomingMatchDate, connectionString))
+        // {
+        //     return LoadComputedDataFromDatabase(connectionString);
+        // }
+        var matchAverages = new List<MatchAverage>();
 
         foreach (var historicalMatch in historicalMatches)
         {
-            var homeTeamData = precomputedTeamData[historicalMatch.HomeTeam];
-            var awayTeamData = precomputedTeamData[historicalMatch.AwayTeam];
-
-            var matchData = homeTeamData.GetMatchDataBy(awayTeamData, historicalMatch.Date.Parse());
-
-            matchData = matchData with
-            {
-                HomeWin = historicalMatch.FullTimeHomeGoals > historicalMatch.FullTimeAwayGoals,
-                AwayWin = historicalMatch.FullTimeAwayGoals > historicalMatch.FullTimeHomeGoals,
-                OverUnderTwoGoals = historicalMatch.FullTimeHomeGoals + historicalMatch.FullTimeAwayGoals > 2.5,
-                BothTeamsScored = historicalMatch is { FullTimeHomeGoals: > 0, FullTimeAwayGoals: > 0 },
-                TwoToThreeGoals = historicalMatch.FullTimeHomeGoals + historicalMatch.FullTimeAwayGoals is 2 or 3
-            };
+            var homeTeam = historicalMatch.HomeTeam;
+            var awayTeam = historicalMatch.AwayTeam;
+            var datTime = historicalMatch.Date.Parse();
+            var homeScore = historicalMatch.FullTimeHomeGoals;
+            var awayScore = historicalMatch.FullTimeAwayGoals;
             
-            matchDataList.Add(matchData);
+            var matchAverage = CalculateGoalMatchAverageBy(historicalMatches, homeTeam, awayTeam, datTime, homeScore, awayScore);
+            matchAverages.Add(matchAverage);
         }
         
         // Save the newly computed data to the database
-        CreateTableInTheDatabase(connectionString);
-        SaveComputedDataToDatabase(matchDataList, connectionString);
-        return matchDataList;
+        CreateTableInTheDatabase(connectionString, """
+                                                    
+                                                        CREATE TABLE IF NOT EXISTS MatchAverage (
+                                                            Id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                                            Data TEXT
+                                                        );
+                                                        
+                                                    """);
+        SaveComputedDataToDatabase(matchAverages, connectionString);
+        return matchAverages;
     }
-    
+ 
     public TeamData CalculateTeamData(IEnumerable<Match> matches, string teamName)
     {
         var teamMatches = matches.Where(m => m.HomeTeam == teamName || m.AwayTeam == teamName);
-
-        if (teamMatches.Count() < 3)
-        {
-            return new TeamData();
-        }
+        if (teamMatches.Count() < 3)return new TeamData();
+        
         var homeMatches = teamMatches.Where(m => m.HomeTeam == teamName);
         var awayMatches = teamMatches.Where(m => m.AwayTeam == teamName);
 
@@ -134,18 +129,164 @@ public class DataProcessor: IDataProcessor
         };
     }
 
-    public MatchAverage CalculateGoalMatchAverageBy(IEnumerable<Match> historicalMatches, string homeTeam, string awayTeam)
+    public MatchData GetLastSixMatchDataBy(List<Match> historicalMatches, string home, string away, DateTime playedOn)
     {
-        var goalAverage = GetGoalAverageBy(historicalMatches, homeTeam, awayTeam);
+        var homeData = GetScoredGoalMatchCountBy(historicalMatches, home, playedOn, true);
+        var awayData = GetScoredGoalMatchCountBy(historicalMatches, away, playedOn);
+        var headToHead = GetHeadToHeadDataBy(historicalMatches, home, away, playedOn);
+
+        var matchData = new MatchData
+        {
+            HomeTeam = homeData,
+            AwayTeam = awayData,
+            HeadToHeadData = headToHead
+        };
+
+        return matchData;
+    }
+
+    private static TeamData GetScoredGoalMatchCountBy(List<Match> historicalMatches, string team, DateTime playedOn, bool isHome = false)
+    {
+        var matches = historicalMatches
+            .GetMatchBy(match => match.Date.Parse() < playedOn &&
+                                 (match.HomeTeam == team || match.AwayTeam == team))
+            .Take(6)
+            .ToList();
+
+        var scoredGoalsMatchCount = matches.Count(i =>
+            i.HomeTeam == team && i.FullTimeHomeGoals > 0 ||
+            i.AwayTeam == team && i.FullTimeAwayGoals > 0
+        );
+        
+        var fieldScoredGoalsMatchCount = matches.Count(i =>
+            isHome ? i.HomeTeam == team && i.FullTimeHomeGoals > 0 
+                    : i.AwayTeam == team && i.FullTimeAwayGoals > 0
+        );
+
+        var matchGoals = new List<int>();
+        
+        foreach (var match in matches)
+        {
+            if (match.HomeTeam == team)
+            {
+                matchGoals.Add(Convert.ToInt32(match.FullTimeHomeGoals));
+            }
+
+            if (match.AwayTeam == team)
+            {
+                matchGoals.Add(Convert.ToInt32(match.FullTimeAwayGoals));
+            }
+        }
+
+        matchGoals.Reverse();
+        
+        var lastMatchNotScored = false;
+        var lastAndThirdLastScored = false;
+        var lastAndSecondLastScored = false;
+        
+        if (matchGoals.Count >= 2)
+        {
+            lastMatchNotScored = matchGoals[0] == 0;
+            lastAndThirdLastScored = matchGoals[0] > 0 && matchGoals[2] > 0;
+            lastAndSecondLastScored = matchGoals[0] == 0 && matchGoals[1] == 0;
+        }
+       
+        var teamData = new TeamData
+        {
+            TeamName = team,
+            MatchCount = matches.Count,
+            FieldMatchCount = matches.Count(i => isHome ? i.HomeTeam == team : i.AwayTeam == team),
+            Output = "Match Goals: [" + string.Join(", ", matchGoals) + "]",
+            LastMatchNotScored = lastMatchNotScored,
+            LastAndThirdLastScored = lastAndThirdLastScored,
+            LastTwoScored = lastAndSecondLastScored,
+        };
+
+        return teamData;
+    }
+
+    private static HeadToHeadData GetHeadToHeadDataBy(List<Match> historicalMatches, string homeTeam, string awayTeam,
+        DateTime playedOn)
+    {
+        var matches = historicalMatches
+            .GetMatchBy(match => match.Date.Parse() < playedOn &&
+                                 (match.HomeTeam == homeTeam ||
+                                  match.AwayTeam == homeTeam || 
+                                  match.HomeTeam == awayTeam ||
+                                  match.AwayTeam == awayTeam))
+            .Take(6)
+            .ToList();
+        
+        var lastThreeHomeMatchGoals = new List<int>();
+        var lastThreeAwayMatchGoals = new List<int>();
+        
+        foreach (var match in matches.Take(3))
+        {
+            if (match.HomeTeam == homeTeam ||match.AwayTeam == homeTeam)
+            {
+                lastThreeHomeMatchGoals.Add(Convert.ToInt32(match.FullTimeHomeGoals));
+            }
+
+            if (match.HomeTeam == awayTeam ||match.AwayTeam == awayTeam)
+            {
+                lastThreeAwayMatchGoals.Add(Convert.ToInt32(match.FullTimeAwayGoals));
+            }
+        }
+
+        var lastMatchNotScored = false;
+        var lastAndThirdLastScored = false;
+        var lastAndSecondLastScored = false;
+        
+        if (lastThreeHomeMatchGoals.Count >= 2 && lastThreeAwayMatchGoals.Count >= 2)
+        {
+            
+            lastMatchNotScored = lastThreeHomeMatchGoals[0] == 0 || lastThreeAwayMatchGoals[0] == 0;
+            lastAndThirdLastScored = lastThreeHomeMatchGoals[0] > 0 && lastThreeHomeMatchGoals[2] > 0 ||
+                                         lastThreeAwayMatchGoals[0] > 0 && lastThreeAwayMatchGoals[2] > 0;
+        
+            lastAndSecondLastScored = lastThreeHomeMatchGoals[0] == 0 && lastThreeHomeMatchGoals[1] == 0 ||
+                                          lastThreeAwayMatchGoals[0] == 0 && lastThreeAwayMatchGoals[1] == 0;
+        }
+       
+        
+        var headToHead = new HeadToHeadData(
+            matches.Take(3).Count(),
+            lastThreeHomeMatchGoals.All(m => m > 0),
+            lastThreeAwayMatchGoals.All(m => m > 0),
+            lastMatchNotScored,
+            lastAndThirdLastScored,
+            lastAndSecondLastScored
+            );
+
+        return headToHead;
+    }
+    
+    public MatchAverage CalculateGoalMatchAverageBy(
+        IEnumerable<Match> historicalMatches, 
+        string homeTeam, string awayTeam, DateTime playedOn, float homeScore, float awayScore, bool currentLeague = false)
+    {
+        var goalAverage = currentLeague 
+            ? GetCurrentLeagueGoalAverageBy(historicalMatches, homeTeam, awayTeam)
+            : GetGoalAverageBy(historicalMatches, homeTeam, awayTeam);
+        
         var homeAttackStrength = goalAverage.HomeScoredGoalAverage / goalAverage.LeagueHomeGoalAverage;
         var awayAttackStrength = goalAverage.AwayScoredGoalAverage / goalAverage.LeagueAwayGoalAverage;
         var homeDefenceStrength = goalAverage.HomeConcededGoalAverage / goalAverage.LeagueAwayGoalAverage;
         var awayDefenceStrength = goalAverage.AwayConcededGoalAverage / goalAverage.LeagueHomeGoalAverage;
 
-        var matchAverage =new MatchAverage(
-            homeAttackStrength * awayDefenceStrength * goalAverage.LeagueHomeGoalAverage,
-            awayAttackStrength * homeDefenceStrength * goalAverage.LeagueAwayGoalAverage
-            );
+        var over = homeScore + awayScore > 2;
+        var goalGoal = homeScore > 0 && awayScore > 0;
+        var matchAverage = new MatchAverage(
+            $"{homeTeam}:{awayTeam}",
+            (float)(homeAttackStrength * awayDefenceStrength * goalAverage.LeagueHomeGoalAverage),
+            (float)(awayAttackStrength * homeDefenceStrength * goalAverage.LeagueAwayGoalAverage),
+            playedOn
+            )
+        {
+            OverUnder = over,
+            GoalGoal = goalGoal
+            
+        };
 
         return matchAverage;
     }
@@ -153,7 +294,32 @@ public class DataProcessor: IDataProcessor
     private static GoalAverages GetGoalAverageBy(IEnumerable<Match> historicalMatches, string homeTeam, string awayTeam)
     {
         var league = GetLeagueOfTeam(historicalMatches, homeTeam);
-        var leagueGames = historicalMatches.GetCurrentLeagueBy(league, 2023);
+        var leagueGames = historicalMatches.GetMatchBy(league);
+
+        var leagueHomeGoalAverage = CalculateAverageGoals(leagueGames, isHomeTeam: true);
+        var leagueAwayGoalAverage = CalculateAverageGoals(leagueGames);
+
+        var homeScoredGoalAverage = CalculateTeamAverageGoals(leagueGames, homeTeam, isHomeTeam: true);
+        var homeConcededGoalAverage = CalculateTeamAverageGoals(leagueGames, homeTeam);
+
+        var awayScoredGoalAverage = CalculateTeamAverageGoals(leagueGames, awayTeam);
+        var awayConcededGoalAverage = CalculateTeamAverageGoals(leagueGames, awayTeam, isHomeTeam: true);
+
+        
+        return new GoalAverages(
+            leagueHomeGoalAverage,
+            leagueAwayGoalAverage,
+            homeScoredGoalAverage,
+            homeConcededGoalAverage,
+            awayScoredGoalAverage,
+            awayConcededGoalAverage
+        );
+    }
+    
+    private static GoalAverages GetCurrentLeagueGoalAverageBy(IEnumerable<Match> historicalMatches, string homeTeam, string awayTeam)
+    {
+        var league = GetLeagueOfTeam(historicalMatches, homeTeam);
+        var leagueGames = historicalMatches.GetMatchBy(league, 2023);
 
         var leagueHomeGoalAverage = CalculateAverageGoals(leagueGames, isHomeTeam: true);
         var leagueAwayGoalAverage = CalculateAverageGoals(leagueGames);
@@ -227,7 +393,7 @@ public class DataProcessor: IDataProcessor
         using var connection = new SqliteConnection(connectionString);
         connection.Open();
 
-        using var command = new SqliteCommand("SELECT Data FROM MatchDataJSON", connection);
+        using var command = new SqliteCommand("SELECT Data FROM MatchAverage", connection);
         var result = command.ExecuteReader();
 
         if (result.Read())
@@ -241,19 +407,19 @@ public class DataProcessor: IDataProcessor
         return false;
     }
     
-    private static List<MatchData> LoadComputedDataFromDatabase(string connectionString)
+    private static List<MatchAverage> LoadComputedDataFromDatabase(string connectionString)
     {
-        var matchDataList = new List<MatchData>();
+        var matchDataList = new List<MatchAverage>();
 
         using var connection = new SqliteConnection(connectionString);
         connection.Open();
 
-        using var command = new SqliteCommand("SELECT Data FROM MatchDataJSON", connection);
+        using var command = new SqliteCommand("SELECT Data FROM MatchAverage", connection);
         using var reader = command.ExecuteReader();
         while (reader.Read())
         {
             var jsonData = reader.GetString(0);
-            var matchData = JsonSerializer.Deserialize<List<MatchData>>(jsonData);
+            var matchData = JsonSerializer.Deserialize<List<MatchAverage>>(jsonData);
             if (matchData != null)
             {
                 matchDataList.AddRange(matchData);
@@ -263,33 +429,25 @@ public class DataProcessor: IDataProcessor
         return matchDataList;
     }
 
-    private static void SaveComputedDataToDatabase(List<MatchData> matchData, string connectionString)
+    private static void SaveComputedDataToDatabase(List<MatchAverage> matchAverages, string connectionString)
     {
-        var jsonData = JsonSerializer.Serialize(matchData);
+        var jsonData = JsonSerializer.Serialize(matchAverages);
         using var connection = new SqliteConnection(connectionString);
         connection.Open();
 
         using var command = connection.CreateCommand();
-        command.CommandText = "INSERT INTO MatchDataJSON (Data) VALUES (@Data)";
+        command.CommandText = "INSERT INTO MatchAverage (Data) VALUES (@Data)";
         command.Parameters.AddWithValue("@Data", jsonData);
         command.ExecuteNonQuery();
     }
     
-    private static void CreateTableInTheDatabase(string connectionString)
+    private static void CreateTableInTheDatabase(string connectionString, string commandText)
     {
         using var connection = new SqliteConnection(connectionString);
         connection.Open();
 
         var command = connection.CreateCommand();
-        command.CommandText = 
-            """
-            
-                CREATE TABLE IF NOT EXISTS MatchDataJSON (
-                    Id INTEGER PRIMARY KEY AUTOINCREMENT,
-                    Data TEXT
-                );
-                
-            """;
+        command.CommandText = commandText;
         command.ExecuteNonQuery();
     }
 }

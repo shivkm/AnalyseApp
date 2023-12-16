@@ -4,10 +4,19 @@ namespace AnalyseApp.Extensions;
 
 public static class DataProcessorExtensions
 {
-    public static IEnumerable<Match> GetCurrentLeagueBy(this IEnumerable<Match> games, string league, int year)
+    internal static IEnumerable<Match> GetMatchBy(this IEnumerable<Match> games, string league, int year = 0)
     {
-        var startDate = $"20/07/{year}";
         var currentSession = games
+            .Where(i => i.League == league)
+            .OrderByDescending(i => i.Date.Parse())
+            .ToList();
+
+        if (year == 0) 
+            return currentSession;
+        
+        var startDate = $"20/07/{year}";
+        
+        currentSession = games
             .Where(i => i.League == league)
             .Where(i =>
             {
@@ -28,6 +37,16 @@ public static class DataProcessorExtensions
                 var matchDate = i.Date.Parse();
                 return matchDate < playedOn;
             })
+            .OrderByDescending(i => i.Date.Parse())
+            .ToList();
+
+        return foundMatches;
+    } 
+    
+    internal static IEnumerable<Match> GetMatchBy(this List<Match> matches, Predicate<Match> predicate)
+    {
+        var foundMatches = matches
+            .Where(i => predicate(i))
             .OrderByDescending(i => i.Date.Parse())
             .ToList();
 

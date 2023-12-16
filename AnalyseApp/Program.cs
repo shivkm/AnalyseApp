@@ -30,6 +30,13 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddScoped<IPredictionService, PredictionService>();
         services.AddScoped<IMachineLearningEngine, MachineLearningEngine>();
         services.AddScoped<IDataProcessor, DataProcessor>();
+        services.AddHttpClient<IFootballService, FootballService>(opt =>
+        {
+            opt.BaseAddress = new Uri("https://api-football-v1.p.rapidapi.com/v3/");
+            opt.DefaultRequestHeaders.Add("X-RapidAPI-Key", "da827aff40msh14588d421d73f04p1627aejsne61502e3f868");
+            opt.DefaultRequestHeaders.Add("X-RapidAPI-Host", "api-football-v1.p.rapidapi.com");
+        });
+        
         services.AddHostedService<Worker>();
     })
     .Build();

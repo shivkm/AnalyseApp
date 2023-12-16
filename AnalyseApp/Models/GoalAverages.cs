@@ -6,8 +6,4 @@ public record GoalAverages(
     double HomeScoredGoalAverage,
     double HomeConcededGoalAverage,
     double AwayScoredGoalAverage,
-    double AwayConcededGoalAverage)
-{
-    public double HomeAverage { get; set; }
-    public double AwayAverage { get; set; }
-};
+    double AwayConcededGoalAverage);

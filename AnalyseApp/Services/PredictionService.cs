@@ -15,9 +15,10 @@ public class PredictionService(
 {
     private readonly string _mlModelPath = options.Value.MachineLearningModel;
     private readonly Dictionary<string, ITransformer> _transformers = new();
-    private List<MatchData> _mataData = new ();
+    private List<MatchAverage> _mataData = new ();
     private List<Match> _historicalData = new ();
-    private static readonly string[] LeagueArray = { "E0", "E1", "E2", "F1", "F2", "D1", "D2", "SP1", "SP2", "I1", "I2" };
+    //private static readonly string[] LeagueArray = { "E0", "E1", "E2", "F1", "F2", "D1", "D2", "SP1", "SP2", "I1", "I2" };
+    private static readonly string[] LeagueArray = { "E0", "E1", "E2", "F1", "D1", "SP1", "I1" };
     
     public void GenerateFixtureFiles(string fixtureName)
     {
@@ -95,103 +96,128 @@ public class PredictionService(
     
     private void TrainAndEvaluateModels()
     {
-        foreach (var type in Enum.GetValues(typeof(PredictionType)).Cast<PredictionType>())
+        foreach (var type in new[] { PredictionType.OverTwoGoals,  PredictionType.GoalGoals })
         {
-            if (type is PredictionType.NotQualified or 
-                PredictionType.UnderThreeGoals or
-                PredictionType.Draw or 
-                PredictionType.Any
-                )
-                continue;
-
             var modelFileName = $"{_mlModelPath}/{type}.zip";
             ITransformer model;
 
             if (!File.Exists(modelFileName))
             {
-                model = machineLearningEngine.TrainModel(type);
-                machineLearningEngine.SaveModel(model, modelFileName);
+                machineLearningEngine.TrainModel(type);
+                machineLearningEngine.SaveModel(modelFileName);
             }
             else
             {
-                model = machineLearningEngine.LoadModel(modelFileName);
+                machineLearningEngine.LoadModel(modelFileName);
             }
-
-            var accuracy = machineLearningEngine.EvaluateModel(model, type);
-            Console.WriteLine($"Model for {type}: Accuracy = {accuracy}");
-
-            _transformers[type.ToString()] = model;
         }
     }
 
     private Prediction ExecutePrediction(Match match, PredictionType ticketType)
     {
-        var random = new Random();
-
-        var allPredictions = new Dictionary<PredictionType, double>();
+        var allPredictions = new List<PoissonProbability>();
         var msg = $"{match.Date} {match.Time} - {match.HomeTeam}:{match.AwayTeam}";
+        var matchAverage = dataProcessor.CalculateGoalMatchAverageBy(
+            _historicalData,
+            match.HomeTeam, 
+            match.AwayTeam,
+            match.Date.Parse(),
+            0, 
+            0);
         var homeTeamData = dataProcessor.CalculateTeamData(_historicalData, match.HomeTeam);
         var awayTeamData = dataProcessor.CalculateTeamData(_historicalData, match.AwayTeam);
         var predictMatch = homeTeamData.GetMatchDataBy(awayTeamData, match.Date.Parse());
-        var matchAverage = dataProcessor.CalculateGoalMatchAverageBy(_historicalData, match.HomeTeam, match.AwayTeam);
-        var poissonProbability = CalculateThePoissonProbabilityBy(matchAverage);
         
-        if (match.HomeTeam == "Kaiserslautern" || match.HomeTeam == "Valencia")
+        var poissonProbability = CalculateThePoissonProbabilityBy(matchAverage);
+        var matchAnalysis = dataProcessor.GetLastSixMatchDataBy(
+            _historicalData,
+            match.HomeTeam,
+            match.AwayTeam,
+            match.Date.Parse()
+        );
+       
+        if (match.HomeTeam is "Portsmouth" or "Valencia")
         {
             
         }
 
-        var testMsg = string.Empty;
-        
-        foreach (var type in new[]
-                 {
-                     PredictionType.OverTwoGoals, 
-                     PredictionType.GoalGoals, 
-                     PredictionType.HomeWin, 
-                     PredictionType.AwayWin,
-                     PredictionType.TwoToThreeGoals
-                 })
+        foreach (var type in new[] { PredictionType.OverTwoGoals, PredictionType.GoalGoals })
         {
-            var transformer = _transformers[type.ToString()];
-            var prediction = machineLearningEngine.PredictOutcome(predictMatch, transformer, type);
-            // var isUnderThreeGoals = IsZeroZeroOrUnderThreeGoal(predictMatch);
-            var gameAverages = GetGameAverageBy(predictMatch, type);
+            
+            var prediction = machineLearningEngine.PredictOutcome(matchAverage, type);
+            
+            if (
+                (matchAnalysis.HomeTeam.LastMatchNotScored && matchAnalysis.AwayTeam.LastMatchNotScored)
+            )
+            {
+                if (prediction.PredictedLabel && prediction.Probability > 0.60)
+                {
+                    allPredictions.Add(new PoissonProbability(type, prediction.Probability));
+                    msg = $"{msg}\n {type}: Qualified probability: {100 * prediction.Probability:F}";
+                }
 
-            // if (poissonProbability.Type == type && gameAverages.qualified)
-            // {
-            //     msg = $"{msg}\n {type}: Qualified probability: {poissonProbability.Probability:F}";
-            //     allPredictions[type] = poissonProbability.Probability;
-            // }
-            // if ((poissonProbability.Type == type ||
-            //      poissonProbability.Type is PredictionType.UnderThreeGoals && type is PredictionType.TwoToThreeGoals) &&
-            //     gameAverages.qualified)
-            // {
-            //     msg = $"{msg}\n {type}: Qualified probability: {poissonProbability.Probability:F}";
-            //     allPredictions[type] = poissonProbability.Probability;
-            // }
+                if (type is PredictionType.GoalGoals)
+                {
+                    msg = $"{msg}\n {type}: Qualified";
+                }
+            }
 
-            var qualified = prediction.Prediction;
-            msg = $"{msg}\n {type}: {qualified}, probability: {poissonProbability.Probability:F}";
-            allPredictions[type] = poissonProbability.Probability;
+            
+            
+            
+           
+
+            // if (!prediction.PredictedLabel && type is PredictionType.OverTwoGoals)
+            // {
+            //     allPredictions.Add(new PoissonProbability(PredictionType.UnderThreeGoals, 1 - prediction.Probability));
+            //     msg = $"{msg}\n {PredictionType.UnderThreeGoals}: Qualified probability: {1 - prediction.Probability:F}";
+            // }
 
         }
 
         var bestPrediction = allPredictions
-            .OrderByDescending(i => i.Value)
-            .FirstOrDefault();
+                                 .FirstOrDefault(i => i.Type == poissonProbability.Type) 
+                             ?? allPredictions.MaxBy(i => i.Probability);
+        
+        if (bestPrediction is null)
+        {
+            return new Prediction();
+        }
 
+        var qualifiedForOver = allPredictions
+            .Any(item => item.Type is PredictionType.OverTwoGoals);
+        
+        var qualifiedForGoalGoal = allPredictions
+            .Any(item => item.Type is PredictionType.GoalGoals);
+            
+        if (poissonProbability.Type is PredictionType.UnderThreeGoals &&
+            poissonProbability.Probability > 0.50 && qualifiedForOver && qualifiedForGoalGoal)
+        {
+            bestPrediction = allPredictions.FirstOrDefault(item => item.Type is PredictionType.GoalGoals);
+        }
+        if (bestPrediction.Type is PredictionType.UnderThreeGoals && poissonProbability.Probability > 0.70)
+        {
+            bestPrediction = poissonProbability;
+        }
+       
+        
+        msg = $"{msg}\n poisson suggestion: {poissonProbability.Type}: Qualified, Probability {100 * poissonProbability.Probability:F}%\n" +
+              $"Last Six Match Analysis: Home: {matchAnalysis.HomeTeam.TeamName},\n " +
+              $"ScoredGoalInLastThreeMatches: {matchAnalysis.HomeTeam.Output},\n  " +
+              $"Away: {matchAnalysis.AwayTeam.TeamName},\n " +
+              $"ScoredGoalInLastThreeMatches: {matchAnalysis.AwayTeam.Output},\n " +
+              $"Head to Head: Home Scored Goal {matchAnalysis.HeadToHeadData.ScoredHomeGoal}, Away Scored Goal {matchAnalysis.HeadToHeadData.ScoredAwayGoal} out of {matchAnalysis.HeadToHeadData.Count}"
+            ;
+        
         return new Prediction
         {
             Date = match.Date.Parse(),
             HomeScore = match.FullTimeHomeGoals,
             AwayScore = match.FullTimeAwayGoals,
             Msg = msg,
-            Type = bestPrediction.Key,
-            OverTwoGoalsAccuracy = allPredictions.TryGetValue(PredictionType.OverTwoGoals, out var overTwoProb) ? overTwoProb : 0,
-            GoalGoalAccuracy = allPredictions.TryGetValue(PredictionType.GoalGoals, out var goalGoalProb) ? goalGoalProb : 0,
-            TwoToThreeGoalsAccuracy = allPredictions.TryGetValue(PredictionType.TwoToThreeGoals, out var twoThreeProb) ? twoThreeProb : 0,
-            Qualified = bestPrediction.Value > 0.50,
-            Probability = bestPrediction.Value
+            Type = bestPrediction.Type,
+            Qualified = bestPrediction.Probability > 0.60,
+            Probability = bestPrediction.Probability
         };
     }
 
@@ -207,7 +233,7 @@ public class PredictionService(
         return (qualified, underThreeGoalsMatches, zeroZeroMatches);
     }
     
-    private static (bool qualified, double average) GetGameAverageBy(MatchData matchData, PredictionType type)
+    private static PoissonProbability GetGameAverageBy(MatchData matchData, PredictionType type)
     {
         var probability = matchData.HomeZeroZeroMatchAverage + matchData.AwayZeroZeroMatchAverage;
         var qualified = probability > 0.20;
@@ -232,7 +258,7 @@ public class PredictionService(
                 break;
         }
 
-        return (qualified, probability);
+        return new PoissonProbability(type, probability);
     }
     
     private static readonly int[] ExpectedGoals = { 0, 1, 2, 3, 4, 5 };
@@ -310,22 +336,22 @@ public class PredictionService(
     private static List<Prediction> SelectRandomPredictions(int gameCount, PredictionType type, IEnumerable<Prediction> predictions)
     {
         var random = new Random();
-        var selectedTickets = new List<Prediction>();
-
-        var goalGoalGames = predictions
-            .Where(i => i is { Qualified: true, Type: PredictionType.GoalGoals })
-            .OrderBy(i => i.Probability)
-            .Take(gameCount)
-            .ToList();
-        selectedTickets.AddRange(goalGoalGames);
-        
-        var overTwoGoalsGames = predictions
-            .Where(i => i is { Qualified: true, Type: PredictionType.OverTwoGoals })
-            .OrderBy(i => i.Probability)
-            .Take(gameCount)
-            .ToList();
-        selectedTickets.AddRange(overTwoGoalsGames);
-        
+        // var selectedTickets = new List<Prediction>();
+        //
+        // var goalGoalGames = predictions
+        //     .Where(i => i is { Qualified: true, Type: PredictionType.GoalGoals })
+        //     .OrderBy(i => i.Probability)
+        //     .Take(gameCount)
+        //     .ToList();
+        // selectedTickets.AddRange(goalGoalGames);
+        //
+        // var overTwoGoalsGames = predictions
+        //     .Where(i => i is { Qualified: true, Type: PredictionType.OverTwoGoals })
+        //     .OrderBy(i => i.Probability)
+        //     .Take(gameCount)
+        //     .ToList();
+        // selectedTickets.AddRange(overTwoGoalsGames);
+        //
         // var underThreeGoalsGames = predictions
         //     .Where(i => i is { Qualified: true, Type: PredictionType.UnderThreeGoals })
         //     .OrderBy(_ => random.Next())
@@ -339,22 +365,29 @@ public class PredictionService(
         //     .Take(2)
         //     .ToList();  
         // selectedTickets.AddRange(twoToThreeGoalsGames);
-        
-        var homeWinGames = predictions
-            .Where(i => i is { Qualified: true, Type: PredictionType.HomeWin })
-            .OrderBy(i => i.Probability)
-            .Take(gameCount)
-            .ToList();
-        selectedTickets.AddRange(homeWinGames);
-        
-        var awayWinGames = predictions
-            .Where(i => i is { Qualified: true, Type: PredictionType.AwayWin })
-            .OrderBy(i => i.Probability)
-            .Take(gameCount)
-            .ToList();
-        selectedTickets.AddRange(awayWinGames);
-        
-        return predictions
+        //
+        // var homeWinGames = predictions
+        //     .Where(i => i is { Qualified: true, Type: PredictionType.HomeWin })
+        //     .OrderBy(i => i.Probability)
+        //     .Take(gameCount)
+        //     .ToList();
+        // selectedTickets.AddRange(homeWinGames);
+        //
+        // var awayWinGames = predictions
+        //     .Where(i => i is { Qualified: true, Type: PredictionType.AwayWin })
+        //     .OrderBy(i => i.Probability)
+        //     .Take(gameCount)
+        //     .ToList();
+        // selectedTickets.AddRange(awayWinGames);
+        //
+        if (type is PredictionType.Any)
+        {
+            return predictions.Where(i => i.Qualified)
+                .OrderBy(_ => Random.Shared.Next())
+                .Take(gameCount)
+                .ToList();
+        }
+        return predictions.Where(i => i.Qualified)
             .OrderBy(i => i.Probability)
             .Take(gameCount)
             .ToList();
