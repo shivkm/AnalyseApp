@@ -4,24 +4,21 @@ using Microsoft.Extensions.Hosting;
 
 namespace AnalyseApp;
 
-public class Worker: BackgroundService
+public class Worker(IServiceScopeFactory scopeFactory) : BackgroundService
 {
-    private readonly IServiceScopeFactory _scopeFactory;
-
-    public Worker(IServiceScopeFactory scopeFactory)
-    {
-        _scopeFactory = scopeFactory;
-    }
-    
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         while (!stoppingToken.IsCancellationRequested)
         {
             try
             {
-                using var scope = _scopeFactory.CreateScope();
-                var predictService = scope.ServiceProvider.GetRequiredService<IMatchPredictor>();
-                predictService.GenerateFixtureFiles("");
+                using var scope = scopeFactory.CreateScope();
+                var predictService = scope.ServiceProvider.GetRequiredService<IPredictionService>();
+                var footballService = scope.ServiceProvider.GetRequiredService<IFootballService>();
+                //predictService.GenerateFixtureFiles("");
+                //predictService.GenerateRandomPredictionsBy();
+
+             //   await footballService.QueryAndSaveLeaguesBy();
             }
             catch (HttpRequestException ex)
             {

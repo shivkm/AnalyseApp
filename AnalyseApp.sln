@@ -4,6 +4,12 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyseApp", "AnalyseApp\An
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AnalyseApp.Tests", "AnalyseApp.Tests\AnalyseApp.Tests.csproj", "{9FBAFD4C-4BF1-4149-AD4D-1D0961665C6E}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{EC15413E-7E3A-46D3-AC30-B548F9647F92}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScoreMind.Application", "src\ScoreMind.Application\ScoreMind.Application.csproj", "{643B20B6-07D4-4212-960A-C98B455729E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScoreMind.Infrastructure", "src\ScoreMind.Infrastructure\ScoreMind.Infrastructure.csproj", "{D4736E50-0725-497C-AA72-5D124F519105}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +24,17 @@ Global
 		{9FBAFD4C-4BF1-4149-AD4D-1D0961665C6E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9FBAFD4C-4BF1-4149-AD4D-1D0961665C6E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{9FBAFD4C-4BF1-4149-AD4D-1D0961665C6E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{643B20B6-07D4-4212-960A-C98B455729E8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{643B20B6-07D4-4212-960A-C98B455729E8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{643B20B6-07D4-4212-960A-C98B455729E8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{643B20B6-07D4-4212-960A-C98B455729E8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4736E50-0725-497C-AA72-5D124F519105}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4736E50-0725-497C-AA72-5D124F519105}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4736E50-0725-497C-AA72-5D124F519105}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4736E50-0725-497C-AA72-5D124F519105}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{643B20B6-07D4-4212-960A-C98B455729E8} = {EC15413E-7E3A-46D3-AC30-B548F9647F92}
+		{D4736E50-0725-497C-AA72-5D124F519105} = {EC15413E-7E3A-46D3-AC30-B548F9647F92}
 	EndGlobalSection
 EndGlobal
