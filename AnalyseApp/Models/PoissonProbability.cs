@@ -1,3 +1,5 @@
-﻿namespace AnalyseApp.models;
+using AnalyseApp.Enums;
 
-public record PoissonProbability(double Home, double Away);
+namespace AnalyseApp.Models;
+
+public record PoissonProbability(PredictionType Type, double Probability);

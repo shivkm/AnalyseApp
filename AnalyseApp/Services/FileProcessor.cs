@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using AnalyseApp.Extensions;
 using AnalyseApp.Interfaces;
-using AnalyseApp.models;
+using AnalyseApp.Models;
 using AnalyseApp.Options;
 using CsvHelper;
 using CsvHelper.Configuration;
@@ -9,36 +9,31 @@ using Microsoft.Extensions.Options;
 
 namespace AnalyseApp.Services;
 
-public class FileProcessor: IFileProcessor
+public class FileProcessor(IOptions<FileProcessorOptions> options) : IFileProcessor
 {
-    private readonly FileProcessorOptions _options;
-    
-    public FileProcessor(IOptions<FileProcessorOptions> options)
-    {
-        _options = options.Value;
-    }
-    
-    public List<Matches> GetHistoricalMatchesBy()
+    private readonly FileProcessorOptions _options = options.Value;
+
+    public List<Match> GetHistoricalMatchesBy()
     {
         var files = Directory.GetFiles(_options.RawCsvDir, "*.csv");
-        var games = new List<Matches>();
+        var games = new List<Match>();
         foreach (var file in files)
         {
-            var currentFile= ReadCsvFileBy<Matches>(file);
+            var currentFile= ReadCsvFileBy<Match>(file);
             games.AddRange(currentFile);
         }
 
         return games;
     }
 
-    public List<Matches> GetUpcomingGamesBy(string fixtureFileName)
+    public List<Match> GetUpcomingGamesBy(string fixtureFileName)
     {
         var filePath = Path.Combine(_options.Upcoming, fixtureFileName);
 
         // Return an empty list if the file doesn't exist.
-        if (!File.Exists(filePath)) return new List<Matches>();
+        if (!File.Exists(filePath)) return new List<Match>();
         
-        var games = ReadCsvFileBy<Matches>(filePath).ToList();
+        var games = ReadCsvFileBy<Match>(filePath).ToList();
         return games;
 
     }
@@ -66,13 +61,13 @@ public class FileProcessor: IFileProcessor
         WriteSelectedMatchesToCsv(selectedMatches, $"fixture-{startDateTime.Date.Day}-{startDateTime.Date.Month}");
     }
 
-    private static bool IsWithinDateRange(Matches match, DateTime startDate, DateTime endDate)
+    private static bool IsWithinDateRange(Match match, DateTime startDate, DateTime endDate)
     {
         var matchStartDate = match.Date.Parse();
         return matchStartDate >= startDate && matchStartDate <= endDate;
     }
 
-    private void WriteSelectedMatchesToCsv(IEnumerable<Matches> matches, string fileName)
+    private void WriteSelectedMatchesToCsv(IEnumerable<Match> matches, string fileName)
     {
         var filePath = Path.Combine(_options.Upcoming, fileName);
         using var writer = new StreamWriter(filePath);

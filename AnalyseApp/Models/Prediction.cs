@@ -1,16 +1,19 @@
 ﻿using AnalyseApp.Enums;
 
-namespace AnalyseApp.models;
+namespace AnalyseApp.Models;
 
-public record Prediction(BetType Type)
+public record Prediction
 {
-    public string Match { get; set; }
-    public int? HomeScore { get; set; }
-    public int? AwayScore { get; set; }
+    public DateTime Date { get; set; }
+    public float HomeScore { get; set; }
+    public float AwayScore { get; set; }
     public string Msg { get; init; } = default!;
-    public double Percentage { get; set; } = default!;
+    public PredictionType Type { get; set; }
+    public double HomeWinAccuracy { get; set; }
+    public double AwayWinAccuracy { get; set; }
+    public double Probability { get; set; }
+    public double OverTwoGoalsAccuracy { get; set; }
+    public double GoalGoalAccuracy { get; set; }
+    public double TwoToThreeGoalsAccuracy { get; set; }
     public bool Qualified { get; init; }
-};
-
-public record GoalAnalysis(bool Qualified, QualificationType Type, BetType BetType);
-
+}
